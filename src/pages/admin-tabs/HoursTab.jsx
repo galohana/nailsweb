@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, Lock, Unlock, AlertTriangle, X, SlidersHorizontal, Check } from 'lucide-react';
 import { db } from '../../utils/db';
+import { fmtDuration } from '../../utils/format';
 import { DEFAULT_WORKING_HOURS } from '../../utils/defaults';
 import * as S from '../../utils/adminStyles';
 import { notifyOwnerCancellation } from '../../utils/sms';
@@ -675,7 +676,7 @@ function WeekCalendar() {
                     <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: pay.dot, flexShrink: 0 }} title={pay.label} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>
-                        {(a.time || '').slice(0, 5)} · {a.serviceName} | {a.serviceDuration} דק׳ | ₪{a.price}
+                        {(a.time || '').slice(0, 5)} · {a.serviceName} | {fmtDuration(a.serviceDuration)} | ₪{a.price}
                       </p>
                       <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-muted)', marginTop: 2 }}>
                         {a.userName} · {pay.label}

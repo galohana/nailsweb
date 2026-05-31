@@ -2,6 +2,7 @@ import { useState, useEffect, memo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { db } from '../../utils/db';
+import { fmtDuration } from '../../utils/format';
 import * as S from '../../utils/adminStyles';
 import ImageUploader from '../../components/ImageUploader';
 
@@ -157,7 +158,7 @@ export default function ServicesTab() {
               <div style={{ flex: 1 }}>
                 <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text)', fontWeight: 600, fontSize: 15 }}>{svc.name}</p>
                 <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)', fontSize: 12, marginTop: 2 }}>
-                  {svc.duration} דק׳ · ₪{svc.price}
+                  {fmtDuration(svc.duration)} · ₪{svc.price}
                   {addons.length > 0 && <span style={{ marginInlineStart: 8, color: 'var(--color-primary)', fontWeight: 600 }}>+ {addons.length} תוספות</span>}
                 </p>
               </div>
@@ -199,7 +200,7 @@ export default function ServicesTab() {
                             <span style={{ fontSize: 14 }}>✨</span>
                             <div style={{ flex: 1 }}>
                               <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{addon.name}</p>
-                              <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-muted)', marginTop: 1 }}>+{addon.duration} דק׳ · +₪{addon.price}</p>
+                              <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-muted)', marginTop: 1 }}>+{fmtDuration(addon.duration)} · +₪{addon.price}</p>
                             </div>
                             <div style={{ display: 'flex', gap: 4 }}>
                               <button

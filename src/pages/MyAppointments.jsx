@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../utils/db';
+import { fmtDuration } from '../utils/format';
 import { notifyOwnerCancellation } from '../utils/sms';
 import { features } from '../config/features';
 import PageHeader from '../components/PageHeader';
@@ -230,7 +231,7 @@ function AptCard({ apt, isUpcoming, onCancel, cancelWindow, confirmed, onConfirm
             </p>
             {apt.serviceDuration > 0 && (
               <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 11, color: 'var(--color-text-hint)', marginTop: 2 }}>
-                {apt.serviceDuration} דק׳
+                {fmtDuration(apt.serviceDuration)}
               </p>
             )}
             <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 12, color: 'var(--color-text-muted)', marginTop: 5, lineHeight: 1.6 }}>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../utils/db';
+import { fmtDuration } from '../utils/format';
 import { notifyOwnerNewAppointment, notifyOwnerCancellation, notifyOwnerNewClient, notifyClientWelcome, notifyOwnerWaitlistJoin, notifyOwnerWaitlistFilled, notifyOwnerAppointmentPaid } from '../utils/sms';
 import PageHeader from '../components/PageHeader';
 import PayButtons from '../components/PayButtons';
@@ -567,7 +568,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
                     }}>
                       <p style={{ color: 'var(--color-surface)', fontFamily: 'var(--demo-body-font)', fontWeight: 700, fontSize: 13, lineHeight: 1.2 }}>{svc.name}</p>
                       <p style={{ color: 'rgba(253,250,247,0.80)', fontFamily: 'var(--demo-body-font)', fontSize: 11, marginTop: 2 }}>
-                        {svc.duration} דק׳ · <span style={{ fontWeight: 700 }}>₪{svc.price}</span>
+                        {fmtDuration(svc.duration)} · <span style={{ fontWeight: 700 }}>₪{svc.price}</span>
                       </p>
                     </div>
                   </motion.button>
@@ -696,8 +697,8 @@ export default function Booking({ user, onUserSave, onNavigate }) {
               <p style={{ color: C.muted, fontSize: 12, marginBottom: 10 }}>סיכום התור</p>
               {[
                 ['שירות', service?.name],
-                ...(selectedAddons.map(a => [`+ ${a.name}`, `+${a.duration} דק׳ · +₪${a.price}`])),
-                ['סה"כ זמן', `${effectiveDuration} דק׳`],
+                ...(selectedAddons.map(a => [`+ ${a.name}`, `+${fmtDuration(a.duration)} · +₪${a.price}`])),
+                ['סה"כ זמן', fmtDuration(effectiveDuration)],
                 ['תאריך', date ? fmtDateShort(date) : ''],
                 ['שעה',   time],
               ].map(([k,v]) => (
@@ -748,6 +749,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
                   ['תאריך', fmtDateLong(confirmed.date)],
                   ['שעה', confirmed.time],
                 ];
+                if (confirmed.serviceDuration > 0) rows.push(['משך', fmtDuration(confirmed.serviceDuration)]);
                 if (staffName) rows.push(['מטפלת', staffName]);
                 return rows;
               })().map(([k,v]) => (
@@ -890,7 +892,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
                     <h3 style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0 }}>
                       {date ? fmtDateShort(date) : ''}
                     </h3>
-                    <p style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{service?.name}{selectedAddons.length > 0 ? ' + ' + selectedAddons.map(a => a.name).join(' + ') : ''} · {effectiveDuration} דק׳</p>
+                    <p style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{service?.name}{selectedAddons.length > 0 ? ' + ' + selectedAddons.map(a => a.name).join(' + ') : ''} · {fmtDuration(effectiveDuration)}</p>
                   </div>
                   <button onClick={() => setSelectedDay(null)}
                     style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: C.bg, border: `1px solid ${C.border}`, color: C.muted, fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1163,7 +1165,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <div>
                     <h3 style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0 }}>תוספות</h3>
-                    <p style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>{pendingBaseService.name} · {pendingBaseService.duration} דק׳ · ₪{pendingBaseService.price}</p>
+                    <p style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>{pendingBaseService.name} · {fmtDuration(pendingBaseService.duration)} · ₪{pendingBaseService.price}</p>
                   </div>
                   <button onClick={() => setShowAddonPicker(false)}
                     style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: C.bg, border: `1px solid ${C.border}`, color: C.muted, fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
@@ -1190,7 +1192,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
                         }}>
                         <div>
                           <p style={{ color: C.text, fontFamily: 'var(--demo-body-font)', fontWeight: 600, fontSize: 14 }}>✨ {addon.name}</p>
-                          <p style={{ color: C.muted, fontFamily: 'var(--demo-body-font)', fontSize: 12, marginTop: 2 }}>+{addon.duration} דק׳ · +₪{addon.price}</p>
+                          <p style={{ color: C.muted, fontFamily: 'var(--demo-body-font)', fontSize: 12, marginTop: 2 }}>+{fmtDuration(addon.duration)} · +₪{addon.price}</p>
                         </div>
                         <div style={{
                           width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
@@ -1208,7 +1210,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
                 {selectedAddons.length > 0 && (
                   <div style={{ padding: '10px 14px', marginBottom: 12, backgroundColor: `rgba(107,79,58,0.06)`, borderRadius: 'var(--demo-radius-card)', border: `1px solid ${C.border}` }}>
                     <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 13, color: C.text }}>
-                      סה"כ: <strong>{pendingBaseService.duration + selectedAddons.reduce((s,a) => s+a.duration, 0)} דק׳</strong> · <strong style={{ color: C.accent }}>₪{pendingBaseService.price + selectedAddons.reduce((s,a) => s+a.price, 0)}</strong>
+                      סה"כ: <strong>{fmtDuration(pendingBaseService.duration + selectedAddons.reduce((s,a) => s+a.duration, 0))}</strong> · <strong style={{ color: C.accent }}>₪{pendingBaseService.price + selectedAddons.reduce((s,a) => s+a.price, 0)}</strong>
                     </p>
                   </div>
                 )}
