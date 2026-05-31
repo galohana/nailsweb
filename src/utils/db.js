@@ -13,7 +13,7 @@ import {
 // ── Mappers ─────────────────────────────────────────────────────
 const mapService = s => ({
   id: s.id, name: s.name, duration: s.duration, price: Number(s.price),
-  imageUrl: s.image_url || '',
+  imageUrl: s.image_url || '', parentId: s.parent_id || null,
 });
 
 const mapProduct = p => ({
@@ -30,6 +30,7 @@ const mapApt = a => ({
   serviceDuration: a.service_duration,
   date: a.date, time: a.time ? a.time.substring(0, 5) : a.time,
   price: Number(a.price), status: a.status, staffId: a.staff_id,
+  addons: Array.isArray(a.addons) ? a.addons : [],
   reminderSent: a.reminder_sent || false, createdAt: a.created_at,
 });
 
@@ -69,9 +70,9 @@ export const db = {
       const { data } = await supabase.from('services').select().order('created_at');
       return (data || []).map(mapService);
     },
-    create: async ({ name, duration, price, imageUrl }) => {
+    create: async ({ name, duration, price, imageUrl, parentId = null }) => {
       const { data, error } = await supabase.from('services')
-        .insert({ name, duration: Number(duration), price: Number(price), image_url: imageUrl || null })
+        .insert({ name, duration: Number(duration), price: Number(price), image_url: imageUrl || null, parent_id: parentId || null })
         .select().single();
       if (error) {
         console.error('[db.services.create]', error);
@@ -81,9 +82,9 @@ export const db = {
       }
       return data ? mapService(data) : null;
     },
-    update: async (id, { name, duration, price, imageUrl }) => {
+    update: async (id, { name, duration, price, imageUrl, parentId = null }) => {
       await supabase.from('services')
-        .update({ name, duration: Number(duration), price: Number(price), image_url: imageUrl || null }).eq('id', id);
+        .update({ name, duration: Number(duration), price: Number(price), image_url: imageUrl || null, parent_id: parentId || null }).eq('id', id);
     },
     delete: async (id) => { await supabase.from('services').delete().eq('id', id); },
   },
@@ -176,6 +177,7 @@ export const db = {
           service_duration: apt.serviceDuration,
           date: apt.date, time: apt.time, price: apt.price,
           status: 'confirmed', staff_id: apt.staffId || null,
+          addons: apt.addons || [],
         })
         .select().single();
       return data ? mapApt(data) : null;

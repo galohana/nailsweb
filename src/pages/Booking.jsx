@@ -127,6 +127,9 @@ export default function Booking({ user, onUserSave, onNavigate }) {
   const [paySettingsLoaded, setPaySettingsLoaded] = useState(false);
   const [showStaffPicker, setShowStaffPicker] = useState(false);
   const [pendingService, setPendingService]   = useState(null);
+  const [selectedAddons, setSelectedAddons]   = useState([]);   // [{id,name,price,duration}]
+  const [showAddonPicker, setShowAddonPicker] = useState(false);
+  const [pendingBaseService, setPendingBaseService] = useState(null);
   const [owner, setOwner]                     = useState({ id: null, name: 'בעלת העסק', imageUrl: '', mediaType: 'image' });
   const [staffHours, setStaffHours]           = useState({});  // { staffId: hoursObject }
   const [postTimePicker, setPostTimePicker]   = useState(null);  // { time, candidates: [{id, name, imageUrl}] }
@@ -184,6 +187,12 @@ export default function Booking({ user, onUserSave, onNavigate }) {
       .catch(() => {});
   }, [user?.phone]);
 
+  // ── Derived: total duration and price including selected addons ──
+  const effectiveDuration = (service?.duration || 0) + selectedAddons.reduce((s, a) => s + (a.duration || 0), 0);
+  const effectivePrice    = (service?.price    || 0) + selectedAddons.reduce((s, a) => s + (a.price    || 0), 0);
+  const baseServices      = services.filter(s => !s.parentId);
+  const addonsOf          = (parentId) => services.filter(s => s.parentId === parentId);
+
   const isVacationDay = (d) => {
     if (!wh) return false;
     const dateStr = toDS(d);
@@ -232,7 +241,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
   // Is this staff free at slot? (no overlapping apt) — assumes slot is already within their hours
   const isStaffFreeAtSlot = (sid, slot) => {
     if (!service) return false;
-    const sStart = toMin(slot); const sEnd = sStart + service.duration;
+    const sStart = toMin(slot); const sEnd = sStart + effectiveDuration;
     const targetSid = sid === null ? null : sid;
     return !apts.some(b => {
       if ((b.staffId || null) !== targetSid) return false;
@@ -247,7 +256,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
     if (!date) return false;
     const cfg = getHoursForStaffDate(date, sid);
     if (!cfg?.active) return false;
-    const sStart = toMin(slot); const sEnd = sStart + (service?.duration || 0);
+    const sStart = toMin(slot); const sEnd = sStart + effectiveDuration;
     if (sStart < toMin(cfg.start) || sEnd > toMin(cfg.end)) return false;
     return isStaffFreeAtSlot(sid, slot);
   };
@@ -269,13 +278,13 @@ export default function Booking({ user, onUserSave, onNavigate }) {
       anyCandidates().forEach(c => {
         const cfg = getHoursForStaffDate(date, c.id);
         if (!cfg?.active) return;
-        genSlots(cfg.start, cfg.end, service.duration, wh.gap || 0).forEach(s => allTimes.add(s));
+        genSlots(cfg.start, cfg.end, effectiveDuration, wh.gap || 0).forEach(s => allTimes.add(s));
       });
       return [...allTimes].sort();
     }
     const cfg = getHoursForStaffDate(date, staffId);
     if (!cfg?.active) return [];
-    return genSlots(cfg.start, cfg.end, service.duration, wh.gap || 0);
+    return genSlots(cfg.start, cfg.end, effectiveDuration, wh.gap || 0);
   };
 
   const isOccupied = (slot) => {
@@ -325,11 +334,13 @@ export default function Booking({ user, onUserSave, onNavigate }) {
   const doBook = async () => {
     if (!service || !date || !time) return;
     setLoading(true);
+    const fullName = service.name + (selectedAddons.length ? ' + ' + selectedAddons.map(a => a.name).join(' + ') : '');
     const apt = await db.appointments.create({
       phone: user.phone, userName: user.name || user.firstName,
-      serviceId: service.id, serviceName: service.name,
-      serviceDuration: service.duration,
-      date: toDS(date), time, price: service.price, staffId,
+      serviceId: service.id, serviceName: fullName,
+      serviceDuration: effectiveDuration,
+      date: toDS(date), time, price: effectivePrice, staffId,
+      addons: selectedAddons,
     });
     setLoading(false);
     if (apt) {
@@ -381,6 +392,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
   };
 
   const back = () => {
+    if (showAddonPicker) { setShowAddonPicker(false); setPendingBaseService(null); return; }
     if (selectedDay) { setSelectedDay(null); return; }
     if (step === 3) { setStep(2); setTime(null); return; }
     if (step > 1) { setStep(step - 1); return; }
@@ -511,18 +523,23 @@ export default function Booking({ user, onUserSave, onNavigate }) {
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             {services.length === 0 && <p style={{ color: C.muted, fontSize: 13, textAlign: 'center', padding: '20px 0' }}>טוענת שירותים...</p>}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-              {services.map((svc, i) => {
+              {baseServices.map((svc, i) => {
                 const isSelected = service?.id === svc.id;
+                const svcAddons  = addonsOf(svc.id);
                 return (
                   <motion.button key={svc.id}
                     onClick={() => {
                       vibrate(15);
-                      // If staff feature is on and there are additional staff, show picker
-                      if (features.staff && staff.length >= 1) {
+                      if (svcAddons.length > 0) {
+                        // Show addon picker first
+                        setPendingBaseService(svc);
+                        setSelectedAddons([]);
+                        setShowAddonPicker(true);
+                      } else if (features.staff && staff.length >= 1) {
                         setPendingService(svc);
                         setShowStaffPicker(true);
                       } else {
-                        setStaffId(null);  // owner
+                        setStaffId(null);
                         setService(svc);
                         setStep(2);
                       }
@@ -679,15 +696,20 @@ export default function Booking({ user, onUserSave, onNavigate }) {
               <p style={{ color: C.muted, fontSize: 12, marginBottom: 10 }}>סיכום התור</p>
               {[
                 ['שירות', service?.name],
+                ...(selectedAddons.map(a => [`+ ${a.name}`, `+${a.duration} דק׳ · +₪${a.price}`])),
+                ['סה"כ זמן', `${effectiveDuration} דק׳`],
                 ['תאריך', date ? fmtDateShort(date) : ''],
                 ['שעה',   time],
-                ['מחיר',  `₪${service?.price}`],
               ].map(([k,v]) => (
                 <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <span style={{ color: C.muted, fontSize: 13 }}>{k}</span>
-                  <span style={{ color: k === 'מחיר' ? C.accent : C.text, fontSize: 13, fontWeight: k === 'מחיר' ? 700 : 500 }}>{v}</span>
+                  <span style={{ color: k.startsWith('+') ? C.accent : C.muted, fontSize: 13 }}>{k}</span>
+                  <span style={{ color: C.text, fontSize: 13, fontWeight: 500 }}>{v}</span>
                 </div>
               ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 2px' }}>
+                <span style={{ color: C.muted, fontSize: 13, fontWeight: 700 }}>סה"כ לתשלום</span>
+                <span style={{ color: C.accent, fontSize: 20, fontWeight: 800 }}>₪{effectivePrice}</span>
+              </div>
             </div>
             {error && <p style={{ color: '#E57373', fontSize: 13, marginBottom: 12 }}>{error}</p>}
             <motion.button onClick={doBook} disabled={loading} whileTap={{ scale: 0.97 }}
@@ -868,7 +890,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
                     <h3 style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0 }}>
                       {date ? fmtDateShort(date) : ''}
                     </h3>
-                    <p style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{service?.name} · {service?.duration} דקות</p>
+                    <p style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{service?.name}{selectedAddons.length > 0 ? ' + ' + selectedAddons.map(a => a.name).join(' + ') : ''} · {effectiveDuration} דק׳</p>
                   </div>
                   <button onClick={() => setSelectedDay(null)}
                     style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: C.bg, border: `1px solid ${C.border}`, color: C.muted, fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1107,6 +1129,105 @@ export default function Booking({ user, onUserSave, onNavigate }) {
                     <span style={{ fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 500, color: C.text, textAlign: 'center', lineHeight: 1.3 }}>{c.name}</span>
                   </motion.button>
                 ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── Addon picker bottom sheet ──────────────────────────── */}
+      <AnimatePresence>
+        {showAddonPicker && pendingBaseService && (
+          <>
+            <motion.div key="addon-backdrop"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ position: 'fixed', inset: 0, zIndex: 60, backgroundColor: 'rgba(44,27,16,0.38)' }}
+              onClick={() => setShowAddonPicker(false)}
+            />
+            <motion.div key="addon-panel"
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 320, damping: 34 }}
+              style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0,
+                maxWidth: 390, margin: '0 auto', zIndex: 70,
+                backgroundColor: C.surface, borderRadius: '20px 20px 0 0',
+                maxHeight: '80vh', overflowY: 'auto',
+                boxShadow: '0 -4px 24px rgba(0,0,0,0.10)',
+              }}>
+              {/* Handle */}
+              <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12, paddingBottom: 2 }}>
+                <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: C.border }} />
+              </div>
+              <div style={{ padding: '12px 16px 48px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <div>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0 }}>תוספות</h3>
+                    <p style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>{pendingBaseService.name} · {pendingBaseService.duration} דק׳ · ₪{pendingBaseService.price}</p>
+                  </div>
+                  <button onClick={() => setShowAddonPicker(false)}
+                    style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: C.bg, border: `1px solid ${C.border}`, color: C.muted, fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                </div>
+                <p style={{ fontSize: 12, color: C.muted, marginBottom: 14 }}>בחרי תוספות (אופציונלי)</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+                  {addonsOf(pendingBaseService.id).map(addon => {
+                    const checked = selectedAddons.some(a => a.id === addon.id);
+                    return (
+                      <motion.button key={addon.id} whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          vibrate(10);
+                          setSelectedAddons(prev =>
+                            checked ? prev.filter(a => a.id !== addon.id) : [...prev, { id: addon.id, name: addon.name, price: addon.price, duration: addon.duration }]
+                          );
+                        }}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 14px', borderRadius: 'var(--demo-radius-card)',
+                          border: `${checked ? '2px' : '1px'} solid ${checked ? C.accent : C.border}`,
+                          backgroundColor: checked ? `rgba(107,79,58,0.06)` : C.surface,
+                          boxShadow: checked ? `0 0 0 2px rgba(107,79,58,0.12)` : SHADOW,
+                          cursor: 'pointer', textAlign: 'start',
+                        }}>
+                        <div>
+                          <p style={{ color: C.text, fontFamily: 'var(--demo-body-font)', fontWeight: 600, fontSize: 14 }}>✨ {addon.name}</p>
+                          <p style={{ color: C.muted, fontFamily: 'var(--demo-body-font)', fontSize: 12, marginTop: 2 }}>+{addon.duration} דק׳ · +₪{addon.price}</p>
+                        </div>
+                        <div style={{
+                          width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                          backgroundColor: checked ? C.accent : 'transparent',
+                          border: `2px solid ${checked ? C.accent : C.border}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          {checked && <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+                {/* Total preview */}
+                {selectedAddons.length > 0 && (
+                  <div style={{ padding: '10px 14px', marginBottom: 12, backgroundColor: `rgba(107,79,58,0.06)`, borderRadius: 'var(--demo-radius-card)', border: `1px solid ${C.border}` }}>
+                    <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 13, color: C.text }}>
+                      סה"כ: <strong>{pendingBaseService.duration + selectedAddons.reduce((s,a) => s+a.duration, 0)} דק׳</strong> · <strong style={{ color: C.accent }}>₪{pendingBaseService.price + selectedAddons.reduce((s,a) => s+a.price, 0)}</strong>
+                    </p>
+                  </div>
+                )}
+                <motion.button whileTap={{ scale: 0.97 }}
+                  onClick={() => {
+                    vibrate(15);
+                    setService(pendingBaseService);
+                    setShowAddonPicker(false);
+                    if (features.staff && staff.length >= 1) {
+                      setPendingService(pendingBaseService);
+                      setShowStaffPicker(true);
+                    } else {
+                      setStaffId(null);
+                      setStep(2);
+                    }
+                  }}
+                  style={{ ...S.btn }}>
+                  המשיכי {selectedAddons.length > 0 ? `עם ${selectedAddons.length} תוספות` : 'ללא תוספות'} ←
+                </motion.button>
               </div>
             </motion.div>
           </>

@@ -216,6 +216,24 @@ export default function ReportsTab() {
 
   const netProfit = totalAllRev - expenses;
 
+  // ── Services grouped by base service (serviceId) ──
+  const baseServiceStats = useMemo(() => {
+    const map = {};
+    confirmed.forEach(a => {
+      const key = a.serviceId || a.serviceName;
+      if (!map[key]) map[key] = { name: a.serviceName?.split(' + ')[0] || a.serviceName, count: 0, revenue: 0, addonCombos: {} };
+      map[key].count++;
+      map[key].revenue += a.price || 0;
+      // Group by addon combination
+      const comboKey = (a.addons || []).length === 0 ? '__none__' : (a.addons || []).map(x => x.name).sort().join(' + ');
+      const comboLabel = comboKey === '__none__' ? 'ללא תוספות' : comboKey;
+      if (!map[key].addonCombos[comboKey]) map[key].addonCombos[comboKey] = { label: comboLabel, count: 0, revenue: 0 };
+      map[key].addonCombos[comboKey].count++;
+      map[key].addonCombos[comboKey].revenue += (a.addons || []).reduce((s, x) => s + (x.price || 0), 0);
+    });
+    return Object.values(map).sort((a, b) => b.count - a.count);
+  }, [confirmed]);
+
   // ── New chart: top 5 clients by visit count ──
   const topClientsData = useMemo(() => {
     const map = {};
@@ -615,6 +633,18 @@ export default function ReportsTab() {
             </GlassCard>
           )}
 
+          {/* ── שירותים מובילים ── */}
+          {baseServiceStats.length > 0 && (
+            <GlassCard>
+              <CardTitle>שירותים מובילים</CardTitle>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginTop: 6 }}>
+                {baseServiceStats.map((svc, i) => (
+                  <ServiceStatRow key={svc.name + i} svc={svc} />
+                ))}
+              </div>
+            </GlassCard>
+          )}
+
           {/* ── Chart 5: לקוחות מובילות ── */}
           {topClientsData.length > 0 && (
             <GlassCard>
@@ -758,6 +788,39 @@ export default function ReportsTab() {
 }
 
 // ── Sub-components ──────────────────────────────────────────────
+
+function ServiceStatRow({ svc }) {
+  const [open, setOpen] = useState(false);
+  const combos = Object.values(svc.addonCombos).sort((a, b) => b.count - a.count);
+  return (
+    <div style={{ borderBottom: '1px solid var(--color-border-soft)' }}>
+      <button
+        onClick={() => setOpen(p => !p)}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'right' }}
+      >
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>{svc.name}</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-muted)', marginTop: 2 }}>{svc.count} תורים · ₪{Number(svc.revenue).toLocaleString()}</p>
+        </div>
+        <span style={{ fontSize: 12, color: 'var(--color-text-hint)', paddingInlineStart: 8 }}>{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <div style={{ paddingBottom: 10, paddingInlineStart: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {combos.map(c => (
+            <div key={c.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 10px', backgroundColor: 'var(--color-brown-07)', borderRadius: 'var(--radius-sm)', borderInlineStart: '2px solid var(--color-primary)' }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text)' }}>
+                {c.label === 'ללא תוספות' ? c.label : `+ ${c.label}`}
+              </span>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text-muted)', flexShrink: 0, paddingInlineStart: 8 }}>
+                {c.count} תורים{c.revenue > 0 ? ` · +₪${Number(c.revenue).toLocaleString()}` : ''}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function GlassCard({ children, style }) {
   return (

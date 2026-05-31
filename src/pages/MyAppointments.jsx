@@ -228,6 +228,11 @@ function AptCard({ apt, isUpcoming, onCancel, cancelWindow, confirmed, onConfirm
             <p style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 19, fontWeight: 600, color: 'var(--color-text)', lineHeight: 1.1 }}>
               ✂️ {apt.serviceName}
             </p>
+            {apt.serviceDuration > 0 && (
+              <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 11, color: 'var(--color-text-hint)', marginTop: 2 }}>
+                {apt.serviceDuration} דק׳
+              </p>
+            )}
             <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 12, color: 'var(--color-text-muted)', marginTop: 5, lineHeight: 1.6 }}>
               {fmtDate(apt.date)}<br />{(apt.time || '').slice(0, 5)}
             </p>
