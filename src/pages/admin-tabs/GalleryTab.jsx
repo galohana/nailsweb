@@ -41,10 +41,13 @@ export default function GalleryTab() {
     <TabBoundary>
       <div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-          <button style={S.subTab(sub === 'works')} onClick={() => setSub('works')}>גלריית עבודות</button>
-          <button style={S.subTab(sub === 'hero')}  onClick={() => setSub('hero')}>רקע ראשי</button>
+          <button style={S.subTab(sub === 'works')}   onClick={() => setSub('works')}>גלריה ראשונה</button>
+          <button style={S.subTab(sub === 'works2')}  onClick={() => setSub('works2')}>גלריה שנייה</button>
+          <button style={S.subTab(sub === 'hero')}    onClick={() => setSub('hero')}>רקע ראשי</button>
         </div>
-        {sub === 'works' ? <Works /> : <Hero />}
+        {sub === 'works'  ? <Works />  :
+         sub === 'works2' ? <Works2 /> :
+                            <Hero />}
       </div>
     </TabBoundary>
   );
@@ -207,6 +210,162 @@ function CarouselStrip({ images, onDelete, onMove }) {
             </div>
 
             {/* ← → reorder buttons */}
+            <div style={{ display: 'flex', gap: 4, marginTop: 6, justifyContent: 'center' }}>
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={() => onMove(i, i - 1)}
+                disabled={i === 0}
+                style={{ flex: 1, height: 28, borderRadius: 8, border: '1px solid #E8DCC8', backgroundColor: i === 0 ? '#F5EEE8' : 'var(--color-surface)', color: i === 0 ? '#C8A882' : 'var(--color-primary)', cursor: i === 0 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'manipulation' }}
+              >
+                <ChevronRight size={14} />
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={() => onMove(i, i + 1)}
+                disabled={i === images.length - 1}
+                style={{ flex: 1, height: 28, borderRadius: 8, border: '1px solid #E8DCC8', backgroundColor: i === images.length - 1 ? '#F5EEE8' : 'var(--color-surface)', color: i === images.length - 1 ? '#C8A882' : 'var(--color-primary)', cursor: i === images.length - 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'manipulation' }}
+              >
+                <ChevronLeft size={14} />
+              </motion.button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Works2 sub-tab — second carousel, stored in settings as 'gallery2'
+// ─────────────────────────────────────────────────────────────────
+const MAX2 = 10;
+
+function Works2() {
+  const [images, setImages]     = useState(null);
+  const [addError, setAddError] = useState('');
+  const [preview, setPreview]   = useState('');
+
+  useEffect(() => {
+    db.settings.get('gallery2', []).then(arr => {
+      setImages(Array.isArray(arr) ? arr : []);
+    });
+  }, []);
+
+  const persist = (arr) => db.settings.set('gallery2', arr);
+
+  const add = useCallback(async (url) => {
+    if (!url) return;
+    setAddError('');
+    const item = { id: `g2_${Date.now()}`, url };
+    const next = [...(images || []), item];
+    setImages(next);
+    await persist(next);
+    setPreview(url);
+    setTimeout(() => setPreview(''), 3000);
+  }, [images]);
+
+  const del = useCallback(async (id) => {
+    if (!confirm('למחוק את התמונה?')) return;
+    const next = images.filter(g => g.id !== id);
+    setImages(next);
+    await persist(next);
+  }, [images]);
+
+  const move = useCallback((from, to) => {
+    setImages(prev => {
+      if (!prev || to < 0 || to >= prev.length) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      persist(next);
+      return next;
+    });
+  }, []);
+
+  if (!images) return <p style={{ ...S.emptyText, padding: '20px 0', textAlign: 'center' }}>טוענת...</p>;
+
+  const atLimit = images.length >= MAX2;
+
+  return (
+    <div>
+      <div style={S.card}>
+        {atLimit ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px', backgroundColor: 'rgba(201,155,108,0.1)', borderRadius: 'var(--demo-radius-card)', border: '1px solid rgba(201,155,108,0.25)' }}>
+            <AlertTriangle size={16} color="#C99B6C" />
+            <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 13, color: 'var(--color-section)', margin: 0 }}>
+              הגעת למגבלת {MAX2} תמונות — מחקי תמונה כדי להוסיף
+            </p>
+          </div>
+        ) : (
+          <MediaUploader currentUrl="" onUploaded={add} label={`הוספת תמונה/סרטון לגלריה שנייה (${images.length}/${MAX2})`} />
+        )}
+        {addError && (
+          <div style={{ marginTop: 8, padding: '10px 12px', backgroundColor: 'rgba(168,90,74,0.08)', borderRadius: 8, border: '1px solid rgba(168,90,74,0.2)' }}>
+            <pre style={{ fontFamily: 'var(--demo-body-font)', fontSize: 11, color: '#A85A4A', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{addError}</pre>
+          </div>
+        )}
+        <AnimatePresence>
+          {preview && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ marginTop: 10, overflow: 'hidden' }}>
+              <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 11, color: '#4CAF50', marginBottom: 6 }}>✓ הועלה</p>
+              {/\.(mp4|webm|mov|ogg)(\?|$)/i.test(preview) ? (
+                <video src={preview} autoPlay muted loop playsInline style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 8 }} />
+              ) : (
+                <img src={preview} alt="" style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 8 }} />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      {images.length === 0 ? (
+        <div style={S.emptyState}>
+          <p style={S.emptyEmoji}>🖼️</p>
+          <p style={S.emptyText}>אין תמונות בגלריה השנייה</p>
+          <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 12, color: 'var(--color-text-muted)', textAlign: 'center' }}>
+            עד שתוסיפי — הגלריה השנייה תציג את תמונות הגלריה הראשונה
+          </p>
+        </div>
+      ) : (
+        <div style={S.card}>
+          <p style={{ ...S.heading, fontSize: 15, marginBottom: 4 }}>תמונות ({images.length}/{MAX2})</p>
+          <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 11, color: 'var(--color-section)', marginBottom: 12 }}>
+            השתמשי בחצים לשינוי סדר — שינויים נשמרים אוטומטית
+          </p>
+          <CarouselStrip2 images={images} onDelete={del} onMove={move} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CarouselStrip2({ images, onDelete, onMove }) {
+  return (
+    <div style={{ overflowX: 'auto', overflowY: 'hidden', WebkitOverflowScrolling: 'touch', paddingBottom: 4, scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', gap: 10, width: 'fit-content', paddingBottom: 2 }}>
+        {images.map((img, i) => (
+          <motion.div
+            key={img.id}
+            layout
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            style={{ position: 'relative', flexShrink: 0, width: 120, borderRadius: 'var(--demo-radius-card)', overflow: 'visible', boxShadow: '0 2px 8px rgba(92,61,46,0.1)' }}
+          >
+            <div style={{ width: 120, height: 140, borderRadius: 'var(--demo-radius-card)', overflow: 'hidden', border: '1px solid #E8DCC8' }}>
+              {/\.(mp4|webm|mov|ogg)(\?|$)/i.test(img.url || '') ? (
+                <video src={img.url} autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={ev => { ev.target.style.backgroundColor = '#F0E6D6'; }} />
+              )}
+            </div>
+            <button
+              onClick={() => onDelete(img.id)}
+              style={{ position: 'absolute', top: 4, insetInlineEnd: 4, width: 26, height: 26, borderRadius: '50%', backgroundColor: 'rgba(168,90,74,0.9)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'manipulation', zIndex: 2 }}
+            >
+              <Trash2 size={12} />
+            </button>
+            <div style={{ position: 'absolute', top: 4, insetInlineStart: 4, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 4, padding: '1px 5px', zIndex: 2 }}>
+              <span style={{ fontFamily: 'var(--demo-body-font)', fontSize: 10, color: '#fff' }}>{i + 1}</span>
+            </div>
             <div style={{ display: 'flex', gap: 4, marginTop: 6, justifyContent: 'center' }}>
               <motion.button
                 whileTap={{ scale: 0.85 }}

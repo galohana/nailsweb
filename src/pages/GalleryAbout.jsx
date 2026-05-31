@@ -34,9 +34,10 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
   const pauseRef2    = useRef(null);
 
   // ── Data from Supabase ────────────────────────────────────────
-  const [galleryUrls, setGalleryUrls] = useState([]);
-  const [about, setAbout]             = useState(DEFAULT_ABOUT);
-  const [clinicInfo, setClinicInfo]   = useState(DEFAULT_CLINIC_INFO);
+  const [galleryUrls, setGalleryUrls]   = useState([]);
+  const [gallery2Urls, setGallery2Urls] = useState([]);
+  const [about, setAbout]               = useState(DEFAULT_ABOUT);
+  const [clinicInfo, setClinicInfo]     = useState(DEFAULT_CLINIC_INFO);
 
   // ── Reviews state ─────────────────────────────────────────────
   const [reviews, setReviews]        = useState([]);
@@ -53,22 +54,31 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
       db.settings.get('about', DEFAULT_ABOUT),
       db.settings.get('clinicInfo', DEFAULT_CLINIC_INFO),
       db.gallery.list(),
-    ]).then(([rev, count, ab, ci, gal]) => {
+      db.settings.get('gallery2', []),
+    ]).then(([rev, count, ab, ci, gal, gal2]) => {
       setReviews(rev);
       setDispCount(Number(count) || 1);
       if (ab) setAbout(ab);
       if (ci) setClinicInfo(ci);
-      // Use gallery images from DB; fall back to hardcoded if empty
       const urls = (gal || []).map(g => g.imageUrl).filter(Boolean);
-      setGalleryUrls(urls.length > 0 ? urls : FALLBACK_IMAGES);
+      const resolved1 = urls.length > 0 ? urls : FALLBACK_IMAGES;
+      setGalleryUrls(resolved1);
+      const urls2 = (Array.isArray(gal2) ? gal2 : []).map(g => g.url).filter(Boolean);
+      // fallback: use gallery1 images so carousel2 is never empty
+      setGallery2Urls(urls2.length > 0 ? urls2 : resolved1);
     });
   }, []);
 
-  // ── Doubled filmstrip for seamless loop (capped at 10 images) ─
+  // ── Doubled filmstrips for seamless loop (capped at 10 each) ──
   const filmImages = useMemo(() => {
     const src = (galleryUrls.length > 0 ? galleryUrls : FALLBACK_IMAGES).slice(0, 10);
     return [...src, ...src];
   }, [galleryUrls]);
+
+  const filmImages2 = useMemo(() => {
+    const src = gallery2Urls.slice(0, 10);
+    return src.length > 0 ? [...src, ...src] : filmImages;
+  }, [gallery2Urls, filmImages]);
 
   // ── Auto-scroll: 1px every 20ms, pauses on touch, resumes 1s ──
   // Recomputes `half` every tick so it stays correct after images load.
@@ -224,12 +234,12 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
                   <video
                     key={i} src={src} draggable={false}
                     autoPlay muted loop playsInline
-                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-surface)' }}
+                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-card-tint)' }}
                   />
                 ) : (
                   <img
                     key={i} src={src} draggable={false}
-                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-surface)' }}
+                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-card-tint)' }}
                     onError={e => { e.target.style.backgroundColor = '#D4B896'; e.target.src = ''; }}
                   />
                 );
@@ -237,7 +247,10 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
             </div>
           </div>
 
-          {/* ── Reverse filmstrip (scrolls right) ── */}
+          {/* ── חוצץ שקוף — רקע ה-section (צבע + חומר) נראה דרכו ── */}
+          <div style={{ height: 14 }} />
+
+          {/* ── Reverse filmstrip — gallery2, scrolls right ── */}
           <div
             ref={scrollerRef2}
             className="gavot-filmstrip demo-tinted"
@@ -253,18 +266,18 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
             }}
           >
             <div style={{ display: 'flex', gap: GAP, width: 'max-content', direction: 'ltr' }}>
-              {filmImages.map((src, i) => {
+              {filmImages2.map((src, i) => {
                 const isVid = /\.(mp4|webm|mov|ogg)(\?|$)/i.test(src);
                 return isVid ? (
                   <video
                     key={i} src={src} draggable={false}
                     autoPlay muted loop playsInline
-                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-surface)' }}
+                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-card-tint)' }}
                   />
                 ) : (
                   <img
                     key={i} src={src} draggable={false}
-                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-surface)' }}
+                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-card-tint)' }}
                     onError={e => { e.target.style.backgroundColor = '#D4B896'; e.target.src = ''; }}
                   />
                 );
