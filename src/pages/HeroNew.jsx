@@ -183,7 +183,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
             onClick={() => setAnnDismissed(true)}
             style={{
               position: 'absolute', top: '50%', left: 10, transform: 'translateY(-50%)',
-              background: 'none', border: 'none', color: 'rgba(253,250,247,0.7)',
+              background: 'none', border: 'none', color: 'var(--color-on-primary)', opacity: 0.7,
               fontSize: 16, cursor: 'pointer', lineHeight: 1, padding: 4,
             }}
           >✕</button>
@@ -293,7 +293,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
               <p style={{
                 fontFamily: 'var(--demo-heading-font)',
                 fontSize: 28, fontWeight: 500,
-                color: 'var(--color-surface)',
+                color: 'var(--color-on-section)',
                 lineHeight: 1.15, letterSpacing: '0.01em',
                 marginBottom: 10,
               }}>
@@ -302,7 +302,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
               <p style={{
                 fontFamily: 'var(--demo-body-font)',
                 fontSize: 16, fontWeight: 300,
-                color: 'rgba(253,250,247,0.75)',
+                color: 'var(--color-on-section)', opacity: 0.75,
                 letterSpacing: '0.04em',
               }}>
                 כיף שחזרת אלינו
@@ -313,7 +313,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
               <p style={{
                 fontFamily: 'var(--demo-heading-font)',
                 fontSize: 28, fontWeight: 400,
-                color: 'var(--color-surface)',
+                color: 'var(--color-on-section)',
                 lineHeight: 1.2, letterSpacing: '0.02em',
                 marginBottom: 10,
               }}>
@@ -322,7 +322,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
               <p style={{
                 fontFamily: 'var(--demo-body-font)',
                 fontSize: 16, fontWeight: 300,
-                color: 'rgba(253,250,247,0.75)',
+                color: 'var(--color-on-section)', opacity: 0.75,
                 letterSpacing: '0.05em',
               }}>
                 שמחות לראותך כאן ✨
@@ -382,19 +382,19 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
               <div key={i} style={{
                 textAlign: 'center', padding: '14px 8px',
                 backgroundColor: 'transparent',
-                border: '1px solid rgba(var(--color-card-tint-rgb), 0.50)',
+                border: '1px solid rgba(var(--color-on-section-rgb), 0.40)',
                 borderRadius: 'var(--demo-radius-card)',
                 backdropFilter: 'blur(8px)',
                 WebkitBackdropFilter: 'blur(8px)',
               }}>
                 <p style={{
                   fontFamily: 'var(--demo-heading-font)',
-                  fontSize: 28, fontWeight: 700, color: 'var(--color-card-tint)',
+                  fontSize: 28, fontWeight: 700, color: 'var(--color-on-section)',
                   lineHeight: 1, marginBottom: 4,
                 }}>
                   <Counter to={Number(s.value) || 0} />+
                 </p>
-                <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 10, color: 'rgba(var(--color-card-tint-rgb), 0.85)', letterSpacing: '0.04em' }}>
+                <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 10, color: 'var(--color-on-section)', opacity: 0.80, letterSpacing: '0.04em' }}>
                   {s.label}
                 </p>
               </div>
@@ -469,7 +469,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
           <span dir="ltr" style={{
             fontFamily: 'var(--demo-body-font)',
             fontSize: 13, fontWeight: 300, letterSpacing: '0.18em',
-            color: 'rgba(253,250,247,0.80)', userSelect: 'none',
+            color: 'var(--color-on-section)', opacity: 0.80, userSelect: 'none',
             textTransform: 'uppercase',
             display: 'inline-flex', direction: 'ltr', unicodeBidi: 'isolate',
           }}>

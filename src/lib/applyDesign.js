@@ -288,6 +288,14 @@ export function applyDesign(design) {
     '--demo-surface-overlay':  matBg.overlay,
     '--demo-surface-border':   matBg.border,
     '--demo-surface-backdrop': matBg.backdrop,
+
+    /* ── Contrast-aware text colors per background ──────────────────
+       readableOn() returns '#1A1410' (near-black) on light backgrounds
+       and '#FDFAF7' (near-white) on dark backgrounds. */
+    '--color-on-section':     readableOn(colors.section),
+    '--color-on-primary':     readableOn(colors.primary),
+    '--color-on-bg':          readableOn(colors.bg),
+    '--color-on-section-rgb': (() => { const [r,g,b] = hexToRgb(readableOn(colors.section)); return `${r},${g},${b}`; })(),
   };
 
   const root = document.documentElement;
