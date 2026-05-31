@@ -1,5 +1,5 @@
 {
-  "alias": ["eyebrowsweb-app.vercel.app"],
+  "alias": ["nailsweb.vercel.app"],
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
