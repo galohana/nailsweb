@@ -6,7 +6,7 @@
 export function fmtDuration(min) {
   const m = Math.round(Number(min) || 0);
   if (m <= 0) return '0 דק׳';
-  if (m < 60) return `${m} דק׳`;
+  if (m <= 60) return `${m} דק׳`;
 
   const h   = Math.floor(m / 60);
   const rem = m % 60;

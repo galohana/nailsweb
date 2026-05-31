@@ -157,8 +157,8 @@ export default function PayButtons({ ownerPhone, bitAccount, amount, onPaid }) {
           </p>
         )}
 
-        {/* Secondary row — phone (tel-mode) or link (url-mode) */}
-        <button
+        {/* Secondary row — phone number only (not for URL/link-mode) */}
+        {!accountIsUrl && <button
           onClick={copySecondary}
           style={{
             width: '100%',
@@ -185,7 +185,7 @@ export default function PayButtons({ ownerPhone, bitAccount, amount, onPaid }) {
           {copiedSecond
             ? <Check size={15} color="#4CAF50" />
             : <Copy size={13} color="#8B6E52" />}
-        </button>
+        </button>}
       </div>
 
       {/* ── Open Bit app / link button ── */}
