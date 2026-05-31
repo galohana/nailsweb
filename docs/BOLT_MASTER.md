@@ -194,12 +194,18 @@ GitHub ו-Supabase — קלוד קוד עושה לבד.
 ---
 
 ### שלב 1 — יצירת Supabase project
+
+> ⚠️ **ארגון חובה: `Rise - nailsweb` בלבד** (`mbddlaufvfzyvnxijbym`)
+> צור את הפרויקט תחת הארגון הזה בלבד — בבנייה חדשה ובעיצוב אתר קיים כאחד.
+> לא ליצור תחת שום ארגון אחר (לא eyebrowsweb, לא core, לא ארגון אישי).
+> Region: **eu-central-1 (Frankfurt)** — תמיד.
+
 ```bash
 # יצור project חדש ב-Supabase אוטומטית
 curl -X POST https://api.supabase.com/v1/projects \
   -H "Authorization: Bearer YOUR_SUPABASE_PERSONAL_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"name": "[שם קליניקה]", "region": "eu-central-1", "plan": "free"}'
+  -d '{"name": "[שם קליניקה]", "organization_id": "mbddlaufvfzyvnxijbym", "region": "eu-central-1"}'
 ```
 חכה כ-2 דקות עד שה-project מוכן, אחר כך שלוף URL + anon key:
 ```bash
