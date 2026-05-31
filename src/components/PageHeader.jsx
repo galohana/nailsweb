@@ -25,7 +25,7 @@ export default function PageHeader() {
         fontSize: 21, fontWeight: 400, letterSpacing: '0.1em',
         color: 'var(--color-surface)', whiteSpace: 'nowrap',
       }}>
-        {name || 'Eyebrows'}
+        {name}
       </span>
     </nav>
   );

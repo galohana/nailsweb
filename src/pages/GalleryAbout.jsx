@@ -3,15 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../utils/db';
 import { DEFAULT_ABOUT, DEFAULT_CLINIC_INFO } from '../utils/defaults';
 
-// ── Fallback images (used when gallery table is empty) — eyebrow design portfolio
-const FALLBACK_IMAGES = [
-  'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=800&q=80',
-  'https://images.unsplash.com/photo-1583241800698-9c2e489be1ce?w=800&q=80',
-  'https://images.unsplash.com/photo-1571908598047-29c0e5f64bcd?w=800&q=80',
-  'https://images.unsplash.com/photo-1620331311520-246422fd82f9?w=800&q=80',
-  'https://images.unsplash.com/photo-1626435443175-fdcc5a4ab2cd?w=800&q=80',
-  'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&q=80',
-];
+const FALLBACK_IMAGES = [];
 
 const ITEM_W     = 120;
 const GAP        = 10;
@@ -322,7 +314,7 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
                   />
                 )}
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 16, background: 'linear-gradient(to top, rgba(92,61,46,0.8), transparent)', color: 'var(--color-surface)', fontFamily: 'var(--demo-heading-font)', fontSize: 20, textAlign: 'center' }}>
-                  {clinicInfo?.name || 'Eyebrows Artist'}
+                  {clinicInfo?.name || ''}
                 </div>
               </div>
               {/* Back face */}

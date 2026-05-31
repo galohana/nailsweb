@@ -66,7 +66,8 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
   const [heroImageUrl, setHeroImg]  = useState(DEFAULT_HERO.imageUrl);
   const [heroVideoUrl, setHeroVid]  = useState('');
   const [heroMediaType, setHeroMT]  = useState('image');
-  const [businessName, setBizName]  = useState('Eyebrows');
+  const [businessName, setBizName]  = useState('');
+  const [clinicLoaded, setClinicLoaded] = useState(false);
   const [ownerName, setOwnerName]   = useState('');
   const [businessLogo, setLogo]     = useState(null); // null = עוד לא נטען מה-DB; אחרי טעינה: URL או '' (אין לוגו)
   const [stats, setStats]           = useState(DEFAULT_HERO_STATS.filter(s => s.enabled));
@@ -104,6 +105,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
       setLogo(resolvedLogo);
       const ann = adminSettings?.announcement;
       if (ann?.show && ann?.text) setAnnouncement(ann.text);
+      setClinicLoaded(true);
     });
     return () => clearTimeout(t);
   }, []);
@@ -159,6 +161,23 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
   // הסדר במערך לא משתנה — flexbox עם dir מסדר את הכיוון, האנימציה (delay לפי i) נשארת אות-אחרי-אות
   const detectDir = (text) => (/[֐-׿]/.test(text || '') ? 'rtl' : 'ltr');
   const navbarDir = detectDir(businessName);
+
+  if (!clinicLoaded) {
+    return (
+      <div style={{
+        minHeight: '100vh', backgroundColor: 'var(--color-bg)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: '50%',
+          border: '2px solid var(--color-primary)',
+          borderTopColor: 'transparent',
+          animation: 'spin 0.8s linear infinite',
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: BG, position: 'relative' }}>
@@ -473,7 +492,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
             textTransform: 'uppercase',
             display: 'inline-flex', direction: 'ltr', unicodeBidi: 'isolate',
           }}>
-            {Array.from(ownerName ? `eyebrows by ${ownerName}` : 'EYEBROWS ARTIST').map((ch, i) => (
+            {Array.from(ownerName ? `by ${ownerName}` : '').map((ch, i) => (
               <motion.span
                 key={i}
                 initial={{ opacity: 0, y: 10 }}
