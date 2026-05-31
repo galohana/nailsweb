@@ -108,17 +108,21 @@ function materialFor(material, bg) {
       };
     }
 
-    case 'stripes':
+    case 'stripes': {
+      /* Contrast-aware: light bg → dark stripes, dark bg → light stripes.
+         Same readableOn() principle as the text-color logic. */
+      const [lr, lg, lb] = hexToRgb(readableOn(bg));
+      const line = `rgba(${lr},${lg},${lb},0.10)`;
+      const grad = `repeating-linear-gradient(to right, transparent 0px, transparent 9px, ${line} 9px, ${line} 10px)`;
       return {
-        /* surface: dark lines for light backgrounds */
-        surface:     `repeating-linear-gradient(to right, transparent 0px, transparent 9px, rgba(0,0,0,0.07) 9px, rgba(0,0,0,0.07) 10px)`,
-        /* overlay: white lines for dark backgrounds (mix-blend-mode: overlay) */
-        overlay:     'repeating-linear-gradient(to right, transparent 0px, transparent 9px, rgba(255,255,255,0.18) 9px, rgba(255,255,255,0.18) 10px)',
-        overlay_sm:  'repeating-linear-gradient(to right, transparent 0px, transparent 9px, rgba(255,255,255,0.18) 9px, rgba(255,255,255,0.18) 10px)',
-        overlay_nav: 'repeating-linear-gradient(to right, transparent 0px, transparent 9px, rgba(255,255,255,0.18) 9px, rgba(255,255,255,0.18) 10px)',
+        surface:     grad,
+        overlay:     grad,
+        overlay_sm:  grad,
+        overlay_nav: grad,
         backdrop:   'none',
-        border:     '1px solid rgba(0,0,0,0.09)',
+        border:     `1px solid rgba(${lr},${lg},${lb},0.12)`,
       };
+    }
 
     case 'marble': {
       const marbleGrad = 'repeating-linear-gradient(42deg, transparent 0px, transparent 54px, rgba(120,90,60,0.09) 58px, transparent 62px, transparent 116px), repeating-linear-gradient(-18deg, transparent 0px, transparent 74px, rgba(80,60,40,0.06) 78px, transparent 82px, transparent 152px)';
