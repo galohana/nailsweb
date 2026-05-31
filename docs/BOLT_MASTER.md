@@ -313,6 +313,8 @@ vercel --prod
 >
 > פורמט: מספר ישראלי ללא קידומת (לדוגמה: `0501234567`) — **חוץ מ-OWNER_PHONE ב-.env שם קידומת +972 חובה**.
 
+> 📧 **אימייל** — `ownerEmail` = האימייל מה-CLAUDE.md. מופיע באדמין → "צרי קשר" → "אימייל בעלת העסק", ולשם נשלחים אוטומטית עותקי הקבלות (`api/send-receipt.js` קורא מפתח זה ראשון). אם אין אימייל ב-CLAUDE.md — דלג על השורה הזו.
+
 ```sql
 INSERT INTO settings (key, value) VALUES
 ('clinicInfo', '{"name":"[שם קליניקה]","ownerName":"[שם פרטי]","ownerFullName":"[שם משפחה]","phone":"[טלפון]","whatsapp":"[טלפון]","ownerWhatsapp":"[טלפון]","address":"[כתובת]","instagram":"[אינסטגרם]","bitAccount":"[טלפון או URL]"}')
@@ -328,6 +330,10 @@ ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
 INSERT INTO settings (key, value) VALUES
 ('adminPassword', '"[סיסמה מה-CLAUDE.md]"')
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+
+INSERT INTO settings (key, value) VALUES
+('ownerEmail', '"[אימייל מה-CLAUDE.md]"')
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
 INSERT INTO settings (key, value) VALUES
