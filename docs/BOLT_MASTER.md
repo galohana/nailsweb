@@ -8,7 +8,7 @@
 ## חלק א' — הבנת המערכת
 
 ### מה זה RISE
-עסק שבונה אתרי קביעת תורים לסטודיואים של יופי. אתר-אב אחד (`eyebrowsweb-app`) משמש כתבנית. כל לקוחה = clone עצמאי עם הגדרות משלה.
+עסק שבונה אתרי קביעת תורים לסטודיואים של יופי. תבנית ציפורניים: `nailsweb`. כל לקוחה = clone עצמאי עם הגדרות משלה.
 
 **עיקרון:** שינוי באתר-האב לא מתפשט לאתרי הלקוחות. תיקון גלובלי = תיקון ידני בכל repo.
 
@@ -18,10 +18,10 @@ React + Vite + Tailwind · Framer Motion · עברית RTL · Supabase (Frankfur
 ### מיקומים
 | פריט | ערך |
 |---|---|
-| תיקייה מקומית | `C:\Users\גל\Bolt\eyebrowsweb-app` |
-| GitHub | `https://github.com/galohana/eyebrowsweb-app` |
+| תיקייה מקומית | `C:\Users\גל\Bolt\nailsweb` |
+| GitHub | `https://github.com/galohana/nailsweb` |
 | Branch | **`master`** |
-| אתר חי | `https://eyebrowsweb-app.vercel.app` |
+| אתר חי | `https://nailsweb.vercel.app` |
 | אדמין | `/manage-x7k2` (סיסמה: `admin123`) |
 
 ### קבצים קריטיים
@@ -215,7 +215,7 @@ curl https://api.supabase.com/v1/projects/[project-id]/api-keys \
 ### שלב 1.5 — שכפול והרצת schema
 ```bash
 cd C:\Users\גל\Bolt
-git clone https://github.com/galohana/eyebrowsweb-app "[שם באנגלית]"
+git clone https://github.com/galohana/nailsweb "[שם באנגלית]"
 cd "[שם באנגלית]"
 npm install
 ```
@@ -283,8 +283,8 @@ WHERE table_name = 'services' AND grantee = 'anon';
 
 ⚠️ **חובה לפני כל push:**
 1. הרץ `git remote -v` וודא שה-remote מצביע על הריפו של הלקוחה — לא על eyebrowsweb-app
-2. אם ה-remote לא נכון — תקן אותו לפני ה-push, לעולם אל תדחוף ל-eyebrowsweb-app במהלך הקמת לקוחה
-3. אם בשגגה נדחף commit ל-eyebrowsweb-app — עצור הכל, דווח לגל מיד, וחכה לאישור לפני שממשיכים
+2. אם ה-remote לא נכון — תקן אותו לפני ה-push, לעולם אל תדחוף ל-nailsweb במהלך הקמת לקוחה
+3. אם בשגגה נדחף commit ל-nailsweb — עצור הכל, דווח לגל מיד, וחכה לאישור לפני שממשיכים
 
 ```bash
 gh repo create galohana/[שם-באנגלית] --private --source=. --remote=origin --push
