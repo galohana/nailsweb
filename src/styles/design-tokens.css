@@ -1,0 +1,240 @@
+/* ═══════════════════════════════════════════════════════════
+   RISE Design Tokens — כל ערכי העיצוב של הפרויקט במקום אחד
+   לקוחה חדשה: שנה רק את הצבעים בקטגוריה "Brand palette"
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+
+  /* ── Brand palette (לקוחה: שני כאן) ─────────────────────
+     מה שמזהה את העסק ויזואלית. החלף #5C3D2E בצבע המותג.     */
+  --color-primary:     #5C3D2E;   /* כפתורים ראשיים, אקסנטים */
+  --color-bg:          #F2E8DC;   /* רקע הדף הראשי            */
+  --color-surface:     #FDFAF7;   /* כרטיסים, שדות קלט, פני שטח */
+  --color-section-bg:  #7D5A47;   /* רקע האזורים הכהים (גלריה, ביקורות) */
+
+  /* ── Text colors ─────────────────────────────────────────  */
+  --color-text:        #2C1810;   /* טקסט ראשי כהה            */
+  --color-text-muted:  #7D5A47;   /* טקסט משני, תיאורים       */
+  --color-text-hint:   #A89580;   /* placeholder, הסברים      */
+
+  /* ── Border & divider colors ─────────────────────────────  */
+  --color-border:      #E8DCC8;   /* גבולות כרטיסים ושדות     */
+  --color-border-soft: #F0E6D6;   /* מפרידים עדינים            */
+  --color-border-dark: #D4B896;   /* כפתורי outline, דאש-בורד  */
+  --color-border-alt:  #8B6E52;   /* גבול לוגו / אלמנטים כהים */
+
+  /* ── Accent / status ─────────────────────────────────────  */
+  --color-accent:      #A85A4A;   /* שגיאות, מחיקה, אזהרות    */
+  --color-accent-dark: #8B3A2E;   /* גרסה כהה יותר של accent   */
+  --color-success:     #4CAF50;   /* אישור, העלאה, ✓ נשמר      */
+  --color-whatsapp:    #25D366;   /* כפתור וואטסאפ              */
+  --color-link:        #4A90E2;   /* לינקים, תשלום דיגיטלי    */
+
+  /* ── Star / review color ─────────────────────────────────  */
+  --color-star:        #D4A574;
+
+  /* ── Brown alpha overlays (base: 92,61,46) ───────────────
+     משמשים לצלליות, גבולות שקופים, רקעים עדינים.             */
+  --color-brown-04:    rgba(92,61,46,0.04);
+  --color-brown-07:    rgba(92,61,46,0.07);
+  --color-brown-08:    rgba(92,61,46,0.08);
+  --color-brown-10:    rgba(92,61,46,0.10);
+  --color-brown-12:    rgba(92,61,46,0.12);
+  --color-brown-15:    rgba(92,61,46,0.15);
+  --color-brown-18:    rgba(92,61,46,0.18);
+  --color-brown-22:    rgba(92,61,46,0.22);
+  --color-brown-28:    rgba(92,61,46,0.28);
+  --color-brown-80:    rgba(92,61,46,0.80);
+
+  /* ── Status alpha overlays ───────────────────────────────  */
+  --color-success-10:  rgba(76,175,80,0.10);
+  --color-success-18:  rgba(76,175,80,0.18);
+  --color-success-20:  rgba(76,175,80,0.20);
+  --color-error-07:    rgba(168,90,74,0.07);
+  --color-error-15:    rgba(168,90,74,0.15);
+  --color-error-20:    rgba(168,90,74,0.20);
+  --color-error-28:    rgba(168,90,74,0.28);
+  --color-error-40:    rgba(168,90,74,0.40);
+
+  /* ── Surface alpha (white overlay) ──────────────────────── */
+  --color-surface-60:  rgba(255,255,255,0.60);
+  --color-surface-50:  rgba(255,255,255,0.50);
+  --color-overlay:     rgba(0,0,0,0.50);
+
+  /* ── Typography ─────────────────────────────────────────── */
+  /* Default fonts — נדרסים ע"י --demo-heading-font/--demo-body-font ב-runtime */
+  --font-display: var(--demo-heading-font, 'Cormorant Garamond', serif);
+  --font-body:    var(--demo-body-font,    'Heebo', sans-serif);
+
+  --text-2xs:  10px;
+  --text-xs:   11px;
+  --text-sm:   12px;
+  --text-base: 13px;
+  --text-md:   14px;
+  --text-lg:   15px;
+  --text-xl:   16px;
+  --text-2xl:  18px;
+  --text-3xl:  21px;
+  --text-4xl:  22px;
+  --text-5xl:  26px;
+  --text-6xl:  28px;
+  --text-7xl:  34px;
+
+  /* ── Border radius ───────────────────────────────────────── */
+  --radius-xs:   6px;    /* תגיות קטנות                       */
+  --radius-sm:   8px;    /* כפתורי secondary / delete          */
+  --radius-md:   10px;   /* שדות קלט, sub-tabs                 */
+  --radius-lg:   12px;   /* תמונות, כרטיסים קטנים              */
+  --radius-xl:   16px;   /* כרטיסי admin (card)               */
+  --radius-2xl:  20px;   /* מודלים, כרטיס "about"              */
+  --radius-full: 9999px; /* עיגולים מלאים                      */
+
+  /* ── Shadows ─────────────────────────────────────────────── */
+  --shadow-card:  0 2px 16px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-sm:    0 2px 12px rgba(0,0,0,0.06);
+  --shadow-md:    0 2px 16px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-lg:    0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-xl:    0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-photo: 0 4px 12px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-btn:   0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-logo:  0 2px 12px rgba(0,0,0,0.06);
+
+  /* ── Z-index ─────────────────────────────────────────────── */
+  --z-base:    1;
+  --z-arch:    2;
+  --z-logo:    5;
+  --z-nav:     100;
+  --z-overlay: 200;
+  --z-sheet:   300;   /* bottom-sheet / modal over overlay */
+
+  /* ── Motion ──────────────────────────────────────────────── */
+  --duration-fast:   0.2s;
+  --duration-base:   0.35s;
+  --duration-slow:   0.65s;
+  --duration-slower: 1.2s;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --tap-scale: 0.97;
+
+  /* ═══════════════════════════════════════════════════════════
+     BOLT BUILDER BRIDGE — משתנים שמוזרקים ב-runtime מ-builder
+     ברירת מחדל מצביעה למשתנים הקיימים כדי לא לשבור כלום.
+     ═══════════════════════════════════════════════════════════ */
+
+  /* alias — bolt-builder משתמש בשם --color-section */
+  --color-section: var(--color-section-bg);
+
+  /* Typography — canonical here, --font-display/--font-body מצביעים אליהם */
+  --demo-heading-font: 'Cormorant Garamond', serif;
+  --demo-body-font:    'Heebo', sans-serif;
+
+  /* Corners — סט אחד לכל הקארדים/כפתורים, builder יעדכן ל-runtime */
+  --demo-radius-card: var(--radius-lg);   /* normal=12 / sharp=2 / rounded=24 */
+  --demo-radius-pill: var(--radius-full); /* normal=999 / sharp=4 / rounded=999 */
+
+  /* Shadows — מ-design.shadow (none/soft/deep/glow) */
+  --demo-shadow-card: var(--shadow-card);
+  --demo-shadow-deep: var(--shadow-lg);
+
+  /* Materials — חומרים על surfaces (flat/matte/glass/metallic/wood/stripes).
+     כל המשתנים מוזרקים ב-runtime ע"י applyDesign.js.
+     ברירת מחדל: ללא חומר (flat).
+     סנכרון מלא עם bolt-builder/src/preview/designVars.js */
+
+  /* Primary material (כפתורים, טאב פעיל) */
+  --demo-primary-mat-surface:  none;
+  --demo-primary-mat-overlay:  none;   /* overlay_sm — מותאם לאלמנטים קטנים */
+  --demo-primary-mat-border:   1px solid rgba(0,0,0,0.06);
+  --demo-primary-mat-backdrop: none;
+
+  /* Section material (hero, gallery, אזורים כהים) */
+  --demo-section-mat-surface:    none;
+  --demo-section-mat-overlay:    none;   /* overlay_sm */
+  --demo-section-mat-overlay-sm: none;   /* small elements: FAB, chips */
+  --demo-section-mat-overlay-lg: none;   /* overlay רגיל — לאזורים גדולים */
+  --demo-section-mat-on-light:   none;   /* גרסה כהה ל-metallic על רקע בהיר */
+  --demo-section-mat-border:     1px solid rgba(0,0,0,0.06);
+  --demo-section-mat-backdrop:   none;
+
+  /* Menu material (טאבים לא פעילים, ניווט) */
+  --demo-menu-mat-overlay:  none;
+  --demo-menu-mat-border:   1px solid rgba(0,0,0,0.06);
+  --demo-menu-mat-backdrop: none;
+
+  /* BG material (רקע הדף, כרטיסים) */
+  --demo-bg-mat-surface:  none;
+  --demo-bg-mat-overlay:  none;
+  --demo-bg-mat-border:   1px solid rgba(0,0,0,0.06);
+  --demo-bg-mat-backdrop: none;
+
+  /* Navbar */
+  --demo-navbar-bg:          rgba(242,232,220,0.85);
+  --demo-navbar-blur:        blur(16px);
+  --demo-navbar-text:        #2C1810;
+  --demo-navbar-mat-overlay: none;
+
+  /* Surface aliases — bolt-builder naming */
+  --demo-surface:          none;
+  --demo-surface-overlay:  none;
+  --demo-surface-border:   1px solid rgba(0,0,0,0.06);
+  --demo-surface-backdrop: none;
+
+  /* RGB tuples — לשימוש ב-rgba(var(--color-primary-rgb), alpha) */
+  --color-primary-rgb: 92, 61, 46;
+  --color-section-rgb: 125, 90, 71;
+  --color-bg-rgb:      242, 232, 220;
+
+  /* ═══════════════════════════════════════════════════════════
+     menuColorExtend feature — Card-tint defaults
+     ─────────────────────────────────────────────────────────────
+     משתנים אלו מוזרקים ב-runtime ע"י applyDesign.js לפי design.menuColorExtend.
+     ברירת מחדל = OFF: cardTint = surface (#FDFAF7), חומר 'none' →
+     קלפי .demo-tinted ייראו לבנים זהה למצב הישן (backward compatible).
+     כש-design.menuColorExtend=true → cardTint = menu color, חומר = menu material.
+     ═══════════════════════════════════════════════════════════ */
+  --color-card-tint:        #FDFAF7;
+  --color-card-tint-rgb:    253, 250, 247;
+  --color-on-card-tint:     #1A1410;
+  --color-tint-mat-overlay: none;
+  --color-tint-blend:       overlay;
+  --color-tint-opacity:     1;
+
+  /* color-menu fallback (applyDesign מזריק ב-runtime) */
+  --color-menu:     var(--color-section-bg);
+  --color-menu-rgb: var(--color-section-rgb);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   .demo-tinted — קלפים שמגיבים ל-menuColorExtend
+   ─────────────────────────────────────────────────────────────
+   האלמנטים שמשתמשים: Hero CTAs, Stats, About card, Reviews,
+   Filmstrip, Booking sheets (time picker + payment), Map card.
+
+   DUAL-APPROACH לחומר (למדנו את זה בקשה):
+   1) background-image + background-blend-mode על האלמנט עצמו —
+      עובד גם בתוך framer-motion composite layers (transform/whileInView).
+   2) ::after עם mix-blend-mode — תוספת punch כשלא ב-composite layer.
+   שניהם יחד מבטיחים שהחומר נראה תמיד.
+   ═══════════════════════════════════════════════════════════ */
+.demo-tinted {
+  background-color: var(--color-card-tint) !important;
+  background-image: var(--color-tint-mat-overlay, none) !important;
+  background-blend-mode: var(--color-tint-blend, overlay);
+  position: relative;
+  overflow: hidden;
+  transition: background-color .35s ease, background-image .35s ease;
+}
+.demo-tinted::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-tint-mat-overlay, none);
+  pointer-events: none;
+  mix-blend-mode: var(--color-tint-blend, overlay);
+  opacity: var(--color-tint-opacity, 1);
+  border-radius: inherit;
+  z-index: 0;
+}
+.demo-tinted > * {
+  position: relative;
+  z-index: 1;
+}

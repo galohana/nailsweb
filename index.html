@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#100806" />
+    <title>Eyebrows</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Parisienne&family=Amatic+SC:wght@400;700&family=Playfair+Display:wght@400;600;700&family=Pacifico&family=Comfortaa:wght@300;400;700&family=Frank+Ruhl+Libre:wght@300;400;700&family=Bellefair&family=Varela+Round&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              heebo: ['Heebo', 'sans-serif'],
+              cormorant: ['"Cormorant Garamond"', 'serif'],
+            },
+            colors: {
+              brand: {
+                bg:      '#F5EFE6',
+                surface: '#FDFAF7',
+                accent:  '#6B4F3A',
+                brown:   '#8B6E52',
+                text:    '#2C1810',
+                muted:   '#8B6E52',
+                border:  '#D4B896',
+                inactive:'#D4B896',
+                waze:    '#00AAFF',
+                wa:      '#25D366',
+              }
+            },
+            keyframes: {
+              fadeDown: {
+                '0%':   { opacity: '0', transform: 'translateY(-20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              fadeUp: {
+                '0%':   { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              scaleIn: {
+                '0%':   { opacity: '0', transform: 'scale(0.92)' },
+                '100%': { opacity: '1', transform: 'scale(1)' },
+              },
+              slideUp: {
+                '0%':   { opacity: '0', transform: 'translateY(40px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              pulse2: {
+                '0%,100%': { transform: 'scale(1)' },
+                '50%':     { transform: 'scale(1.08)' },
+              },
+              checkDraw: {
+                '0%':   { strokeDashoffset: '50' },
+                '100%': { strokeDashoffset: '0' },
+              },
+              circleDraw: {
+                '0%':   { strokeDashoffset: '160' },
+                '100%': { strokeDashoffset: '0' },
+              },
+            },
+            animation: {
+              'fade-down':   'fadeDown 0.7s ease-out both',
+              'fade-up':     'fadeUp 0.5s ease-out both',
+              'scale-in':    'scaleIn 0.3s ease-out both',
+              'slide-up':    'slideUp 0.6s ease-out both',
+              'pulse2':      'pulse2 2s ease-in-out infinite',
+              'check-draw':  'checkDraw 0.5s ease-out 0.3s both',
+              'circle-draw': 'circleDraw 0.5s ease-out both',
+            },
+          }
+        }
+      }
+    </script>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body { font-family: 'Heebo', sans-serif; background-color: #F5EFE6; color: #2C1810; margin: 0; padding: 0; }
+      input, select, textarea { font-family: 'Heebo', sans-serif; }
+      ::-webkit-scrollbar { width: 3px; }
+      ::-webkit-scrollbar-track { background: #F5EFE6; }
+      ::-webkit-scrollbar-thumb { background: #D4B896; border-radius: 10px; }
+      input[type=range] { accent-color: #6B4F3A; }
+      input[type=checkbox] { accent-color: #6B4F3A; }
+      /* iOS Safari date input fix — מבטל את ה-native widget שגורם ל-input לקרוס/לברוח שמאלה.
+         כל input[type=date] באפליקציה מקבל את התיקון אוטומטית, גם בלי inline styles. */
+      input[type=date] {
+        -webkit-appearance: none;
+        appearance: none;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 42px;
+        line-height: 1.4;
+      }
+      .leopard-section {
+        background-color: #EDE0D0;
+      }
+      .btn-shadow { box-shadow: 0 4px 18px rgba(107,79,58,0.25); }
+      .btn-shadow-sm { box-shadow: 0 2px 10px rgba(107,79,58,0.18); }
+      .card-shadow { box-shadow: 0 4px 20px rgba(107,79,58,0.08); }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

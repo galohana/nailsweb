@@ -1,0 +1,6 @@
+{
+  "alias": ["eyebrowsweb-app.vercel.app"],
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}
