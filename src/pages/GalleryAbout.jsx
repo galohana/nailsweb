@@ -28,8 +28,10 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
   const [flipped, setFlipped] = useState(false);
 
   // ── Filmstrip — native scroll + auto-advance ──────────────────
-  const scrollerRef = useRef(null);
-  const pauseRef    = useRef(null);   // setTimeout id to resume after touch
+  const scrollerRef  = useRef(null);
+  const pauseRef     = useRef(null);   // setTimeout id to resume after touch
+  const scrollerRef2 = useRef(null);
+  const pauseRef2    = useRef(null);
 
   // ── Data from Supabase ────────────────────────────────────────
   const [galleryUrls, setGalleryUrls] = useState([]);
@@ -62,9 +64,9 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
     });
   }, []);
 
-  // ── Doubled filmstrip for seamless loop ───────────────────────
+  // ── Doubled filmstrip for seamless loop (capped at 10 images) ─
   const filmImages = useMemo(() => {
-    const src = galleryUrls.length > 0 ? galleryUrls : FALLBACK_IMAGES;
+    const src = (galleryUrls.length > 0 ? galleryUrls : FALLBACK_IMAGES).slice(0, 10);
     return [...src, ...src];
   }, [galleryUrls]);
 
@@ -109,6 +111,42 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
       el.removeEventListener('touchstart', pauseAndResume);
       el.removeEventListener('mousedown',  pauseAndResume);
       el.removeEventListener('wheel',      pauseAndResume);
+    };
+  }, []);
+
+  // ── Reverse filmstrip — scrolls right ─────────────────────────
+  useEffect(() => {
+    const el = scrollerRef2.current;
+    if (!el) return;
+    let interval = null;
+    const tick = () => {
+      const half = el.scrollWidth / 2;
+      if (half <= 0) return;
+      let next = el.scrollLeft - 1;
+      if (next <= 0) next += half;
+      el.scrollLeft = next;
+    };
+    const start = () => { if (interval) return; interval = setInterval(tick, 20); };
+    const stop  = () => { if (interval) { clearInterval(interval); interval = null; } };
+    const pauseAndResume2 = () => {
+      stop();
+      if (pauseRef2.current) clearTimeout(pauseRef2.current);
+      pauseRef2.current = setTimeout(start, 1000);
+    };
+    requestAnimationFrame(() => {
+      const half = el.scrollWidth / 2;
+      if (half > 0) el.scrollLeft = half;
+      start();
+    });
+    el.addEventListener('touchstart', pauseAndResume2, { passive: true });
+    el.addEventListener('mousedown',  pauseAndResume2);
+    el.addEventListener('wheel',      pauseAndResume2, { passive: true });
+    return () => {
+      stop();
+      if (pauseRef2.current) clearTimeout(pauseRef2.current);
+      el.removeEventListener('touchstart', pauseAndResume2);
+      el.removeEventListener('mousedown',  pauseAndResume2);
+      el.removeEventListener('wheel',      pauseAndResume2);
     };
   }, []);
 
@@ -186,12 +224,47 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
                   <video
                     key={i} src={src} draggable={false}
                     autoPlay muted loop playsInline
-                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid #FDFAF7' }}
+                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-surface)' }}
                   />
                 ) : (
                   <img
                     key={i} src={src} draggable={false}
-                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid #FDFAF7' }}
+                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-surface)' }}
+                    onError={e => { e.target.style.backgroundColor = '#D4B896'; e.target.src = ''; }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── Reverse filmstrip (scrolls right) ── */}
+          <div
+            ref={scrollerRef2}
+            className="gavot-filmstrip demo-tinted"
+            dir="ltr"
+            style={{
+              padding: '12px 0',
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              direction: 'ltr',
+            }}
+          >
+            <div style={{ display: 'flex', gap: GAP, width: 'max-content', direction: 'ltr' }}>
+              {filmImages.map((src, i) => {
+                const isVid = /\.(mp4|webm|mov|ogg)(\?|$)/i.test(src);
+                return isVid ? (
+                  <video
+                    key={i} src={src} draggable={false}
+                    autoPlay muted loop playsInline
+                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-surface)' }}
+                  />
+                ) : (
+                  <img
+                    key={i} src={src} draggable={false}
+                    style={{ height: 160, width: ITEM_W, objectFit: 'cover', borderRadius: 'var(--demo-radius-card)', flexShrink: 0, border: '3px solid var(--color-surface)' }}
                     onError={e => { e.target.style.backgroundColor = '#D4B896'; e.target.src = ''; }}
                   />
                 );
