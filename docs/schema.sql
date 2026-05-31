@@ -18,7 +18,8 @@ CREATE TABLE public.appointments (
     status text NOT NULL DEFAULT 'confirmed'::text,
     staff_id uuid,
     created_at timestamp with time zone DEFAULT now(),
-    reminder_sent boolean DEFAULT false
+    reminder_sent boolean DEFAULT false,
+    addons jsonb DEFAULT '[]'::jsonb
 );
 
 CREATE TABLE public.clients (
@@ -72,7 +73,8 @@ CREATE TABLE public.services (
     duration integer NOT NULL DEFAULT 30,
     price numeric(10,2) NOT NULL DEFAULT 0,
     created_at timestamp with time zone DEFAULT now(),
-    image_url text DEFAULT ''::text
+    image_url text DEFAULT ''::text,
+    parent_id uuid DEFAULT NULL
 );
 
 CREATE TABLE public.settings (
@@ -89,6 +91,15 @@ CREATE TABLE public.staff (
     image_url text DEFAULT ''::text
 );
 
+CREATE TABLE public.waitlist (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    date date NOT NULL,
+    phone text NOT NULL,
+    user_name text NOT NULL,
+    service_id uuid,
+    created_at timestamp with time zone DEFAULT now()
+);
+
 -- ═══════════════════════════════════════════════════════════
 -- CONSTRAINTS — סדר: PRIMARY KEY → FOREIGN KEY → CHECK
 -- ═══════════════════════════════════════════════════════════
@@ -103,10 +114,12 @@ ALTER TABLE public.reviews      ADD CONSTRAINT reviews_pkey      PRIMARY KEY (id
 ALTER TABLE public.services     ADD CONSTRAINT services_pkey     PRIMARY KEY (id);
 ALTER TABLE public.settings     ADD CONSTRAINT settings_pkey     PRIMARY KEY (key);
 ALTER TABLE public.staff        ADD CONSTRAINT staff_pkey        PRIMARY KEY (id);
+ALTER TABLE public.waitlist     ADD CONSTRAINT waitlist_pkey     PRIMARY KEY (id);
 
 -- FOREIGN KEY
 ALTER TABLE public.appointments ADD CONSTRAINT appointments_service_id_fkey FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL;
 ALTER TABLE public.appointments ADD CONSTRAINT appointments_staff_id_fkey   FOREIGN KEY (staff_id)   REFERENCES staff(id)     ON DELETE SET NULL;
+ALTER TABLE public.services     ADD CONSTRAINT services_parent_id_fkey      FOREIGN KEY (parent_id)  REFERENCES services(id)  ON DELETE CASCADE;
 
 -- CHECK
 ALTER TABLE public.appointments ADD CONSTRAINT appointments_status_check CHECK ((status = ANY (ARRAY['confirmed'::text, 'cancelled'::text])));
