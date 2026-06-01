@@ -90,18 +90,18 @@ function UpsellScreen({ tab }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         marginBottom: 20,
       }}>
-        <Lock size={28} color="var(--color-primary)" strokeWidth={1.5} />
+        <Lock size={28} color="var(--color-on-bg)" strokeWidth={1.5} />
       </div>
       <h3 style={{
         fontFamily: 'var(--demo-heading-font)',
-        fontSize: 26, color: 'var(--color-primary)',
+        fontSize: 26, color: 'var(--color-on-bg)',
         fontWeight: 500, marginBottom: 10,
       }}>
         {tab.packageName}
       </h3>
       <p style={{
         fontFamily: 'var(--demo-body-font)',
-        fontSize: 14, color: 'var(--color-section)',
+        fontSize: 14, color: 'var(--color-on-bg)',
         marginBottom: 32, lineHeight: 1.7,
         maxWidth: 280,
       }}>
@@ -200,11 +200,11 @@ export default function AdminPanel() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ textAlign: 'right' }}>
             <h1 style={{ fontFamily: 'var(--demo-heading-font)', fontSize: '32px', color: 'var(--color-text)', lineHeight: 1, marginBottom: '4px', fontWeight: 500 }}>ניהול</h1>
-            <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: '13px', color: 'var(--color-section)' }}>{activeTabData?.label.replace('\n', ' ')}</p>
+            <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: '13px', color: 'var(--color-on-bg)' }}>{activeTabData?.label.replace('\n', ' ')}</p>
           </div>
           <button
             onClick={() => { window.history.pushState({}, '', '/'); window.location.reload(); }}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: 'var(--color-surface)', color: 'var(--color-section)', border: '1px solid var(--color-border)', borderRadius: '10px', fontFamily: 'var(--demo-body-font)', fontSize: '13px', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-bg)', border: '1px solid var(--color-border)', borderRadius: '10px', fontFamily: 'var(--demo-body-font)', fontSize: '13px', cursor: 'pointer' }}
           >
             <LogOut size={14} />יציאה
           </button>
@@ -221,11 +221,11 @@ export default function AdminPanel() {
             transition={{ duration: 0.3 }}
             style={{ margin: '12px 16px 0', padding: '12px 14px', backgroundColor: 'rgba(212,184,150,0.25)', border: '1px solid rgba(92,61,46,0.20)', borderRadius: 'var(--demo-radius-card)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <Heart size={16} color="var(--color-accent)" strokeWidth={1.8} />
-            <p style={{ flex: 1, fontFamily: 'var(--demo-body-font)', fontSize: 13, color: 'var(--color-primary)', margin: 0, fontWeight: 500 }}>
+            <p style={{ flex: 1, fontFamily: 'var(--demo-body-font)', fontSize: 13, color: 'var(--color-on-bg)', margin: 0, fontWeight: 500 }}>
               {reminder.text}
             </p>
             <button onClick={dismissReminder}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-section)' }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-on-bg)' }}>
               <X size={16} />
             </button>
           </motion.div>
@@ -283,7 +283,7 @@ export default function AdminPanel() {
                     ? (isLocked ? 'rgba(92,61,46,0.55)' : 'var(--color-primary)')
                     : 'rgba(253,250,247,0.92)',
                   backgroundImage: isActive && !isLocked ? 'var(--demo-primary-mat-overlay)' : 'none',
-                  color: isActive ? 'var(--color-surface)' : (isLocked ? 'rgba(92,61,46,0.55)' : 'var(--color-primary)'),
+                  color: isActive ? 'var(--color-on-primary)' : (isLocked ? 'rgba(92,61,46,0.55)' : 'var(--color-on-bg)'),
                   border: isActive ? 'var(--demo-primary-mat-border, none)' : '1px solid rgba(253,250,247,0.4)',
                   borderRadius: 'var(--demo-radius-card)',
                   fontFamily: 'var(--demo-heading-font)', fontSize: '12px', fontWeight: 500,

@@ -299,7 +299,9 @@ export function applyDesign(design) {
     '--color-on-section':     readableOn(colors.section),
     '--color-on-primary':     readableOn(colors.primary),
     '--color-on-bg':          readableOn(colors.bg),
+    '--color-on-menu':        readableOn(menuColor),
     '--color-on-section-rgb': (() => { const [r,g,b] = hexToRgb(readableOn(colors.section)); return `${r},${g},${b}`; })(),
+    '--color-on-menu-rgb':    (() => { const [r,g,b] = hexToRgb(readableOn(menuColor)); return `${r},${g},${b}`; })(),
   };
 
   const root = document.documentElement;
