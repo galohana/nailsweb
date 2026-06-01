@@ -410,7 +410,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
   const calMaxDate     = wh ? new Date(calToday.getTime() + (wh.weeksAhead||4)*7*86400000) : null;
   const calCells       = [...Array(calFirstDow).fill(null), ...Array.from({length: calDaysInMonth}, (_, i) => i+1)];
   while (calCells.length % 7 !== 0) calCells.push(null);
-  const canGoPrev = new Date(calYear, calMonth, 1) > new Date(calToday.getFullYear(), calToday.getMonth(), 1);
+  const canGoPrev = true; // free navigation — past months show historical appointment dots
   const canGoNext = !calMaxDate || new Date(calYear, calMonth + 1, 1) <= calMaxDate;
 
   const stepLabels = ['', 'בחירת שירות', 'בחירת תאריך', 'אישור תור'];
@@ -655,7 +655,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
                         : isToday ? `1.5px solid ${C.accent}`
                         : disabled ? 'none' : `1px solid ${C.border}`,
                       boxShadow: disabled ? 'none' : isSelected ? 'none' : SHADOW,
-                      opacity: isVacation ? 0.6 : disabled ? 0.22 : 1,
+                      opacity: isVacation ? 0.6 : (disabled && hasUserApt) ? 0.75 : disabled ? 0.22 : 1,
                     }}
                   >
                     <span style={{ fontSize: 12, fontWeight: isSelected || isToday ? 700 : 400, color: isSelected ? 'var(--color-surface)' : C.text, lineHeight: 1 }}>
