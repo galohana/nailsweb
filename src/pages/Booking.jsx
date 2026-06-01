@@ -411,7 +411,7 @@ export default function Booking({ user, onUserSave, onNavigate }) {
   const calCells       = [...Array(calFirstDow).fill(null), ...Array.from({length: calDaysInMonth}, (_, i) => i+1)];
   while (calCells.length % 7 !== 0) calCells.push(null);
   const canGoPrev = true; // free navigation — past months show historical appointment dots
-  const canGoNext = !calMaxDate || new Date(calYear, calMonth + 1, 1) <= calMaxDate;
+  const canGoNext = true; // free forward navigation — isFar still disables individual cells from being booked
 
   const stepLabels = ['', 'בחירת שירות', 'בחירת תאריך', 'אישור תור'];
 

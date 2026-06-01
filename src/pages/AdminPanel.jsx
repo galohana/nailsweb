@@ -281,10 +281,12 @@ export default function AdminPanel() {
                   width: 110, flexShrink: 0,
                   backgroundColor: isActive
                     ? (isLocked ? 'rgba(92,61,46,0.55)' : 'var(--color-primary)')
-                    : 'rgba(253,250,247,0.92)',
-                  backgroundImage: isActive && !isLocked ? 'var(--demo-primary-mat-overlay)' : 'none',
-                  color: isActive ? 'var(--color-on-primary)' : (isLocked ? 'rgba(92,61,46,0.55)' : 'var(--color-on-bg)'),
-                  border: isActive ? 'var(--demo-primary-mat-border, none)' : '1px solid rgba(253,250,247,0.4)',
+                    : 'var(--color-menu)',
+                  backgroundImage: isActive && !isLocked
+                    ? 'var(--demo-primary-mat-overlay)'
+                    : 'var(--demo-menu-mat-overlay)',
+                  color: isActive ? 'var(--color-on-primary)' : (isLocked ? 'rgba(92,61,46,0.55)' : 'var(--color-on-menu)'),
+                  border: isActive ? 'var(--demo-primary-mat-border, none)' : 'var(--demo-menu-mat-border, none)',
                   borderRadius: 'var(--demo-radius-card)',
                   fontFamily: 'var(--demo-heading-font)', fontSize: '12px', fontWeight: 500,
                   cursor: 'pointer', height: '90px',
