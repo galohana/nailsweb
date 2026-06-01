@@ -7,20 +7,20 @@
 
 export const design = {
   colors: {
-    primary: '#ff99ff',   // כפתורים ראשיים, אקסנטים
-    section: '#fff0fe',   // רקע סקשנים כהים (Hero arch, גלריה)
-    bg:      '#fffafb',   // רקע הדף הראשי
-    menu:    '#ffd1ff',   // צבע menu — כשmenuColorExtend=true מוחל על קלפים/CTAs/sheets/map
+    primary: '#ffeae8',   // כפתורים ראשיים, אקסנטים
+    section: '#ffeae8',   // רקע סקשנים כהים (Hero arch, גלריה)
+    bg:      '#ffc8c1',   // רקע הדף הראשי
+    menu:    '#ffa198',   // צבע menu — כשmenuColorExtend=true מוחל על קלפים/CTAs/sheets/map
   },
 
   materials: {
     primary: 'stripes',    // flat | matte | glass | metallic | wood | stripes | marble
     section: 'glass',
-    bg:      'stripes',
-    menu:    'metallic',   // חומר ה-menu — מוחל יחד עם הצבע כשmenuColorExtend=true
+    bg:      'metallic',
+    menu:    'glass',      // חומר ה-menu — מוחל יחד עם הצבע כשmenuColorExtend=true
   },
 
-  headingFont: 'Playfair Display',  // Cormorant Garamond | Playfair Display | Pacifico | Comfortaa | Parisienne
+  headingFont: 'Comfortaa',  // Cormorant Garamond | Playfair Display | Pacifico | Comfortaa | Parisienne
   corners:     'rounded',           // sharp | normal | rounded
   shadow:      'glow',              // none | soft | deep | glow
   navbarBg:    'transparent',       // transparent | primary | section | bg
