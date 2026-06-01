@@ -7,23 +7,23 @@
 
 export const design = {
   colors: {
-    primary: '#5C3D2E',   // כפתורים ראשיים, אקסנטים
-    section: '#7D5A47',   // רקע סקשנים כהים (Hero arch, גלריה)
-    bg:      '#F2E8DC',   // רקע הדף הראשי
-    menu:    '#7D5A47',   // צבע menu — כשmenuColorExtend=true מוחל על קלפים/CTAs/sheets/map
+    primary: '#8e0000',   // כפתורים ראשיים, אקסנטים
+    section: '#ffe9e0',   // רקע סקשנים כהים (Hero arch, גלריה)
+    bg:      '#ffe5dd',   // רקע הדף הראשי
+    menu:    '#8e0000',   // צבע menu — כשmenuColorExtend=true מוחל על קלפים/CTAs/sheets/map
   },
 
   materials: {
-    primary: 'flat',      // flat | matte | glass | metallic | wood | stripes | marble
+    primary: 'stripes',   // flat | matte | glass | metallic | wood | stripes | marble
     section: 'flat',
     bg:      'flat',
-    menu:    'flat',      // חומר ה-menu — מוחל יחד עם הצבע כשmenuColorExtend=true
+    menu:    'matte',     // חומר ה-menu — מוחל יחד עם הצבע כשmenuColorExtend=true
   },
 
-  headingFont: 'Cormorant Garamond',  // Cormorant Garamond | Playfair Display | Pacifico | Comfortaa | Parisienne
-  corners:     'normal',               // sharp | normal | rounded
-  shadow:      'soft',                 // none | soft | deep | glow
-  navbarBg:    'transparent',          // transparent | primary | section | bg
+  headingFont: 'Comfortaa',  // Cormorant Garamond | Playfair Display | Pacifico | Comfortaa | Parisienne
+  corners:     'normal',      // sharp | normal | rounded
+  shadow:      'soft',        // none | soft | deep | glow
+  navbarBg:    'primary',     // transparent | primary | section | bg
 
   /* כשtrue → קלפים/CTAs/sheets/מסגרת מפת waze מקבלים את צבע + חומר ה-menu
      כשfalse (ברירת מחדל) → הם לבנים (#FDFAF7) בלי חומר.
