@@ -290,8 +290,13 @@ export default function InstallButton() {
 
               <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 22 }}>
                 <Step n="1">
-                  לחצי על אייקון השיתוף{' '}
-                  <InlineShare /> (ריבוע עם חץ כלפי מעלה) — נמצא בתחתית המסך או למעלה
+                  לחצי על כפתור התפריט של הדפדפן{' '}
+                  <span dir="ltr" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, verticalAlign: 'middle' }}>
+                    <IconCircle><ShareMark /></IconCircle>
+                    <span style={{ color: 'var(--color-text-hint, #A89580)', fontWeight: 700 }}>/</span>
+                    <IconCircle><DotsMark /></IconCircle>
+                  </span>
+                  {' '}— בתחתית המסך או למעלה
                 </Step>
                 <Step n="2">בחרי <b style={{ color: 'var(--color-text)' }}>"<InlineAddToHome />הוסף למסך הבית"</b></Step>
               </div>
@@ -347,16 +352,39 @@ function InlineAddToHome() {
   );
 }
 
-/* ── אייקון שיתוף מוקטן בתוך הטקסט ── */
-function InlineShare() {
+/* ── עיגול-כפתור שקוף-בערך שעוטף אייקון — מסמן "זה כפתור" ── */
+function IconCircle({ children }) {
   return (
-    <svg width="15" height="17" viewBox="0 0 24 28" fill="none"
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      width: 27, height: 27, borderRadius: '50%',
+      border: '1px solid rgba(var(--color-primary-rgb, 92,61,46), 0.35)',
+      backgroundColor: 'rgba(var(--color-primary-rgb, 92,61,46), 0.07)',
+      flexShrink: 0,
+    }}>{children}</span>
+  );
+}
+
+/* אייקון שיתוף (ריבוע עם חץ למעלה) — ספארי */
+function ShareMark() {
+  return (
+    <svg width="13" height="15" viewBox="0 0 24 28" fill="none"
       stroke="var(--color-primary)" strokeWidth="2.2"
-      strokeLinecap="round" strokeLinejoin="round"
-      style={{ display: 'inline-block', verticalAlign: 'middle', margin: '0 2px' }}>
+      strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>
       <path d="M6 12 V22 a2 2 0 0 0 2 2 H16 a2 2 0 0 0 2 -2 V12" />
       <path d="M12 3 V15" />
       <path d="M8 7 L12 3 L16 7" />
+    </svg>
+  );
+}
+
+/* אייקון שלוש נקודות אופקיות — תפריט (כרום/דפדפנים אחרים) */
+function DotsMark() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="var(--color-primary)" style={{ display: 'block' }}>
+      <circle cx="5" cy="12" r="2" />
+      <circle cx="12" cy="12" r="2" />
+      <circle cx="19" cy="12" r="2" />
     </svg>
   );
 }
