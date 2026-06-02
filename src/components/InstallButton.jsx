@@ -169,6 +169,8 @@ export default function InstallButton() {
   const EASE = [0.16, 1, 0.3, 1];
   const showIosOverlay = mode === 'ios' && (overlayOpen || popupOpen);
   const showAndroidCard = mode === 'android' && popupOpen;
+  // האם אנחנו בפאנל הניהול — רק שם מציגים את טיפ הלוגו
+  const isAdmin = typeof window !== 'undefined' && window.location.pathname === '/manage-x7k2';
 
   return (
     <div dir="rtl">
@@ -232,6 +234,7 @@ export default function InstallButton() {
                 fontFamily: 'var(--demo-body-font)', fontSize: 14, lineHeight: 1.7,
                 color: 'var(--color-text-muted, #7D5A47)', marginBottom: 20,
               }}>הוסיפי את האתר למסך הבית — קביעת תור במגע אחד, בלי לחפש בדפדפן ✨</p>
+              {isAdmin && <AdminLogoTip />}
               <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={triggerAndroid} style={{
                   flex: 1, height: 50, border: 'none', cursor: 'pointer',
@@ -301,6 +304,8 @@ export default function InstallButton() {
                 <Step n="2">בחרי <b style={{ color: 'var(--color-text)' }}>"<InlineAddToHome />הוסף למסך הבית"</b></Step>
               </div>
 
+              {isAdmin && <AdminLogoTip />}
+
               <button onClick={() => { setOverlay(false); dismissPopup(); }} style={{
                 width: '100%', height: 50, border: 'none', cursor: 'pointer',
                 borderRadius: 'var(--demo-radius-card)',
@@ -349,6 +354,22 @@ function InlineAddToHome() {
       <rect x="3" y="3" width="18" height="18" rx="5" />
       <path d="M12 8 V16 M8 12 H16" />
     </svg>
+  );
+}
+
+/* ── טיפ אדמין בלבד: היכן בוחרים לוגו לאפליקציות (ניהול + ראשי) ── */
+function AdminLogoTip() {
+  return (
+    <p style={{
+      fontFamily: 'var(--demo-body-font)', fontSize: 12.5, lineHeight: 1.65,
+      color: 'var(--color-text-muted, #7D5A47)',
+      backgroundColor: 'rgba(var(--color-primary-rgb, 92,61,46), 0.06)',
+      border: '1px solid var(--color-border, #E8DCC8)',
+      borderRadius: 14, padding: '10px 13px', margin: '0 0 18px', textAlign: 'right',
+    }}>
+      💡 אפשר לבחור לוגו נפרד לאפליקציית הניהול ולאפליקציה הראשית — בטאב{' '}
+      <b style={{ color: 'var(--color-text)' }}>"פרטי קשר וקליניקה"</b>.
+    </p>
   );
 }
 
