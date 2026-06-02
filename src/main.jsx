@@ -13,3 +13,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <App />
   </React.StrictMode>,
 )
+
+/* ── PWA service worker — רישום בפרודקשן בלבד (לא ב-dev כדי לא לשבש Vite HMR) ── */
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  })
+}

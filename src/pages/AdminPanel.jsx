@@ -131,6 +131,14 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('services');
   const [notif, setNotif]         = useState({ 'clients-reviews': 0, shop: 0 });
   const [reminder, setReminder]   = useState({ show: false, text: DEFAULT_REMINDER_TEXT, enabled: true });
+  const [adminLogo, setAdminLogo] = useState('');   // לוגו ייעודי לפאנל הניהול
+
+  // טעינת לוגו האדמין (נופל ללוגו הראשי אם לא הוגדר ייעודי)
+  useEffect(() => {
+    db.settings.get('clinicInfo', {})
+      .then((ci) => setAdminLogo((ci?.adminLogo || ci?.logoUrl || '').trim()))
+      .catch(() => {});
+  }, []);
 
   const activeTabData = TABS.find(t => t.id === activeTab);
   const ActiveComp = activeTabData?.Comp;
@@ -198,9 +206,23 @@ export default function AdminPanel() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-bg)', backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat', direction: 'rtl', paddingBottom: '40px' }}>
       <div style={{ padding: '24px 20px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ textAlign: 'right' }}>
-            <h1 style={{ fontFamily: 'var(--demo-heading-font)', fontSize: '32px', color: 'var(--color-text)', lineHeight: 1, marginBottom: '4px', fontWeight: 500 }}>ניהול</h1>
-            <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: '13px', color: 'var(--color-on-bg)' }}>{activeTabData?.label.replace('\n', ' ')}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {adminLogo && (
+              <img
+                src={adminLogo}
+                alt=""
+                style={{
+                  width: 44, height: 44, borderRadius: '50%', objectFit: 'cover',
+                  border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)',
+                  boxShadow: 'var(--demo-shadow-card, 0 2px 8px rgba(0,0,0,0.08))', flexShrink: 0,
+                }}
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.style.display = 'none'; }}
+              />
+            )}
+            <div style={{ textAlign: 'right' }}>
+              <h1 style={{ fontFamily: 'var(--demo-heading-font)', fontSize: '32px', color: 'var(--color-text)', lineHeight: 1, marginBottom: '4px', fontWeight: 500 }}>ניהול</h1>
+              <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: '13px', color: 'var(--color-on-bg)' }}>{activeTabData?.label.replace('\n', ' ')}</p>
+            </div>
           </div>
           <button
             onClick={() => { window.history.pushState({}, '', '/'); window.location.reload(); }}

@@ -13,6 +13,7 @@ import Register from './pages/Register';
 import BubbleMenu from './components/BubbleMenu';
 import ProfileModal from './components/ProfileModal';
 import UrgentBooking from './components/UrgentBooking';
+import InstallButton from './components/InstallButton';
 import GalleryAbout from './pages/GalleryAbout';
 import ReviewsPage from './pages/ReviewsPage';
 import ManageReviews from './pages/ManageReviews';
@@ -20,6 +21,9 @@ import ContactPage from './pages/ContactPage';
 import RisePage from './pages/RisePage';
 import PrivacyPage from './pages/PrivacyPage';
 import { features } from './config/features';
+import { design } from './config/design';
+import { DEFAULT_CLINIC_INFO } from './utils/defaults';
+import { applyDynamicPWA } from './lib/dynamicPWA';
 
 const ADMIN_PATH    = '/manage-x7k2';
 const RISE_PATH     = '/rise';     // עמוד המותג של RISE Builder
@@ -35,6 +39,8 @@ export default function App() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [showWarning, setShowWarning] = useState('');   // אזהרת אי-הגעה — הודעה או ''
   const [blockedUser, setBlockedUser] = useState(false); // חסימה מלאה
+  const [clinicName, setClinicName]   = useState('');    // שם הסטודיו (ל-PWA + כותרת)
+  const [pwaLogo, setPwaLogo]         = useState('');    // לוגו ייעודי ל-PWA (אם הועלה)
 
   // ── בדיקת סטטוס אי-הגעות בסילנט (לא חוסמת טעינה) ───────────
   const checkNoShowStatus = (phone) => {
@@ -80,6 +86,28 @@ export default function App() {
     window.addEventListener('popstate', syncFromPath);
     return () => window.removeEventListener('popstate', syncFromPath);
   }, []);
+
+  // ── טעינת שם הסטודיו + לוגו PWA פעם אחת (ל-PWA + כותרת הטאב) ──
+  useEffect(() => {
+    db.settings.get('clinicInfo', DEFAULT_CLINIC_INFO)
+      .then((ci) => {
+        setClinicName((ci?.name || '').trim());
+        setPwaLogo((ci?.pwaLogo || '').trim());
+      })
+      .catch(() => {});
+  }, []);
+
+  // ── זהות PWA דינמית: שם + לוגו (מועלה או מונוגרמה אוטומטית); אדמין → "+admin" ──
+  useEffect(() => {
+    if (!clinicName) return;
+    applyDynamicPWA({
+      clinicName,
+      isAdmin: page === 'admin',
+      colors: design.colors,
+      headingFont: design.headingFont,
+      pwaLogo,
+    });
+  }, [clinicName, page, pwaLogo]);
 
   // ── Admin-only splash: shows on every entry to /manage-x7k2 ──
   // Image loads via background-image; if /splash.jpg is missing, BG color shows.
@@ -295,6 +323,9 @@ export default function App() {
             onBook={() => { setUrgentOpen(false); navigate('booking'); }}
           />
         )}
+
+        {/* PWA — הוספה למסך הבית (גם לקוחות וגם אדמין) */}
+        <InstallButton />
       </div>
     </div>
   );

@@ -22,6 +22,20 @@ const DEFAULT_STATS = [
   { label: 'תורים בשבוע',   value: 30,  enabled: true },
 ];
 
+// שלושת הלוגואים — יושבים באותו מקום, מחליקים ביניהם.
+// סדר: ראשי → מסך הבית (PWA) → אדמין למסך הבית.
+const LOGOS = [
+  { key: 'logoUrl',   label: 'לוגו ראשי',          hint: 'בעיגול בדף הבית ובראש הקבלות' },
+  { key: 'pwaLogo',   label: 'לוגו למסך הבית',     hint: 'האייקון כשמוסיפים את האתר הראשי למסך הבית. ריק → לוגו אוטומטי מהאותיות והצבעים' },
+  { key: 'adminLogo', label: 'לוגו אדמין למסך הבית', hint: 'האייקון כשמוסיפים את אתר הניהול למסך הבית, ומוצג גם בראש פאנל הניהול' },
+];
+
+const logoSlide = {
+  enter:  (d) => ({ x: d > 0 ? 70 : -70, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit:   (d) => ({ x: d > 0 ? -70 : 70, opacity: 0 }),
+};
+
 // ── Inline save button — appears in card header, only when dirty ──
 function InlineSaveBtn({ dirty, saved, onSave }) {
   return (
@@ -65,6 +79,16 @@ export default function ContactTab() {
   const [aboutDirty, setAboutDirty]     = useState(false);
   const [passwordDirty, setPasswordDirty] = useState(false);
 
+  // ── Logo carousel ── (0=ראשי, 1=מסך הבית, 2=אדמין) — מתחיל בראשי
+  const [logoIdx, setLogoIdx] = useState(0);
+  const [logoDir, setLogoDir] = useState(0);
+
+  // החלפה אוטומטית ימינה לבא כל 5 שניות; כל שינוי (ידני/אוטומטי) מאפס את הטיימר
+  useEffect(() => {
+    const t = setTimeout(() => { setLogoDir(1); setLogoIdx(i => (i + 1) % 3); }, 5000);
+    return () => clearTimeout(t);
+  }, [logoIdx]);
+
   // Flash indicator — which section just saved
   const [flashSection, setFlashSection] = useState(null);
   const timer = useRef(null);
@@ -89,6 +113,17 @@ export default function ContactTab() {
     setFlashSection(section);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setFlashSection(null), 1600);
+  };
+
+  // ── Logo carousel navigation + save ───────────────────────────
+  const goLogoTo = (i) => { setLogoDir(i > logoIdx ? 1 : -1); setLogoIdx(((i % 3) + 3) % 3); };
+  const goLogo   = (delta) => goLogoTo(logoIdx + delta);
+  const saveLogo = (key, url) => {
+    const next = { ...info, [key]: url };
+    setInfo(next);
+    db.settings.set('clinicInfo', next);
+    if (key === 'logoUrl') db.settings.set('businessLogo', url); // תאימות עם דף הבית
+    flashFor('logo');
   };
 
   // ── Clinic info + email ───────────────────────────────────────
@@ -139,10 +174,15 @@ export default function ContactTab() {
 
   return (
     <div>
-      {/* ── Business logo ─────────────────────────────────────── */}
+      {/* ── Logos carousel — 3 לוגואים באותו מקום, מחליקים ביניהם ── */}
       <div style={S.card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={S.heading}>לוגו העסק</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <p style={S.heading}>{LOGOS[logoIdx].label}</p>
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--color-text-hint)' }}>
+              {logoIdx + 1}/3
+            </span>
+          </div>
           <AnimatePresence>
             {flashSection === 'logo' && (
               <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -150,19 +190,58 @@ export default function ContactTab() {
             )}
           </AnimatePresence>
         </div>
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-hint)', marginBottom: 14, lineHeight: 1.5 }}>
-          יופיע בעיגול בדף הבית ובראש הקבלות. ללא לוגו — יוצג לוגו RISE כברירת מחדל.
-        </p>
-        <LogoUploader
-          currentUrl={info.logoUrl || ''}
-          onUploaded={(url) => {
-            const next = { ...info, logoUrl: url };
-            setInfo(next);
-            db.settings.set('clinicInfo', next);
-            db.settings.set('businessLogo', url);
-            flashFor('logo');
-          }}
-        />
+
+        <div style={{ position: 'relative', minHeight: 18, marginBottom: 14 }}>
+          <AnimatePresence mode="wait" custom={logoDir} initial={false}>
+            <motion.p
+              key={LOGOS[logoIdx].key + '-hint'}
+              custom={logoDir} variants={logoSlide} initial="enter" animate="center" exit="exit"
+              transition={{ duration: 0.2 }}
+              style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-hint)', lineHeight: 1.5, margin: 0 }}
+            >
+              {LOGOS[logoIdx].hint}
+            </motion.p>
+          </AnimatePresence>
+        </div>
+
+        {/* אזור ההחלקה — גרירה ימינה/שמאלה מחליפה לוגו */}
+        <div style={{ position: 'relative', overflow: 'hidden', touchAction: 'pan-y' }}>
+          <AnimatePresence mode="wait" custom={logoDir} initial={false}>
+            <motion.div
+              key={LOGOS[logoIdx].key}
+              custom={logoDir} variants={logoSlide} initial="enter" animate="center" exit="exit"
+              transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+              drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.18}
+              onDragEnd={(e, i) => {
+                // החלקה ימינה → הלוגו הבא; שמאלה → הקודם
+                if (i.offset.x > 50 || i.velocity.x > 350) goLogo(1);
+                else if (i.offset.x < -50 || i.velocity.x < -350) goLogo(-1);
+              }}
+            >
+              <LogoUploader
+                currentUrl={info[LOGOS[logoIdx].key] || ''}
+                onUploaded={(url) => saveLogo(LOGOS[logoIdx].key, url)}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* נקודות ניווט */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16, direction: 'ltr' }}>
+          {LOGOS.map((l, i) => (
+            <button
+              key={l.key}
+              onClick={() => goLogoTo(i)}
+              aria-label={l.label}
+              style={{
+                width: i === logoIdx ? 22 : 8, height: 8, borderRadius: 999,
+                border: 'none', cursor: 'pointer', padding: 0,
+                backgroundColor: i === logoIdx ? 'var(--color-primary)' : 'var(--color-border-dark)',
+                transition: 'width 0.25s ease, background-color 0.25s ease',
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       {/* ── Clinic info ───────────────────────────────────────── */}
