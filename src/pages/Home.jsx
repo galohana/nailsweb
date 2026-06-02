@@ -19,7 +19,7 @@ const FEAT_GALLERY = import.meta.env.VITE_FEATURE_GALLERY !== 'false';
 
 function btnPrimary(extra) {
   return {
-    backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)',
+    backgroundColor: 'var(--color-surface)', color: 'var(--color-primary-ink)',
     border: '1.5px solid #5C3D2E', borderRadius: 'var(--demo-radius-card)', fontWeight: 600,
     fontSize: 15, cursor: 'pointer',
     boxShadow: 'var(--demo-shadow-card)',
@@ -29,7 +29,7 @@ function btnPrimary(extra) {
 }
 function btnOutline(extra) {
   return {
-    backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)',
+    backgroundColor: 'var(--color-surface)', color: 'var(--color-primary-ink)',
     border: '1.5px solid #5C3D2E',
     borderRadius: 'var(--demo-radius-card)', fontWeight: 600,
     fontSize: 14, cursor: 'pointer',
@@ -168,7 +168,7 @@ function Hero({ user, hero, onNavigate, visible, businessLogo }) {
             <span style={{
               fontFamily: 'var(--demo-heading-font)',
               fontSize: 15, fontWeight: 400, letterSpacing: '0.06em',
-              color: 'var(--color-primary)', whiteSpace: 'nowrap',
+              color: 'var(--color-primary-ink)', whiteSpace: 'nowrap',
             }}>BOLT ⚡</span>
           )}
         </motion.div>
@@ -238,7 +238,7 @@ function Hero({ user, hero, onNavigate, visible, businessLogo }) {
               style={{
                 height: 44, width: '100%', borderRadius: 'var(--demo-radius-card)',
                 border: '1.5px solid #5C3D2E', backgroundColor: 'var(--color-surface)',
-                color: 'var(--color-primary)', fontSize: 14, fontWeight: 600,
+                color: 'var(--color-primary-ink)', fontSize: 14, fontWeight: 600,
                 cursor: 'pointer', fontFamily: 'var(--demo-body-font)',
               }}
             >
@@ -251,7 +251,7 @@ function Hero({ user, hero, onNavigate, visible, businessLogo }) {
               style={{
                 height: 44, width: '100%', borderRadius: 'var(--demo-radius-card)',
                 border: '1.5px solid #5C3D2E', backgroundColor: 'var(--color-surface)',
-                color: 'var(--color-primary)', fontSize: 14, fontWeight: 600,
+                color: 'var(--color-primary-ink)', fontSize: 14, fontWeight: 600,
                 cursor: 'pointer', fontFamily: 'var(--demo-body-font)',
               }}
             >
@@ -348,7 +348,7 @@ function GallerySection({ images }) {
           display: 'flex', alignItems: 'center', gap: 8,
           padding: '10px 20px', borderRadius: 'var(--demo-radius-card)',
           border: '1.5px solid #5C3D2E', backgroundColor: 'var(--color-surface)',
-          color: 'var(--color-primary)', fontSize: 13, fontWeight: 600,
+          color: 'var(--color-primary-ink)', fontSize: 13, fontWeight: 600,
           cursor: 'pointer', fontFamily: 'var(--demo-body-font)',
         }}>
           <input type="file" accept="image/*" style={{ display: 'none' }} onChange={() => {}} />
@@ -437,7 +437,7 @@ function AboutSection({ about, clinicInfo }) {
               </p>
               <label onClick={e => e.stopPropagation()} style={{
                 padding: '6px 12px', borderRadius: 8,
-                backgroundColor: 'rgba(253,250,247,0.85)', color: 'var(--color-primary)',
+                backgroundColor: 'rgba(253,250,247,0.85)', color: 'var(--color-primary-ink)',
                 fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 border: '1px solid rgba(92,61,46,0.3)',
               }}>

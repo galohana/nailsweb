@@ -151,7 +151,7 @@ export default function ProfileModal({ user, onClose, onUserUpdate }) {
 function Field({ label, value, onChange, placeholder, type = 'text', disabled, hint }) {
   return (
     <div>
-      <label style={{ fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 600, color: 'var(--color-primary)', display: 'block', marginBottom: 6 }}>
+      <label style={{ fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 600, color: 'var(--color-primary-ink)', display: 'block', marginBottom: 6 }}>
         {label}
       </label>
       {hint && (

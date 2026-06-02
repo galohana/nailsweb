@@ -184,7 +184,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen font-heebo" style={{ backgroundColor: 'var(--color-bg)', backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat', color: 'var(--color-primary)' }} dir="rtl">
+    <div className="min-h-screen font-heebo" style={{ backgroundColor: 'var(--color-bg)', backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat', color: 'var(--color-primary-ink)' }} dir="rtl">
       {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
 
       {/* ── מסך חסימה מלא — לא ניתן לסגור ── */}

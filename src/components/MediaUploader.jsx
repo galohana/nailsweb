@@ -10,7 +10,7 @@ const MAX_DUR  = 10;                  // 10 seconds
 
 const btnStyle = {
   flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-  gap: '6px', padding: '12px', backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)',
+  gap: '6px', padding: '12px', backgroundColor: 'var(--color-surface)', color: 'var(--color-primary-ink)',
   border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-body)',
   fontSize: '13px', fontWeight: 500, cursor: 'pointer', touchAction: 'manipulation',
 };
@@ -117,7 +117,7 @@ export default function MediaUploader({
   return (
     <div style={{ marginBottom: 16 }}>
       {label && (
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-primary)', marginBottom: 8, fontWeight: 500 }}>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-primary-ink)', marginBottom: 8, fontWeight: 500 }}>
           {label}
         </p>
       )}

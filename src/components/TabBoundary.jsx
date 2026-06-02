@@ -43,7 +43,7 @@ export default class TabBoundary extends Component {
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           <button
             onClick={this.reset}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', backgroundColor: 'var(--color-primary)', color: 'var(--color-surface)', border: 'none', borderRadius: 8, fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)', border: 'none', borderRadius: 8, fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
           >
             <RefreshCw size={13} /> נסי שוב
           </button>

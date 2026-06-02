@@ -36,10 +36,10 @@ export default function RisePage({ embedded = false }) {
         >
           <p style={{ marginBottom: '8px', fontWeight: 600 }}>עמוסה מלנהל לעצמך את העסק?</p>
           <p style={{ marginBottom: '8px', fontWeight: 600 }}>לא רוצה להוציא הון על מזכירה?</p>
-          <p style={{ marginBottom: '12px', fontFamily: 'Cormorant Garamond', fontSize: '18px', color: 'var(--color-primary)', fontWeight: 600 }}>
+          <p style={{ marginBottom: '12px', fontFamily: 'Cormorant Garamond', fontSize: '18px', color: 'var(--color-primary-ink)', fontWeight: 600 }}>
             הפתרון המושלם עבורך!
           </p>
-          <p style={{ color: 'var(--color-primary)', opacity: 0.8, fontSize: '12.5px', lineHeight: 1.7 }}>
+          <p style={{ color: 'var(--color-primary-ink)', opacity: 0.8, fontSize: '12.5px', lineHeight: 1.7 }}>
             מערכת RISE קובעת עבורך תורים, מעדכנת אותך ואת הלקוחות בכל תור, הופכת את העסק שלך למקצועי ואסתטי, ובעיקר הופכת את היומיום שלך לרגוע וקל.
           </p>
         </motion.div>

@@ -106,7 +106,7 @@ export default function StaffTab() {
                 width: '100%', marginTop: 12,
                 padding: '10px', borderRadius: 'var(--demo-radius-card)',
                 border: '1px solid #E8DCC8', backgroundColor: 'transparent',
-                color: 'var(--color-primary)', fontFamily: 'var(--demo-body-font)', fontSize: 13, fontWeight: 600,
+                color: 'var(--color-primary-ink)', fontFamily: 'var(--demo-body-font)', fontSize: 13, fontWeight: 600,
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}>
               <Calendar size={14} />שעות וחופשות

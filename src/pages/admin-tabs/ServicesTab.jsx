@@ -159,7 +159,7 @@ export default function ServicesTab() {
                 <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text)', fontWeight: 600, fontSize: 15 }}>{svc.name}</p>
                 <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)', fontSize: 12, marginTop: 2 }}>
                   {fmtDuration(svc.duration)} · ₪{svc.price}
-                  {addons.length > 0 && <span style={{ marginInlineStart: 8, color: 'var(--color-primary)', fontWeight: 600 }}>+ {addons.length} תוספות</span>}
+                  {addons.length > 0 && <span style={{ marginInlineStart: 8, color: 'var(--color-primary-ink)', fontWeight: 600 }}>+ {addons.length} תוספות</span>}
                 </p>
               </div>
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>

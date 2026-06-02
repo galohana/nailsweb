@@ -110,7 +110,7 @@ function SectionHeader({ title }) {
     <div style={{ marginTop: 20, marginBottom: 12, paddingInline: 2 }}>
       <h3 style={{
         fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 600,
-        color: 'var(--color-primary)', letterSpacing: '0.03em', lineHeight: 1, margin: 0,
+        color: 'var(--color-primary-ink)', letterSpacing: '0.03em', lineHeight: 1, margin: 0,
       }}>
         {title}
       </h3>
@@ -244,7 +244,7 @@ function ReceiptsSettings({ settings, clinicInfo, counter, saved, preview, onPre
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
               padding: '7px 12px',
-              backgroundColor: 'var(--color-primary)', color: 'var(--color-surface)',
+              backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)',
               backgroundImage: 'var(--demo-primary-mat-overlay, none)',
               border: 'var(--demo-primary-mat-border, none)', borderRadius: 9,
               fontFamily: 'var(--font-body)', fontSize: 12, cursor: 'pointer',
@@ -272,7 +272,7 @@ function ReceiptsSettings({ settings, clinicInfo, counter, saved, preview, onPre
         <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 700, color: 'var(--color-text)', marginBottom: 6 }}>
           ✅ איך זה עובד
         </p>
-        <ul style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-primary)', lineHeight: 2, paddingInlineStart: 16, margin: 0 }}>
+        <ul style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-primary-ink)', lineHeight: 2, paddingInlineStart: 16, margin: 0 }}>
           <li>תור + ביט/פייבוקס — קבלה נשלחת לאחר אישורך</li>
           <li>הזמנת חנות + מזומן — קבלה לאחר אישור</li>
           <li>הקבלה מגיעה לאימייל שהוגדר בשדה "אימייל לקבלת עותק"</li>
@@ -323,7 +323,7 @@ function ReceiptPreview({ name, items, total, method, businessName, businessAddr
           {(items || []).map((item, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--color-border-soft)' }}>
               <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text)' }}>{item.name}</span>
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-primary)', fontWeight: 700 }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-primary-ink)', fontWeight: 700 }}>
                 ₪{Number(item.price).toLocaleString()}
               </span>
             </div>
@@ -350,7 +350,7 @@ function ReceiptPreview({ name, items, total, method, businessName, businessAddr
             display: 'inline-block', padding: '3px 12px',
             backgroundColor: 'rgba(92,61,46,0.08)', border: '1px solid rgba(92,61,46,0.18)',
             borderRadius: 'var(--radius-xl)',
-            fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 600, color: 'var(--color-primary)',
+            fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 600, color: 'var(--color-primary-ink)',
           }}>
             שולם ב-{methodLabel}
           </span>

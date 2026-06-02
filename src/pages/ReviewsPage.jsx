@@ -150,7 +150,7 @@ function ReviewCard({ review, size }) {
         <div style={{ marginBottom: 12, color: '#D4A574', fontSize: nameF }}>
           {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
         </div>
-        <p style={{ fontSize: bodyF, lineHeight: 1.65, color: 'var(--color-primary)', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: clamp, WebkitBoxOrient: 'vertical' }}>
+        <p style={{ fontSize: bodyF, lineHeight: 1.65, color: 'var(--color-primary-ink)', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: clamp, WebkitBoxOrient: 'vertical' }}>
           {review.text}
         </p>
       </div>
@@ -198,7 +198,7 @@ function ReviewForm({ onClose }) {
         />
 
         <div style={{ marginBottom: 16, textAlign: 'center' }}>
-          <p style={{ color: 'var(--color-primary)', marginBottom: 8, fontSize: 14, fontFamily: 'var(--demo-body-font)' }}>דירוג:</p>
+          <p style={{ color: 'var(--color-primary-ink)', marginBottom: 8, fontSize: 14, fontFamily: 'var(--demo-body-font)' }}>דירוג:</p>
           {[1,2,3,4,5].map(s => (
             <button key={s} onClick={() => setRating(s)} style={{ background: 'none', border: 'none', fontSize: 32, color: s <= rating ? '#D4A574' : '#E8E0D8', cursor: 'pointer', padding: '0 3px' }}>★</button>
           ))}
@@ -221,7 +221,7 @@ function ReviewForm({ onClose }) {
 }
 
 const primaryBtn = {
-  width: '100%', padding: 14, backgroundColor: 'var(--color-section)', color: 'var(--color-surface)',
+  width: '100%', padding: 14, backgroundColor: 'var(--color-section)', color: 'var(--color-on-section)',
   backgroundImage: 'var(--demo-section-mat-overlay-sm, none)',
   border: 'var(--demo-section-mat-border, none)', borderRadius: 'var(--demo-radius-card)', fontFamily: 'var(--demo-body-font)', fontSize: 15,
   fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)',

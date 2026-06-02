@@ -392,7 +392,7 @@ export default function ReportsTab() {
           <GlassCard>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>סה״כ הכנסות</span>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 700, color: 'var(--color-primary)', lineHeight: 1 }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 700, color: 'var(--color-primary-ink)', lineHeight: 1 }}>
                 ₪{totalAllRev.toLocaleString()}
               </span>
             </div>
@@ -473,7 +473,7 @@ export default function ReportsTab() {
             <GlassCard>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 6 }}>✨ שירות הכי רווחי</p>
               <p style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--color-text)' }}>{topServiceByRev[0]}</p>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-primary)', marginTop: 4 }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-primary-ink)', marginTop: 4 }}>
                 ₪{Number(topServiceByRev[1]).toLocaleString()} סה״כ · {topService?.[1] || 0} תורים
               </p>
             </GlassCard>
@@ -510,7 +510,7 @@ export default function ReportsTab() {
                 <Minus size={18} color="var(--color-text-muted)" />
               </motion.button>
               <div style={{ textAlign: 'center' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: 48, fontWeight: 700, color: 'var(--color-primary)', lineHeight: 1 }}>{noShowCount}</p>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: 48, fontWeight: 700, color: 'var(--color-primary-ink)', lineHeight: 1 }}>{noShowCount}</p>
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-muted)', marginTop: 2 }}>אי-הגעות</p>
               </div>
               <motion.button whileTap={{ scale: 0.9 }}
@@ -849,7 +849,7 @@ function CardTitle({ children, style }) {
 function SectionHeader({ title }) {
   return (
     <div style={{ marginTop: 20, marginBottom: 12, paddingInline: 2 }}>
-      <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 600, color: 'var(--color-primary)', letterSpacing: '0.03em', lineHeight: 1, margin: 0 }}>
+      <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 600, color: 'var(--color-primary-ink)', letterSpacing: '0.03em', lineHeight: 1, margin: 0 }}>
         {title}
       </h3>
       <div style={{ height: 2, background: 'linear-gradient(90deg, rgba(92,61,46,0.8) 0%, rgba(92,61,46,0.15) 60%, transparent 100%)', borderRadius: 1, marginTop: 8 }} />

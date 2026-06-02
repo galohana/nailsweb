@@ -318,7 +318,7 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
                 </div>
               </div>
               {/* Back face */}
-              <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', border: 'var(--demo-primary-mat-border, none)', borderRadius: 'var(--demo-radius-card)', padding: '24px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: 'var(--color-surface)', direction: 'rtl', boxShadow: 'var(--demo-shadow-deep)' }}>
+              <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', border: 'var(--demo-primary-mat-border, none)', borderRadius: 'var(--demo-radius-card)', padding: '24px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: 'var(--color-on-primary)', direction: 'rtl', boxShadow: 'var(--demo-shadow-deep)' }}>
                 <div>
                   <h3 style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 26, fontWeight: 400, marginBottom: 16, textAlign: 'center' }}>קצת עליי</h3>
                   <p style={{ fontSize: 14, lineHeight: 1.8, opacity: 0.95, fontFamily: 'var(--demo-body-font)' }}>
@@ -329,7 +329,7 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
                   <a
                     href={waLink}
                     onClick={e => e.stopPropagation()}
-                    style={{ display: 'block', padding: 12, marginTop: 20, backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)', textDecoration: 'none', borderRadius: 'var(--demo-radius-card)', textAlign: 'center', fontFamily: 'var(--demo-body-font)', fontSize: 14, fontWeight: 600, boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }}
+                    style={{ display: 'block', padding: 12, marginTop: 20, backgroundColor: 'var(--color-surface)', color: 'var(--color-primary-ink)', textDecoration: 'none', borderRadius: 'var(--demo-radius-card)', textAlign: 'center', fontFamily: 'var(--demo-body-font)', fontSize: 14, fontWeight: 600, boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }}
                   >
                     דברי איתי בוואטסאפ
                   </a>
@@ -411,7 +411,7 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
       {/* Book button — standalone only */}
       {!embedded && onNavigate && (
         <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ padding: '32px 16px 0' }}>
-          <motion.button onClick={() => onNavigate('booking')} whileTap={{ scale: 0.97 }} style={{ width: '100%', height: 52, borderRadius: 'var(--demo-radius-card)', backgroundColor: 'rgba(253,250,247,0.9)', color: 'var(--color-primary)', border: 'none', fontFamily: 'var(--demo-body-font)', fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: SHADOW }}>
+          <motion.button onClick={() => onNavigate('booking')} whileTap={{ scale: 0.97 }} style={{ width: '100%', height: 52, borderRadius: 'var(--demo-radius-card)', backgroundColor: 'rgba(253,250,247,0.9)', color: 'var(--color-primary-ink)', border: 'none', fontFamily: 'var(--demo-body-font)', fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: SHADOW }}>
             לקביעת תור ←
           </motion.button>
         </motion.div>
@@ -446,7 +446,7 @@ function ReviewCard({ review }) {
           ))}
         </span>
       </div>
-      <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 12, lineHeight: 1.65, color: 'var(--color-primary)', flex: 1, overflow: 'hidden' }}>{review.text}</p>
+      <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 12, lineHeight: 1.65, color: 'var(--color-primary-ink)', flex: 1, overflow: 'hidden' }}>{review.text}</p>
     </motion.div>
   );
 }
@@ -482,13 +482,13 @@ function ReviewForm({ onClose }) {
         <h3 style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 26, fontWeight: 400, color: 'var(--color-text)', marginBottom: 20, textAlign: 'center' }}>השאירי ביקורת</h3>
         <input placeholder="שמך" value={name} onChange={e => setName(e.target.value)} style={inputS} />
         <div style={{ marginBottom: 16, textAlign: 'center' }}>
-          <p style={{ color: 'var(--color-primary)', marginBottom: 8, fontSize: 14, fontFamily: 'var(--demo-body-font)' }}>דירוג:</p>
+          <p style={{ color: 'var(--color-primary-ink)', marginBottom: 8, fontSize: 14, fontFamily: 'var(--demo-body-font)' }}>דירוג:</p>
           {[1,2,3,4,5].map(s => (
             <button key={s} onClick={() => setRating(s)} style={{ background: 'none', border: 'none', fontSize: 32, color: s <= rating ? '#D4A574' : '#E8E0D8', cursor: 'pointer', padding: '0 3px' }}>★</button>
           ))}
         </div>
         <textarea placeholder="הביקורת שלך..." value={text} onChange={e => setText(e.target.value)} rows={4} style={{ ...inputS, resize: 'none', marginBottom: 20 }} />
-        <motion.button onClick={submit} disabled={submitting} whileTap={{ scale: 0.97 }} style={{ width: '100%', padding: 14, backgroundColor: 'var(--color-section)', backgroundImage: 'var(--demo-section-mat-overlay-sm, none)', border: 'var(--demo-section-mat-border, none)', borderRadius: 'var(--demo-radius-card)', color: 'var(--color-surface)', fontFamily: 'var(--demo-body-font)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
+        <motion.button onClick={submit} disabled={submitting} whileTap={{ scale: 0.97 }} style={{ width: '100%', padding: 14, backgroundColor: 'var(--color-section)', backgroundImage: 'var(--demo-section-mat-overlay-sm, none)', border: 'var(--demo-section-mat-border, none)', borderRadius: 'var(--demo-radius-card)', color: 'var(--color-on-section)', fontFamily: 'var(--demo-body-font)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
           {submitting ? 'שולחת...' : 'שלחי לאישור'}
         </motion.button>
       </motion.div>

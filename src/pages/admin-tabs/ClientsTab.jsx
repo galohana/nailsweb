@@ -395,7 +395,7 @@ export default function ClientsTab() {
                 )}
 
                 <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                  <a href={`tel:+${toE164(c.phone)}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', border: 'var(--demo-primary-mat-border, none)', borderRadius: 'var(--demo-radius-card)', color: 'var(--color-surface)', textDecoration: 'none', fontFamily: 'var(--demo-body-font)', fontSize: 13, fontWeight: 600 }}>
+                  <a href={`tel:+${toE164(c.phone)}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', border: 'var(--demo-primary-mat-border, none)', borderRadius: 'var(--demo-radius-card)', color: 'var(--color-on-primary)', textDecoration: 'none', fontFamily: 'var(--demo-body-font)', fontSize: 13, fontWeight: 600 }}>
                     <Phone size={16} />חיוג
                   </a>
                   <a href={`https://wa.me/${toE164(c.phone)}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px', backgroundColor: '#25D366', color: 'var(--color-surface)', borderRadius: 'var(--demo-radius-card)', textDecoration: 'none', fontFamily: 'var(--demo-body-font)', fontSize: 13, fontWeight: 600 }}>

@@ -26,7 +26,7 @@ export default function ManageReviews() {
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => { if (pw === PASS) setAuthed(true); else alert('סיסמה שגויה'); }}
-            style={{ width: '100%', padding: 13, backgroundColor: 'var(--color-section)', backgroundImage: 'var(--demo-section-mat-overlay-sm, none)', border: 'var(--demo-section-mat-border, none)', borderRadius: 'var(--demo-radius-card)', color: 'var(--color-surface)', fontFamily: 'var(--demo-body-font)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
+            style={{ width: '100%', padding: 13, backgroundColor: 'var(--color-section)', backgroundImage: 'var(--demo-section-mat-overlay-sm, none)', border: 'var(--demo-section-mat-border, none)', borderRadius: 'var(--demo-radius-card)', color: 'var(--color-on-section)', fontFamily: 'var(--demo-body-font)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
           >
             כניסה
           </motion.button>
@@ -110,7 +110,7 @@ function ReviewsAdmin() {
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => setShowAddForm(true)}
-            style={{ width: '100%', padding: 13, backgroundColor: 'var(--color-section)', backgroundImage: 'var(--demo-section-mat-overlay-sm, none)', border: 'var(--demo-section-mat-border, none)', borderRadius: 'var(--demo-radius-card)', color: 'var(--color-surface)', fontFamily: 'var(--demo-body-font)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
+            style={{ width: '100%', padding: 13, backgroundColor: 'var(--color-section)', backgroundImage: 'var(--demo-section-mat-overlay-sm, none)', border: 'var(--demo-section-mat-border, none)', borderRadius: 'var(--demo-radius-card)', color: 'var(--color-on-section)', fontFamily: 'var(--demo-body-font)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
           >
             + הוסף ביקורת
           </motion.button>
@@ -162,7 +162,7 @@ function ReviewRow({ review, onApprove, onDelete, showApprove = false }) {
         </span>
         <span style={{ color: '#D4A574', fontSize: 14 }}>{'★'.repeat(review.rating)}</span>
       </div>
-      <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 13, color: 'var(--color-primary)', lineHeight: 1.6, marginBottom: 10 }}>
+      <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 13, color: 'var(--color-primary-ink)', lineHeight: 1.6, marginBottom: 10 }}>
         {review.text}
       </p>
       <div style={{ display: 'flex', gap: 8 }}>
@@ -222,7 +222,7 @@ function AddReviewForm({ onDone }) {
 }
 
 const approveBtn = {
-  flex: 1, padding: '8px 0', backgroundColor: 'var(--color-section)', color: 'var(--color-surface)',
+  flex: 1, padding: '8px 0', backgroundColor: 'var(--color-section)', color: 'var(--color-on-section)',
   backgroundImage: 'var(--demo-section-mat-overlay-sm, none)',
   border: 'var(--demo-section-mat-border, none)', borderRadius: 8, fontFamily: 'var(--demo-body-font)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
 };

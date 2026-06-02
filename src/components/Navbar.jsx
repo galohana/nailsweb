@@ -177,7 +177,7 @@ export default function Navbar({ user, page, menuOpen, onMenuToggle, onNavigate,
                     whileTap={{ scale: 0.97 }}
                     style={{
                       width: '100%', height: 42, borderRadius: 'var(--demo-radius-card)',
-                      backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)',
+                      backgroundColor: 'var(--color-surface)', color: 'var(--color-primary-ink)',
                       border: '1.5px solid #5C3D2E', fontWeight: 600, fontSize: 14, cursor: 'pointer',
                       boxShadow: 'var(--demo-shadow-card)',
                       fontFamily: 'var(--demo-body-font)',

@@ -181,7 +181,7 @@ export default function BreaksTab() {
               </p>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
                 {conflictList.map((a, i) => (
-                  <li key={i} style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-primary)' }}>
+                  <li key={i} style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-primary-ink)' }}>
                     {a.date} · {a.time?.slice(0, 5)} — {a.userName || a.clientName || a.phone}
                   </li>
                 ))}
@@ -216,7 +216,7 @@ export default function BreaksTab() {
               <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--color-border-soft)' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {isRange && <span style={{ fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 700, color: 'var(--color-primary)', backgroundColor: 'var(--color-brown-08)', border: '1px solid var(--color-brown-18)', borderRadius: 4, padding: '1px 5px' }}>טווח</span>}
+                    {isRange && <span style={{ fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 700, color: 'var(--color-primary-ink)', backgroundColor: 'var(--color-brown-08)', border: '1px solid var(--color-brown-18)', borderRadius: 4, padding: '1px 5px' }}>טווח</span>}
                     <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text)', fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis' }} dir="ltr">{dateLabel}</p>
                   </div>
                   <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -244,7 +244,7 @@ export default function BreaksTab() {
               ) : annDirty ? (
                 <motion.button key="btn" whileTap={{ scale: 0.97 }} onClick={() => saveAdmin(admin)}
                   initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 6 }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 11px', borderRadius: 'var(--radius-sm)', border: 'none', backgroundColor: 'var(--color-primary)', color: 'var(--color-surface)', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 11px', borderRadius: 'var(--radius-sm)', border: 'none', backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                   שמורי 💾
                 </motion.button>
               ) : null}

@@ -223,7 +223,7 @@ function Products() {
                   style={{ ...S.input, flex: 1, fontSize: 13, padding: '8px 10px', marginBottom: 0 }}
                 />
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => restock(p.id, restockAmt[p.id])}
-                  style={{ padding: '8px 14px', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', border: 'var(--demo-primary-mat-border, none)', borderRadius: 8, color: 'var(--color-surface)', fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  style={{ padding: '8px 14px', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', border: 'var(--demo-primary-mat-border, none)', borderRadius: 8, color: 'var(--color-on-primary)', fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Plus size={12} />חדש מלאי
                 </motion.button>
               </div>
@@ -324,7 +324,7 @@ function Orders({ orders, setOrders, onBadgeUpdate }) {
               </div>
               <p style={{ fontFamily: 'var(--demo-body-font)', color: 'var(--color-section)', fontSize: 12, marginBottom: 8 }}>{(o.items || []).map(i => `${i.name} ×${i.quantity}`).join(' · ')}</p>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontFamily: 'var(--demo-heading-font)', color: 'var(--color-primary)', fontWeight: 700, fontSize: 18 }}>₪{o.total}</span>
+                <span style={{ fontFamily: 'var(--demo-heading-font)', color: 'var(--color-primary-ink)', fontWeight: 700, fontSize: 18 }}>₪{o.total}</span>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button disabled={!!busy} onClick={() => reject(o)} style={S.deleteBtn}>דחיה</button>
                   <button disabled={!!busy} onClick={() => approve(o)} style={{ padding: '8px 16px', backgroundColor: '#4CAF50', color: '#fff', border: 'none', borderRadius: 8, fontFamily: 'var(--demo-body-font)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>אישור ✓</button>
@@ -345,7 +345,7 @@ function Orders({ orders, setOrders, onBadgeUpdate }) {
               </div>
               <div style={{ textAlign: 'end' }}>
                 <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, backgroundColor: `${statusColor[o.status]}18`, color: statusColor[o.status], fontFamily: 'var(--demo-body-font)', fontWeight: 600 }}>{statusLabel[o.status]}</span>
-                <p style={{ fontFamily: 'var(--demo-heading-font)', color: 'var(--color-primary)', fontWeight: 700, fontSize: 15, marginTop: 3 }}>₪{o.total}</p>
+                <p style={{ fontFamily: 'var(--demo-heading-font)', color: 'var(--color-primary-ink)', fontWeight: 700, fontSize: 15, marginTop: 3 }}>₪{o.total}</p>
               </div>
             </div>
           ))}
@@ -464,7 +464,7 @@ function Approvals({ pendingPayments, onApproved, onBadgeUpdate }) {
                   <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 'var(--demo-radius-card)', backgroundColor: `${methodColor(payment.method)}18`, color: methodColor(payment.method), fontFamily: 'var(--demo-body-font)', fontSize: 11, fontWeight: 700 }}>
                     {methodLabel(payment.method)}
                   </span>
-                  <p style={{ fontFamily: 'var(--demo-heading-font)', color: 'var(--color-primary)', fontWeight: 700, fontSize: 18, marginTop: 4 }}>₪{payment.amount}</p>
+                  <p style={{ fontFamily: 'var(--demo-heading-font)', color: 'var(--color-primary-ink)', fontWeight: 700, fontSize: 18, marginTop: 4 }}>₪{payment.amount}</p>
                 </div>
               </div>
               {!isDone && (
@@ -544,7 +544,7 @@ function Payment() {
           { key: 'bit', label: 'הצג Bit', cur: visibility.bit, savedKey: 'visBit' },
         ].map(({ key, label, cur, savedKey }) => (
           <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
-            <span style={{ fontFamily: 'var(--demo-body-font)', fontSize: 13, color: 'var(--color-primary)' }}>{label}</span>
+            <span style={{ fontFamily: 'var(--demo-body-font)', fontSize: 13, color: 'var(--color-primary-ink)' }}>{label}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {saved === savedKey && <span style={{ color: '#4CAF50', fontSize: 12 }}>✓</span>}
               <button

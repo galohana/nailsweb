@@ -47,7 +47,7 @@ const ExceptionRow = memo(function ExceptionRow({ exc, onRemove }) {
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid #F0E6D6' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {isRange && <span style={{ fontFamily: 'var(--demo-body-font)', fontSize: 9, fontWeight: 700, color: 'var(--color-primary)', backgroundColor: 'rgba(92,61,46,0.08)', border: '1px solid rgba(92,61,46,0.18)', borderRadius: 4, padding: '1px 5px' }}>טווח</span>}
+          {isRange && <span style={{ fontFamily: 'var(--demo-body-font)', fontSize: 9, fontWeight: 700, color: 'var(--color-primary-ink)', backgroundColor: 'rgba(92,61,46,0.08)', border: '1px solid rgba(92,61,46,0.18)', borderRadius: 4, padding: '1px 5px' }}>טווח</span>}
           <p style={{ fontFamily: 'var(--demo-body-font)', color: 'var(--color-text)', fontSize: 13, fontWeight: 500 }} dir="ltr">{dateLabel}</p>
         </div>
         <p style={{ fontFamily: 'var(--demo-body-font)', color: 'var(--color-section)', fontSize: 12 }}>

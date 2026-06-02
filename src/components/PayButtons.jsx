@@ -102,7 +102,7 @@ export default function PayButtons({ ownerPhone, bitAccount, amount, onPaid }) {
             <p style={{
               fontFamily: 'var(--demo-heading-font)',
               fontSize: 48, fontWeight: 700,
-              color: 'var(--color-primary)', lineHeight: 1,
+              color: 'var(--color-primary-ink)', lineHeight: 1,
               marginBottom: 14,
               letterSpacing: '-0.01em',
             }}>

@@ -84,11 +84,11 @@ export const TemplateCard = memo(function TemplateCard({ tplKey, side, label, hi
         style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text)', backgroundColor: 'var(--color-surface)', resize: 'vertical', marginBottom: 6, minHeight: 64 }}
       />
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--color-text-muted)', marginBottom: 8, lineHeight: 1.5 }}>
-        זמין: <span dir="ltr" style={{ fontFamily: 'monospace', color: 'var(--color-primary)' }}>{hint}</span>
+        זמין: <span dir="ltr" style={{ fontFamily: 'monospace', color: 'var(--color-primary-ink)' }}>{hint}</span>
       </p>
       <div style={{ display: 'flex', gap: 6 }}>
         <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave}
-          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '7px 10px', backgroundColor: savedTick ? 'var(--color-success)' : 'var(--color-primary)', backgroundImage: savedTick ? 'none' : 'var(--demo-primary-mat-overlay, none)', border: savedTick ? 'none' : 'var(--demo-primary-mat-border, none)', borderRadius: 'var(--radius-sm)', color: 'var(--color-surface)', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'background-color 0.2s' }}
+          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '7px 10px', backgroundColor: savedTick ? 'var(--color-success)' : 'var(--color-primary)', backgroundImage: savedTick ? 'none' : 'var(--demo-primary-mat-overlay, none)', border: savedTick ? 'none' : 'var(--demo-primary-mat-border, none)', borderRadius: 'var(--radius-sm)', color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'background-color 0.2s' }}
         >
           {savedTick ? <CheckCircle size={12} /> : <Save size={12} />}
           {savedTick ? 'נשמר' : 'שמרי'}
@@ -133,13 +133,13 @@ const TelegramTemplateCard = memo(function TelegramTemplateCard({ tplKey, label,
         style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text)', backgroundColor: 'var(--color-surface)', resize: 'vertical', marginBottom: 6, minHeight: 80 }}
       />
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--color-text-muted)', marginBottom: 8, lineHeight: 1.5 }}>
-        זמין: <span dir="ltr" style={{ fontFamily: 'monospace', color: 'var(--color-primary)' }}>{hint}</span>
+        זמין: <span dir="ltr" style={{ fontFamily: 'monospace', color: 'var(--color-primary-ink)' }}>{hint}</span>
         <br />
         <span style={{ color: 'var(--color-text-hint)' }}>HTML מותר: &lt;b&gt;, &lt;i&gt;, &lt;code&gt; | שורה חדשה: \n</span>
       </p>
       <div style={{ display: 'flex', gap: 6 }}>
         <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave}
-          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '7px 10px', backgroundColor: savedTick ? 'var(--color-success)' : 'var(--color-primary)', backgroundImage: savedTick ? 'none' : 'var(--demo-primary-mat-overlay, none)', border: savedTick ? 'none' : 'var(--demo-primary-mat-border, none)', borderRadius: 'var(--radius-sm)', color: 'var(--color-surface)', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'background-color 0.2s' }}
+          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '7px 10px', backgroundColor: savedTick ? 'var(--color-success)' : 'var(--color-primary)', backgroundImage: savedTick ? 'none' : 'var(--demo-primary-mat-overlay, none)', border: savedTick ? 'none' : 'var(--demo-primary-mat-border, none)', borderRadius: 'var(--radius-sm)', color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'background-color 0.2s' }}
         >
           {savedTick ? <CheckCircle size={12} /> : <Save size={12} />}
           {savedTick ? 'נשמר' : 'שמרי'}
@@ -220,7 +220,7 @@ function PlaceholderGuide() {
             <div style={{ padding: '4px 14px 14px' }}>
               {SMS_PLACEHOLDERS.map(({ tag, desc }) => (
                 <div key={tag} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid rgba(201,155,108,0.18)' }}>
-                  <code style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--color-primary)', backgroundColor: 'var(--color-surface)', padding: '2px 7px', borderRadius: 4, border: '1px solid var(--color-border)', flexShrink: 0, minWidth: 78, textAlign: 'center' }} dir="ltr">{tag}</code>
+                  <code style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--color-primary-ink)', backgroundColor: 'var(--color-surface)', padding: '2px 7px', borderRadius: 4, border: '1px solid var(--color-border)', flexShrink: 0, minWidth: 78, textAlign: 'center' }} dir="ltr">{tag}</code>
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text)' }}>{desc}</span>
                 </div>
               ))}
@@ -269,7 +269,7 @@ function AdminWeeklyReminderCard() {
           ) : dirty ? (
             <motion.button key="btn" whileTap={{ scale: 0.97 }} onClick={() => save({})}
               initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 6 }}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 11px', borderRadius: 7, backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', border: 'var(--demo-primary-mat-border, none)', color: 'var(--color-surface)', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 11px', borderRadius: 7, backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', border: 'var(--demo-primary-mat-border, none)', color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
               שמורי 💾
             </motion.button>
           ) : null}

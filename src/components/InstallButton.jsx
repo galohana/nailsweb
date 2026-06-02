@@ -296,7 +296,7 @@ export default function InstallButton() {
                   לחצי על כפתור התפריט של הדפדפן{' '}
                   <span dir="ltr" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, verticalAlign: 'middle' }}>
                     <IconCircle><ShareMark /></IconCircle>
-                    <span style={{ color: 'var(--color-text-hint, #A89580)', fontWeight: 700 }}>/</span>
+                    <span style={{ color: 'rgba(0,0,0,0.45)', fontWeight: 700 }}>/</span>
                     <IconCircle><DotsMark /></IconCircle>
                   </span>
                   {' '}— בתחתית המסך או למעלה
@@ -379,18 +379,19 @@ function IconCircle({ children }) {
     <span style={{
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       width: 27, height: 27, borderRadius: '50%',
-      border: '1px solid rgba(var(--color-primary-rgb, 92,61,46), 0.35)',
-      backgroundColor: 'rgba(var(--color-primary-rgb, 92,61,46), 0.07)',
+      /* שחור קבוע — הרקע של חלונית ההתקנה תמיד בהיר, לכן לא תלוי ב-primary של הלקוחה */
+      border: '1px solid rgba(0,0,0,0.30)',
+      backgroundColor: 'rgba(0,0,0,0.05)',
       flexShrink: 0,
     }}>{children}</span>
   );
 }
 
-/* אייקון שיתוף (ריבוע עם חץ למעלה) — ספארי */
+/* אייקון שיתוף (ריבוע עם חץ למעלה) — ספארי. שחור קבוע (רקע חלונית בהיר תמיד) */
 function ShareMark() {
   return (
     <svg width="13" height="15" viewBox="0 0 24 28" fill="none"
-      stroke="var(--color-primary)" strokeWidth="2.2"
+      stroke="#1F1F1F" strokeWidth="2.2"
       strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>
       <path d="M6 12 V22 a2 2 0 0 0 2 2 H16 a2 2 0 0 0 2 -2 V12" />
       <path d="M12 3 V15" />
@@ -399,10 +400,10 @@ function ShareMark() {
   );
 }
 
-/* אייקון שלוש נקודות אופקיות — תפריט (כרום/דפדפנים אחרים) */
+/* אייקון שלוש נקודות אופקיות — תפריט. שחור קבוע (רקע חלונית בהיר תמיד) */
 function DotsMark() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="var(--color-primary)" style={{ display: 'block' }}>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="#1F1F1F" style={{ display: 'block' }}>
       <circle cx="5" cy="12" r="2" />
       <circle cx="12" cy="12" r="2" />
       <circle cx="19" cy="12" r="2" />

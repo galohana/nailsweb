@@ -244,7 +244,7 @@ function AptCard({ apt, isUpcoming, onCancel, cancelWindow, confirmed, onConfirm
             )}
           </div>
           <div style={{ textAlign: 'end', flexShrink: 0 }}>
-            <p style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 22, fontWeight: 700, color: 'var(--color-primary)' }}>₪{apt.price}</p>
+            <p style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 22, fontWeight: 700, color: 'var(--color-primary-ink)' }}>₪{apt.price}</p>
             <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end', marginTop: 4, flexWrap: 'wrap' }}>
               <span style={{
                 fontSize: 10, padding: '3px 10px', borderRadius: 20, fontWeight: 700,
@@ -284,7 +284,7 @@ function AptCard({ apt, isUpcoming, onCancel, cancelWindow, confirmed, onConfirm
                           height: 40, borderRadius: 'var(--demo-radius-card)',
                           border: '1.5px solid var(--color-brown-28)',
                           backgroundColor: 'var(--color-brown-04)',
-                          color: 'var(--color-primary)',
+                          color: 'var(--color-primary-ink)',
                           fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 700,
                           cursor: 'pointer', touchAction: 'manipulation',
                         }}>
@@ -317,7 +317,7 @@ function AptCard({ apt, isUpcoming, onCancel, cancelWindow, confirmed, onConfirm
                       style={{
                         height: 40, borderRadius: 'var(--demo-radius-card)',
                         border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)',
-                        color: 'var(--color-primary)', fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 500,
+                        color: 'var(--color-primary-ink)', fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 500,
                         cursor: 'pointer', touchAction: 'manipulation',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                       }}>
@@ -391,7 +391,7 @@ function AptCard({ apt, isUpcoming, onCancel, cancelWindow, confirmed, onConfirm
             </div>
             <div style={{ padding: '8px 20px 14px', borderBottom: '1px solid var(--color-border)' }}>
               <p style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 17, fontWeight: 600, color: 'var(--color-text)' }}>{apt.serviceName}</p>
-              <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 22, fontWeight: 700, color: 'var(--color-primary)', marginTop: 2 }}>₪{apt.price}</p>
+              <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 22, fontWeight: 700, color: 'var(--color-primary-ink)', marginTop: 2 }}>₪{apt.price}</p>
             </div>
             <div style={{ padding: '16px 20px 12px' }}>
               <PayButtons

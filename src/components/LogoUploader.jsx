@@ -16,7 +16,7 @@ function extOf(file) {
 
 const btnStyle = {
   flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-  gap: 6, padding: '11px', backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)',
+  gap: 6, padding: '11px', backgroundColor: 'var(--color-surface)', color: 'var(--color-primary-ink)',
   border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-body)',
   fontSize: 13, fontWeight: 500, cursor: 'pointer', touchAction: 'manipulation',
 };

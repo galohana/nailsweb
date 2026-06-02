@@ -155,7 +155,7 @@ export default function ReceiptSender() {
         <>
           {selectableApts.length > 1 && (
             <button onClick={() => setSelected(new Set(selectableApts.map(a => a.id)))}
-              style={{ width: '100%', padding: '8px', marginBottom: 10, borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)', fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              style={{ width: '100%', padding: '8px', marginBottom: 10, borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-primary-ink)', fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
               בחרי הכל ({selectableApts.length})
             </button>
           )}
@@ -226,7 +226,7 @@ export default function ReceiptSender() {
                     )}
                   </div>
 
-                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--color-primary)', flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--color-primary-ink)', flexShrink: 0 }}>
                     ₪{a.price}
                   </span>
                 </div>
@@ -253,7 +253,7 @@ export default function ReceiptSender() {
 
 const navBtn = {
   width: 36, height: 36, borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)',
-  backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)', cursor: 'pointer',
+  backgroundColor: 'var(--color-surface)', color: 'var(--color-primary-ink)', cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   touchAction: 'manipulation', flexShrink: 0,
 };

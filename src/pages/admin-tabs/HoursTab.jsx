@@ -264,7 +264,7 @@ export default function HoursTab() {
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text-muted)', marginTop: 3 }}>
                     {c.dayName} · {c.date} {c.time} · {c.serviceName}
                   </p>
-                  <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-primary)', marginTop: 3, direction: 'ltr', textAlign: 'right' }}>📞 {c.phone}</p>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-primary-ink)', marginTop: 3, direction: 'ltr', textAlign: 'right' }}>📞 {c.phone}</p>
                 </div>
               ))}
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-muted)', marginTop: 12, marginBottom: 14 }}>
@@ -477,7 +477,7 @@ function WeekCalendar() {
           {showLegend && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
               style={{ overflow: 'hidden', marginTop: 10 }}>
-              <div style={{ padding: 10, backgroundColor: 'var(--color-brown-07)', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-primary)', lineHeight: 1.8 }}>
+              <div style={{ padding: 10, backgroundColor: 'var(--color-brown-07)', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-primary-ink)', lineHeight: 1.8 }}>
                 <p><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', backgroundColor: 'var(--color-success)', marginInlineEnd: 6 }} />ירוק ✓ — שולם ואושר</p>
                 <p><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', backgroundColor: '#E69E2C', marginInlineEnd: 6 }} />כתום ⏳ — ממתין לאישור / מזומן</p>
                 <p><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', backgroundColor: '#7C5CBF', marginInlineEnd: 6 }} />סגול — אישרה הגעה</p>
@@ -555,7 +555,7 @@ function WeekCalendar() {
                         padding: '3px 8px', borderRadius: 'var(--radius-sm)',
                         border: '1px solid var(--color-border)',
                         backgroundColor: 'var(--color-surface)',
-                        color: 'var(--color-primary)',
+                        color: 'var(--color-primary-ink)',
                         fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 600,
                         cursor: 'pointer', touchAction: 'manipulation',
                       }}>
@@ -617,7 +617,7 @@ function WeekCalendar() {
                             <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.serviceName}</p>
                             <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--color-text-muted)' }}>{a.userName}</p>
                           </div>
-                          <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: 'var(--color-primary)' }}>₪{a.price}</span>
+                          <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: 'var(--color-primary-ink)' }}>₪{a.price}</span>
                           {/* Cancel button — only future appointments */}
                           {isFuture && (
                             <motion.button
@@ -690,7 +690,7 @@ function WeekCalendar() {
                         padding: '6px 12px', borderRadius: 'var(--radius-md)',
                         border: '1px solid var(--color-border)',
                         backgroundColor: 'var(--color-surface)',
-                        color: 'var(--color-primary)',
+                        color: 'var(--color-primary-ink)',
                         fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600,
                         cursor: 'pointer', touchAction: 'manipulation',
                         display: 'flex', alignItems: 'center', gap: 4,
@@ -704,7 +704,7 @@ function WeekCalendar() {
               {/* Close */}
               <div style={{ padding: '4px 20px 0' }}>
                 <motion.button whileTap={{ scale: 0.97 }} onClick={() => setCalendarModal(null)}
-                  style={{ width: '100%', height: 40, borderRadius: 'var(--radius-md)', border: 'none', backgroundColor: 'var(--color-brown-08)', color: 'var(--color-primary)', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                  style={{ width: '100%', height: 40, borderRadius: 'var(--radius-md)', border: 'none', backgroundColor: 'var(--color-brown-08)', color: 'var(--color-primary-ink)', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                   סגירה
                 </motion.button>
               </div>
@@ -844,7 +844,7 @@ function WeekCalendar() {
                   השינוי נשמר מיד. תורים מסומנים לא ייחשבו בהכנסות, ספירה, ולקוחות חוזרות בדוחות.
                 </p>
                 <motion.button whileTap={{ scale: 0.97 }} onClick={() => setExcludeModal(null)}
-                  style={{ width: '100%', height: 40, borderRadius: 'var(--radius-md)', border: 'none', backgroundColor: 'var(--color-brown-08)', color: 'var(--color-primary)', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                  style={{ width: '100%', height: 40, borderRadius: 'var(--radius-md)', border: 'none', backgroundColor: 'var(--color-brown-08)', color: 'var(--color-primary-ink)', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                   סגירה
                 </motion.button>
               </div>
@@ -859,7 +859,7 @@ function WeekCalendar() {
 
 const navBtn = {
   width: 40, height: 40, borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)',
-  backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)', cursor: 'pointer',
+  backgroundColor: 'var(--color-surface)', color: 'var(--color-primary-ink)', cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   touchAction: 'manipulation', flexShrink: 0,
 };

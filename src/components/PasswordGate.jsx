@@ -74,7 +74,7 @@ export default function PasswordGate({ children }) {
           whileTap={loading ? {} : { scale: 0.97 }}
           onClick={tryUnlock}
           disabled={loading}
-          style={{ width: '100%', padding: '14px', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', color: 'var(--color-surface)', border: 'var(--demo-primary-mat-border, none)', borderRadius: '12px', fontFamily: 'var(--demo-body-font)', fontSize: '15px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.5 : 1 }}
+          style={{ width: '100%', padding: '14px', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', color: 'var(--color-on-primary)', border: 'var(--demo-primary-mat-border, none)', borderRadius: '12px', fontFamily: 'var(--demo-body-font)', fontSize: '15px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.5 : 1 }}
         >
           כניסה
         </motion.button>

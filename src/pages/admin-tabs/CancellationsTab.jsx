@@ -88,7 +88,7 @@ export default function CancellationsTab() {
             ) : termsDirty ? (
               <motion.button key="btn" whileTap={{ scale: 0.97 }} onClick={saveTerms}
                 initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 6 }}
-                style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 11px', borderRadius: 'var(--radius-sm)', border: 'none', backgroundColor: 'var(--color-primary)', color: 'var(--color-surface)', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 11px', borderRadius: 'var(--radius-sm)', border: 'none', backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
                 שמורי 💾
               </motion.button>
             ) : null}

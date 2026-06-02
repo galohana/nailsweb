@@ -25,7 +25,7 @@ class TabBoundary extends Component {
           <pre style={{ fontFamily: 'var(--demo-body-font)', fontSize: 11, color: 'var(--color-section)', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
             {String(this.state.err?.message || this.state.err)}
           </pre>
-          <button onClick={() => this.setState({ err: null })} style={{ marginTop: 10, padding: '6px 12px', backgroundColor: 'var(--color-primary)', color: 'var(--color-surface)', border: 'none', borderRadius: 8, fontFamily: 'var(--demo-body-font)', fontSize: 12, cursor: 'pointer' }}>
+          <button onClick={() => this.setState({ err: null })} style={{ marginTop: 10, padding: '6px 12px', backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)', border: 'none', borderRadius: 8, fontFamily: 'var(--demo-body-font)', fontSize: 12, cursor: 'pointer' }}>
             נסי שוב
           </button>
         </div>
