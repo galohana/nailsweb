@@ -196,10 +196,11 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: 0.7, ease: 'easeOut' }}
-            style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 28, fontWeight: 400, color: 'var(--color-surface)', textAlign: 'center', letterSpacing: '0.06em', margin: '0 0 20px' }}
+            style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 28, fontWeight: 400, color: 'var(--color-on-section)', textAlign: 'center', letterSpacing: '0.06em', margin: '0 0 6px' }}
           >
             העבודות שלי
           </motion.h2>
+          <div className="rise-divider" />
           <style>{`
             .gavot-filmstrip::-webkit-scrollbar{display:none}
             .gavot-filmstrip img,.gavot-filmstrip video{ transition: transform .35s ease, box-shadow .35s ease; }
@@ -281,9 +282,21 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
         {/* About flip card — outer wrapper carries .demo-tinted (color + material).
             Inner motion.div has whileInView, which would create a composite layer
             that breaks ::after mix-blend-mode if placed on the tinted element. */}
+        {/* ── About section heading + divider — אחיד עם שאר הכותרות ── */}
+        <motion.h2
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+          style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 26, fontWeight: 400, color: 'var(--color-on-section)', textAlign: 'center', letterSpacing: '0.05em', margin: '64px 0 6px' }}
+        >
+          קצת עליי
+        </motion.h2>
+        <div className="rise-divider" />
+
         <div
           className="demo-tinted"
-          style={{ margin: '64px 16px 0', borderRadius: 20, padding: 24, boxShadow: 'var(--demo-shadow-deep)' }}
+          style={{ margin: '0 16px', borderRadius: 20, padding: 24, boxShadow: 'var(--demo-shadow-deep)' }}
         >
         <motion.div
           initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
@@ -347,10 +360,11 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: 0.7, ease: 'easeOut' }}
-            style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 26, fontWeight: 400, color: 'var(--color-surface)', textAlign: 'center', letterSpacing: '0.05em', marginBottom: 16 }}
+            style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 26, fontWeight: 400, color: 'var(--color-on-section)', textAlign: 'center', letterSpacing: '0.05em', marginBottom: 6 }}
           >
             ביקורות לקוחות
           </motion.h2>
+          <div className="rise-divider" />
 
           {reviews.length > 0 ? (
             <div className="demo-tinted" style={{ borderRadius: 20, padding: '4px 12px 8px' }}>

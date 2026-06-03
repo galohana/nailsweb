@@ -89,32 +89,47 @@ function upsertMeta(name, content) {
 let _iconCache = null;   // { icon192, icon512, primary, bg } — נבנה פעם אחת
 let _lastKey   = '';     // הזהות האחרונה שהוחלה (תלוית-דף)
 
+/* iOS (אייפון/אייפד) — Safari לא תומך ב-manifest מסוג data: URL, ולכן נופל
+   ל-/manifest.json הסטטי (start_url '/') → גם האדמין נפתח לראשי. לכן ב-iOS
+   מצביעים ל-קובץ manifest אמיתי נפרד (start_url נכון). */
+function isIOS() {
+  const ua = navigator.userAgent || '';
+  return /iPhone|iPad|iPod/.test(ua) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
 /* ── הפונקציה הראשית ── */
 export async function applyDynamicPWA({ clinicName, isAdmin = false, colors = {}, headingFont, pwaLogo } = {}) {
   if (typeof document === 'undefined') return;
   const name = (clinicName || '').trim() || 'הסטודיו';
   // שם התצוגה תלוי-דף: באדמין → "שם הקליניקה admin"
   const displayName = isAdmin ? `${name} admin` : name;
+  const ios = isIOS();
 
   // ── כותרת + manifest מוגדרים מיד (סינכרוני) — לפני כל await ──
   // iOS קורא את apple-mobile-web-app-title וה-manifest כשהמשתמש לוחץ "הוסף למסך הבית".
-  // אם נחכה לבניית האייקון (async), iOS עלול לקרוא את הnmanifest הישן עם start_url שגוי.
   if (displayName !== _lastKey) {
     _lastKey = displayName;
     document.title = displayName;
     upsertMeta('apple-mobile-web-app-title', displayName);
-    // manifest מינימלי מיידי עם id/start_url נכונים (יתעדכן עם אייקונים מטה)
-    upsertLink('manifest', 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify({
-      id: isAdmin ? '/manage-x7k2' : '/',
-      lang: 'he', dir: 'rtl',
-      name: displayName,
-      short_name: displayName.length <= 12 ? displayName : initials(displayName).toUpperCase(),
-      description: `קביעת תורים — ${name}`,
-      start_url: isAdmin ? '/manage-x7k2' : '/',
-      scope: '/',
-      display: 'standalone',
-      orientation: 'portrait',
-    })));
+    if (ios) {
+      // קובץ manifest אמיתי לפי הדף — iOS מכבד את ה-start_url שלו.
+      // השם/אייקון ב-iOS ממילא מגיעים מ-apple-mobile-web-app-title + apple-touch-icon.
+      upsertLink('manifest', isAdmin ? '/manifest-admin.json' : '/manifest.json');
+    } else {
+      // אנדרואיד/דסקטופ — data URL דינמי מלא (שם + אייקון + start_url פר-לקוחה)
+      upsertLink('manifest', 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify({
+        id: isAdmin ? '/manage-x7k2' : '/',
+        lang: 'he', dir: 'rtl',
+        name: displayName,
+        short_name: displayName.length <= 12 ? displayName : initials(displayName).toUpperCase(),
+        description: `קביעת תורים — ${name}`,
+        start_url: isAdmin ? '/manage-x7k2' : '/',
+        scope: '/',
+        display: 'standalone',
+        orientation: 'portrait',
+      })));
+    }
   }
 
   // ── האייקון + theme-color נבנים פעם אחת (לא תלויים בדף) ──
@@ -141,8 +156,10 @@ export async function applyDynamicPWA({ clinicName, isAdmin = false, colors = {}
     upsertMeta('theme-color', primary);
   }
 
-  // ── manifest מתעדכן עכשיו עם אייקונים מלאים (אם הזהות השתנתה) ──
-  if (!_iconCache) return;   // אייקון עדיין בבנייה — manifest המינימלי כבר הוגדר למעלה
+  // ── manifest מתעדכן עכשיו עם אייקונים מלאים (אנדרואיד/דסקטופ בלבד) ──
+  // ב-iOS משאירים את קובץ ה-manifest האמיתי (אחרת data URL ישבור את start_url).
+  if (ios) return;
+  if (!_iconCache) return;
   const { icon192, icon512, primary, bg } = _iconCache;
   const manifest = {
     // id ייחודי לכל מצב → iOS/Android רואים את האדמין ואת הראשי כשתי אפליקציות נפרדות,

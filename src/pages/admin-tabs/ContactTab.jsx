@@ -30,14 +30,14 @@ const LOGOS = [
   { key: 'adminLogo', label: 'לוגו אדמין למסך הבית', hint: 'האייקון כשמוסיפים את אתר הניהול למסך הבית, ומוצג גם בראש פאנל הניהול' },
 ];
 
-/* התנהגות קרוסלה סטנדרטית (כמו iOS / Instagram):
-   החלקה שמאלה = הבא, ימינה = הקודם.
-   הפריט הבא נכנס מימין (x>0→+60) ויוצא שמאלה (x<0→-60).
-   נקודת הניווט (LTR) נעה ימינה כשהאינדקס עולה — כיוון אחיד עם UX סטנדרטי. */
+/* התנהגות קרוסלה RTL (מימין לשמאל — כמו דפדוף בעברית):
+   החלקה ימינה = הבא, שמאלה = הקודם.
+   הפריט הבא נכנס משמאל (x<0→-60) ונע ימינה למרכז, הישן יוצא ימינה (x>0→+60).
+   נקודות הניווט ב-RTL → נעות שמאלה כשהאינדקס עולה — אחיד עם כיוון התוכן. */
 const logoSlide = {
-  enter:  (d) => ({ x: d > 0 ? 60 : -60, opacity: 0 }),
+  enter:  (d) => ({ x: d > 0 ? -60 : 60, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit:   (d) => ({ x: d > 0 ? -60 : 60, opacity: 0 }),
+  exit:   (d) => ({ x: d > 0 ? 60 : -60, opacity: 0 }),
 };
 const LOGO_SPRING = { type: 'spring', stiffness: 440, damping: 36, mass: 0.8 };
 
@@ -218,9 +218,9 @@ export default function ContactTab() {
               transition={LOGO_SPRING}
               drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.14}
               onDragEnd={(e, i) => {
-                // סטנדרט: החלקה שמאלה → הבא (אינדקס+ → נקודה ימינה), ימינה → הקודם
-                if (i.offset.x < -45 || i.velocity.x < -300) goLogo(1);
-                else if (i.offset.x > 45 || i.velocity.x > 300) goLogo(-1);
+                // RTL: החלקה ימינה → הבא, שמאלה → הקודם
+                if (i.offset.x > 45 || i.velocity.x > 300) goLogo(1);
+                else if (i.offset.x < -45 || i.velocity.x < -300) goLogo(-1);
               }}
             >
               <LogoUploader
@@ -232,7 +232,7 @@ export default function ContactTab() {
         </div>
 
         {/* נקודות ניווט */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16, direction: 'ltr' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16, direction: 'rtl' }}>
           {LOGOS.map((l, i) => (
             <button
               key={l.key}
