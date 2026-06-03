@@ -204,7 +204,7 @@ export default function AdminPanel() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-bg)', backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat', direction: 'rtl', paddingBottom: '40px' }}>
-      <div style={{ padding: '24px 20px 20px' }}>
+      <div style={{ padding: 'calc(24px + env(safe-area-inset-top)) 20px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {adminLogo && (

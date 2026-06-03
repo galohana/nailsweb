@@ -24,7 +24,7 @@ export default function BubbleMenu({ onNavigate, showStore = false, user, onLogo
         onClick={() => setOpen(o => !o)}
         whileTap={{ scale: 0.92 }}
         style={{
-          position: 'fixed', top: 8, right: 16, zIndex: 101,
+          position: 'fixed', top: 'calc(8px + env(safe-area-inset-top))', right: 16, zIndex: 101,
           width: 44, height: 44, borderRadius: 'var(--demo-radius-card)',
           backgroundColor: 'rgba(253,250,247,0.15)',
           backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
@@ -63,7 +63,7 @@ export default function BubbleMenu({ onNavigate, showStore = false, user, onLogo
               exit={{ opacity: 0, scale: 0.5, x: 20, y: -20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               style={{
-                position: 'fixed', top: 60, right: 16,
+                position: 'fixed', top: 'calc(60px + env(safe-area-inset-top))', right: 16,
                 background: 'rgba(253,250,247,0.75)',
                 backdropFilter: 'blur(24px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(24px) saturate(180%)',

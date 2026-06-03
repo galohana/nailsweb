@@ -21,6 +21,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 const LS_DISMISSED = 'rise_pwa_dismissed';
 const LS_INSTALLED = 'rise_pwa_installed';
+const LS_AUTOSHOWN = 'rise_pwa_autoshown';   // per-session — popup אוטומטי פעם אחת בכל ביקור
 
 function isStandalone() {
   return (
@@ -125,11 +126,15 @@ export default function InstallButton() {
     window.addEventListener('beforeinstallprompt', onBIP);
     window.addEventListener('appinstalled', onInstalled);
 
-    // popup אוטומטי אחרי 3 שניות — רק אם לא נסגר בעבר וקיים מסלול התקנה
+    // popup אוטומטי — נפתח לבד פעם אחת בכל כניסה מהדפדפן (session), גם באדמין וגם בראשי,
+    // כדי שמשתמשים יבינו שאפשר להתקין. לא נחסם ע"י dismiss קבוע — רק פעם אחת per-session.
     const timer = setTimeout(() => {
-      if (localStorage.getItem(LS_DISMISSED) === '1') return;
-      if (resolvedMode === 'android' || resolvedMode === 'ios') setPopup(true);
-    }, 3000);
+      if (sessionStorage.getItem(LS_AUTOSHOWN) === '1') return;
+      if (resolvedMode === 'android' || resolvedMode === 'ios') {
+        setPopup(true);
+        try { sessionStorage.setItem(LS_AUTOSHOWN, '1'); } catch {}
+      }
+    }, 2500);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', onBIP);

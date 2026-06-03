@@ -189,7 +189,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
           exit={{ y: -60, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 24 }}
           style={{
-            position: 'fixed', top: 60, left: 0, right: 0, zIndex: 200,
+            position: 'fixed', top: 'calc(60px + env(safe-area-inset-top))', left: 0, right: 0, zIndex: 200,
             maxWidth: 375, margin: '0 auto',
             backgroundColor: BROWN, color: WHITE,
             padding: '10px 40px 10px 14px',
@@ -210,7 +210,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
       )}
       {/* ── Nav bar — business name only ── */}
       <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, height: 60, zIndex: 100,
+        position: 'fixed', top: 0, left: 0, right: 0, height: 'calc(60px + env(safe-area-inset-top))', paddingTop: 'env(safe-area-inset-top)', zIndex: 100,
         backgroundColor: 'var(--demo-navbar-bg, rgba(242,232,220,0.15))',
         backgroundImage: 'var(--demo-navbar-mat-overlay, none)',
         backdropFilter: 'var(--demo-navbar-blur, blur(8px))',

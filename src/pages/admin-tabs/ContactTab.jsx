@@ -30,11 +30,14 @@ const LOGOS = [
   { key: 'adminLogo', label: 'לוגו אדמין למסך הבית', hint: 'האייקון כשמוסיפים את אתר הניהול למסך הבית, ומוצג גם בראש פאנל הניהול' },
 ];
 
+/* d>0 = קדימה (החלקה ימינה): הפריט החדש נכנס מצד שמאל ונע ימינה למרכז,
+   הישן יוצא ימינה — כך התוכן נע באותו כיוון של האצבע ושל נקודת-הניווט (סנכרון מלא). */
 const logoSlide = {
-  enter:  (d) => ({ x: d > 0 ? 70 : -70, opacity: 0 }),
+  enter:  (d) => ({ x: d > 0 ? -64 : 64, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit:   (d) => ({ x: d > 0 ? -70 : 70, opacity: 0 }),
+  exit:   (d) => ({ x: d > 0 ? 64 : -64, opacity: 0 }),
 };
+const LOGO_SPRING = { type: 'spring', stiffness: 520, damping: 40, mass: 0.7 };
 
 // ── Inline save button — appears in card header, only when dirty ──
 function InlineSaveBtn({ dirty, saved, onSave }) {
@@ -210,7 +213,7 @@ export default function ContactTab() {
             <motion.div
               key={LOGOS[logoIdx].key}
               custom={logoDir} variants={logoSlide} initial="enter" animate="center" exit="exit"
-              transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+              transition={LOGO_SPRING}
               drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.18}
               onDragEnd={(e, i) => {
                 // החלקה ימינה → הלוגו הבא; שמאלה → הקודם

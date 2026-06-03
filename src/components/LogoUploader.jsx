@@ -78,10 +78,10 @@ export default function LogoUploader({ currentUrl, onUploaded }) {
           <div style={{ flex: 1 }}>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 6 }}>לוגו נוכחי</p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <motion.button whileTap={{ scale: 0.97 }} type="button" onClick={() => fileRef.current?.click()} style={btnStyle} disabled={uploading}>
+              <motion.button whileTap={{ scale: 0.97 }} type="button" onPointerDown={(e) => e.stopPropagation()} onClick={() => fileRef.current?.click()} style={btnStyle} disabled={uploading}>
                 <Upload size={14} />{uploading ? 'מעלה...' : 'החלף'}
               </motion.button>
-              <motion.button whileTap={{ scale: 0.97 }} type="button" onClick={() => onUploaded?.('')} style={{ ...btnStyle, color: 'var(--color-accent)' }} disabled={uploading}>
+              <motion.button whileTap={{ scale: 0.97 }} type="button" onPointerDown={(e) => e.stopPropagation()} onClick={() => onUploaded?.('')} style={{ ...btnStyle, color: 'var(--color-accent)' }} disabled={uploading}>
                 <X size={14} />הסר
               </motion.button>
             </div>
@@ -100,7 +100,7 @@ export default function LogoUploader({ currentUrl, onUploaded }) {
             <>
               <Upload size={26} color="var(--color-text-muted)" strokeWidth={1.5} />
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-text-muted)', margin: 0 }}>PNG / JPG / SVG עד 5MB</p>
-              <motion.button whileTap={{ scale: 0.97 }} type="button" onClick={() => fileRef.current?.click()} style={{ ...btnStyle, width: '100%' }}>
+              <motion.button whileTap={{ scale: 0.97 }} type="button" onPointerDown={(e) => e.stopPropagation()} onClick={() => fileRef.current?.click()} style={{ ...btnStyle, width: '100%' }}>
                 <Upload size={14} />בחרי קובץ
               </motion.button>
             </>

@@ -129,14 +129,16 @@ export async function applyDynamicPWA({ clinicName, isAdmin = false, colors = {}
 
   const { icon192, icon512, primary, bg } = _iconCache;
   const manifest = {
-    id: '/',
+    // id ייחודי לכל מצב → iOS/Android רואים את האדמין ואת הראשי כשתי אפליקציות נפרדות,
+    // אחרת הן ממוזגות ל-start_url אחד (שתיהן נפתחו לראשי).
+    id: isAdmin ? '/manage-x7k2' : '/',
     lang: 'he',
     dir: 'rtl',
     name: displayName,
     short_name: displayName.length <= 12 ? displayName : initials(displayName).toUpperCase(),
     description: `קביעת תורים — ${name}`,
     start_url: isAdmin ? '/manage-x7k2' : '/',   // התקנה מהאדמין → נפתח לאדמין
-    scope: '/',
+    scope: '/',   // scope משותף — מאפשר ניווט פנימי באפליקציה (כולל יציאה לדף הבית)
     display: 'standalone',
     orientation: 'portrait',
     theme_color: primary,
