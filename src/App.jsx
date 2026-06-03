@@ -40,7 +40,8 @@ export default function App() {
   const [showWarning, setShowWarning] = useState('');   // אזהרת אי-הגעה — הודעה או ''
   const [blockedUser, setBlockedUser] = useState(false); // חסימה מלאה
   const [clinicName, setClinicName]   = useState('');    // שם הסטודיו (ל-PWA + כותרת)
-  const [pwaLogo, setPwaLogo]         = useState('');    // לוגו ייעודי ל-PWA (אם הועלה)
+  const [pwaLogo, setPwaLogo]         = useState('');    // לוגו ייעודי ל-PWA הראשי (אם הועלה)
+  const [adminLogo, setAdminLogo]     = useState('');    // לוגו ייעודי ל-PWA האדמין (אם הועלה)
 
   // ── בדיקת סטטוס אי-הגעות בסילנט (לא חוסמת טעינה) ───────────
   const checkNoShowStatus = (phone) => {
@@ -93,6 +94,7 @@ export default function App() {
       .then((ci) => {
         setClinicName((ci?.name || '').trim());
         setPwaLogo((ci?.pwaLogo || '').trim());
+        setAdminLogo((ci?.adminLogo || '').trim());
       })
       .catch(() => {});
   }, []);
@@ -106,8 +108,9 @@ export default function App() {
       colors: design.colors,
       headingFont: design.headingFont,
       pwaLogo,
+      adminLogo,
     });
-  }, [clinicName, page, pwaLogo]);
+  }, [clinicName, page, pwaLogo, adminLogo]);
 
   // ── Admin-only splash: shows on every entry to /manage-x7k2 ──
   // Image loads via background-image; if /splash.jpg is missing, BG color shows.

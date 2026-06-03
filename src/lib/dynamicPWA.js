@@ -86,8 +86,20 @@ function upsertMeta(name, content) {
   return el;
 }
 
-let _iconCache = null;   // { icon192, icon512, primary, bg } — נבנה פעם אחת
+// cache נפרד לכל מצב: ראשי (pwaLogo) ואדמין (adminLogo) — אחרת שניהם חולקים אייקון אחד
+let _iconCache = { main: null, admin: null };   // לכל מפתח: { icon192, icon512 }
 let _lastKey   = '';     // הזהות האחרונה שהוחלה (תלוית-דף)
+let _themeSet  = false;  // theme-color נקבע פעם אחת (לפי primary המשותף)
+
+/* בונה זוג אייקונים (192/512): לוגו שהועלה (URL) אם קיים, אחרת מונוגרמה אוטומטית */
+async function buildIconPair({ logo, primary, primary2, fg, mono, headingFont }) {
+  if (logo && /^https?:\/\//.test(logo)) return { icon192: logo, icon512: logo };
+  const [icon512, icon192] = await Promise.all([
+    makeIconDataURL(512, { primary, primary2, fg, mono, headingFont }),
+    makeIconDataURL(192, { primary, primary2, fg, mono, headingFont }),
+  ]);
+  return { icon192, icon512 };
+}
 
 /* iOS (אייפון/אייפד) — Safari לא תומך ב-manifest מסוג data: URL, ולכן נופל
    ל-/manifest.json הסטטי (start_url '/') → גם האדמין נפתח לראשי. לכן ב-iOS
@@ -99,7 +111,7 @@ function isIOS() {
 }
 
 /* ── הפונקציה הראשית ── */
-export async function applyDynamicPWA({ clinicName, isAdmin = false, colors = {}, headingFont, pwaLogo } = {}) {
+export async function applyDynamicPWA({ clinicName, isAdmin = false, colors = {}, headingFont, pwaLogo, adminLogo } = {}) {
   if (typeof document === 'undefined') return;
   const name = (clinicName || '').trim() || 'הסטודיו';
   // שם התצוגה תלוי-דף: באדמין → "שם הקליניקה admin"
@@ -117,61 +129,58 @@ export async function applyDynamicPWA({ clinicName, isAdmin = false, colors = {}
       // השם/אייקון ב-iOS ממילא מגיעים מ-apple-mobile-web-app-title + apple-touch-icon.
       upsertLink('manifest', isAdmin ? '/manifest-admin.json' : '/manifest.json');
     } else {
-      // אנדרואיד/דסקטופ — data URL דינמי מלא (שם + אייקון + start_url פר-לקוחה)
+      // אנדרואיד/דסקטופ — data URL דינמי. חובה כתובות מוחלטות: ב-data: URL כתובות
+      // יחסיות נפתרות מול ה-data URL (בסיס לא חוקי) → start_url/id נשברים. origin מתקן.
+      const origin = location.origin;
+      const path   = isAdmin ? '/manage-x7k2' : '/';
       upsertLink('manifest', 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify({
-        id: isAdmin ? '/manage-x7k2' : '/',
+        id: origin + path,
         lang: 'he', dir: 'rtl',
         name: displayName,
         short_name: displayName.length <= 12 ? displayName : initials(displayName).toUpperCase(),
         description: `קביעת תורים — ${name}`,
-        start_url: isAdmin ? '/manage-x7k2' : '/',
-        scope: '/',
+        start_url: origin + path,
+        scope: origin + path,   // scope צר לאדמין → אפליקציה נפרדת (תבנית Apple shop/forums)
         display: 'standalone',
         orientation: 'portrait',
       })));
     }
   }
 
-  // ── האייקון + theme-color נבנים פעם אחת (לא תלויים בדף) ──
-  if (!_iconCache) {
-    const primary  = colors.primary || '#5C3D2E';
-    const bg       = colors.bg || '#F2E8DC';
-    const primary2 = lighten(primary, 0.14);
-    const fg       = readableOn(primary);
-    const mono     = initials(name).toUpperCase();
+  // ── אייקון תלוי-מצב: אדמין ← adminLogo, ראשי ← pwaLogo (כל אחד fallback למונוגרמה) ──
+  const primary  = colors.primary || '#5C3D2E';
+  const bg       = colors.bg || '#F2E8DC';
+  const primary2 = lighten(primary, 0.14);
+  const fg       = readableOn(primary);
+  const mono     = initials(name).toUpperCase();
+  const modeKey  = isAdmin ? 'admin' : 'main';
 
-    // לוגו PWA שהועלה (URL) → משתמשים בו; אחרת מונוגרמה אוטומטית מצבעי העיצוב
-    let icon192, icon512;
-    if (pwaLogo && /^https?:\/\//.test(pwaLogo)) {
-      icon192 = icon512 = pwaLogo;
-    } else {
-      [icon512, icon192] = await Promise.all([
-        makeIconDataURL(512, { primary, primary2, fg, mono, headingFont }),
-        makeIconDataURL(192, { primary, primary2, fg, mono, headingFont }),
-      ]);
-    }
-    _iconCache = { icon192, icon512, primary, bg };
-    try { window.__risePwaIcon = icon192; } catch {}
-    upsertLink('apple-touch-icon', icon192);
-    upsertMeta('theme-color', primary);
+  if (!_iconCache[modeKey]) {
+    const logo = isAdmin ? (adminLogo || '') : (pwaLogo || '');
+    _iconCache[modeKey] = await buildIconPair({ logo, primary, primary2, fg, mono, headingFont });
   }
+  const { icon192, icon512 } = _iconCache[modeKey];
+  try { window.__risePwaIcon = icon192; } catch {}
+  // apple-touch-icon מתעדכן בכל מעבר דף → iOS לוקח אותו בעת "הוסף למסך הבית"
+  upsertLink('apple-touch-icon', icon192);
+  if (!_themeSet) { upsertMeta('theme-color', primary); _themeSet = true; }
 
   // ── manifest מתעדכן עכשיו עם אייקונים מלאים (אנדרואיד/דסקטופ בלבד) ──
   // ב-iOS משאירים את קובץ ה-manifest האמיתי (אחרת data URL ישבור את start_url).
   if (ios) return;
-  if (!_iconCache) return;
-  const { icon192, icon512, primary, bg } = _iconCache;
+  const origin = location.origin;
+  const path   = isAdmin ? '/manage-x7k2' : '/';
   const manifest = {
-    // id ייחודי לכל מצב → iOS/Android רואים את האדמין ואת הראשי כשתי אפליקציות נפרדות,
-    // אחרת הן ממוזגות ל-start_url אחד (שתיהן נפתחו לראשי).
-    id: isAdmin ? '/manage-x7k2' : '/',
+    // כתובות מוחלטות (origin) — חובה ב-data: URL manifest, אחרת start_url/id נשברים.
+    // id+scope נפרדים → אנדרואיד רואה את האדמין והראשי כשתי אפליקציות נפרדות.
+    id: origin + path,
     lang: 'he',
     dir: 'rtl',
     name: displayName,
     short_name: displayName.length <= 12 ? displayName : initials(displayName).toUpperCase(),
     description: `קביעת תורים — ${name}`,
-    start_url: isAdmin ? '/manage-x7k2' : '/',   // התקנה מהאדמין → נפתח לאדמין
-    scope: '/',   // scope משותף — מאפשר ניווט פנימי באפליקציה (כולל יציאה לדף הבית)
+    start_url: origin + path,
+    scope: origin + path,   // scope צר לאדמין → אפליקציה נפרדת (תבנית Apple shop/forums)
     display: 'standalone',
     orientation: 'portrait',
     theme_color: primary,

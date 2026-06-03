@@ -6,7 +6,7 @@
   "short_name": "סטודיו admin",
   "description": "קביעת תורים לסטודיו — מהיר, אישי, מכל מקום.",
   "start_url": "/manage-x7k2",
-  "scope": "/",
+  "scope": "/manage-x7k2",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#ffeae8",
