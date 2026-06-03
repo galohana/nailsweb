@@ -7,16 +7,15 @@
     <title>Loading...</title>
 
     <!-- ── PWA — הוספה למסך הבית ── -->
-    <link rel="manifest" href="/manifest.json" id="rise-manifest" />
+    <!-- PWA manifest — link ללא href בכוונה! preload-scanner של Safari מושך href סטטי מיד
+         לפני שהסקריפט מחליף → שתי האפליקציות נפתחות לראשי. הסקריפט קובע href לפי הנתיב. -->
+    <link rel="manifest" id="rise-manifest" />
     <script>
-      /* CRITICAL — iOS קורא את ה-manifest בעת "הוסף למסך הבית" לפני ש-React רץ.
-         על נתיב האדמין מחליפים סינכרונית ל-manifest-admin.json (start_url /manage-x7k2). */
       (function () {
         try {
-          if (location.pathname.indexOf('/manage-x7k2') === 0) {
-            var m = document.getElementById('rise-manifest');
-            if (m) m.setAttribute('href', '/manifest-admin.json');
-          }
+          var m = document.getElementById('rise-manifest');
+          var isAdmin = location.pathname.indexOf('/manage-x7k2') === 0;
+          if (m) m.setAttribute('href', isAdmin ? '/manifest-admin.json' : '/manifest.json');
         } catch (e) {}
       })();
     </script>
