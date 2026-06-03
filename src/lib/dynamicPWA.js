@@ -96,6 +96,27 @@ export async function applyDynamicPWA({ clinicName, isAdmin = false, colors = {}
   // שם התצוגה תלוי-דף: באדמין → "שם הקליניקה admin"
   const displayName = isAdmin ? `${name} admin` : name;
 
+  // ── כותרת + manifest מוגדרים מיד (סינכרוני) — לפני כל await ──
+  // iOS קורא את apple-mobile-web-app-title וה-manifest כשהמשתמש לוחץ "הוסף למסך הבית".
+  // אם נחכה לבניית האייקון (async), iOS עלול לקרוא את הnmanifest הישן עם start_url שגוי.
+  if (displayName !== _lastKey) {
+    _lastKey = displayName;
+    document.title = displayName;
+    upsertMeta('apple-mobile-web-app-title', displayName);
+    // manifest מינימלי מיידי עם id/start_url נכונים (יתעדכן עם אייקונים מטה)
+    upsertLink('manifest', 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify({
+      id: isAdmin ? '/manage-x7k2' : '/',
+      lang: 'he', dir: 'rtl',
+      name: displayName,
+      short_name: displayName.length <= 12 ? displayName : initials(displayName).toUpperCase(),
+      description: `קביעת תורים — ${name}`,
+      start_url: isAdmin ? '/manage-x7k2' : '/',
+      scope: '/',
+      display: 'standalone',
+      orientation: 'portrait',
+    })));
+  }
+
   // ── האייקון + theme-color נבנים פעם אחת (לא תלויים בדף) ──
   if (!_iconCache) {
     const primary  = colors.primary || '#5C3D2E';
@@ -120,13 +141,8 @@ export async function applyDynamicPWA({ clinicName, isAdmin = false, colors = {}
     upsertMeta('theme-color', primary);
   }
 
-  // ── הזהות (שם טאב + שם PWA + manifest) מתעדכנת בכל מעבר דף ──
-  if (displayName === _lastKey) return;
-  _lastKey = displayName;
-
-  document.title = displayName;
-  upsertMeta('apple-mobile-web-app-title', displayName);   // השם מתחת לאייקון ב-iOS
-
+  // ── manifest מתעדכן עכשיו עם אייקונים מלאים (אם הזהות השתנתה) ──
+  if (!_iconCache) return;   // אייקון עדיין בבנייה — manifest המינימלי כבר הוגדר למעלה
   const { icon192, icon512, primary, bg } = _iconCache;
   const manifest = {
     // id ייחודי לכל מצב → iOS/Android רואים את האדמין ואת הראשי כשתי אפליקציות נפרדות,

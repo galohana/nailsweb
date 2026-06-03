@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, X, CheckCircle, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -18,14 +18,37 @@ const btnStyle = {
   flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
   gap: 6, padding: '11px', backgroundColor: 'var(--color-surface)', color: 'var(--color-primary-ink)',
   border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-body)',
-  fontSize: 13, fontWeight: 500, cursor: 'pointer', touchAction: 'manipulation',
+  fontSize: 13, fontWeight: 500, cursor: 'pointer', touchAction: 'manipulation', position: 'relative',
 };
+
+/* ── FileButton — כפתור עם input מיוצב מעליו לפתיחת בורר הקבצים ──
+   מונע את בעיית ה-"user gesture" (הקרוסלה חוטפת אירועי pointer מ-framer-motion).
+   הinput מכסה את הכפתור ב-opacity:0 → הקשה ישירה על הinput = "trusted" event. */
+function FileButton({ onFile, children, style, disabled }) {
+  const id = useRef(`fu-${Math.random().toString(36).slice(2)}`);
+  return (
+    <div style={{ ...style, position: 'relative', overflow: 'hidden' }}>
+      {children}
+      <input
+        id={id.current}
+        type="file"
+        accept="image/*"
+        disabled={disabled}
+        onChange={onFile}
+        onPointerDown={(e) => e.stopPropagation()}
+        style={{
+          position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer',
+          fontSize: 0, width: '100%', height: '100%',
+        }}
+      />
+    </div>
+  );
+}
 
 export default function LogoUploader({ currentUrl, onUploaded }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError]         = useState('');
   const [success, setSuccess]     = useState(false);
-  const fileRef = useRef(null);
 
   const handleFile = async (e) => {
     setError('');
@@ -78,10 +101,13 @@ export default function LogoUploader({ currentUrl, onUploaded }) {
           <div style={{ flex: 1 }}>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 6 }}>לוגו נוכחי</p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <motion.button whileTap={{ scale: 0.97 }} type="button" onPointerDown={(e) => e.stopPropagation()} onClick={() => fileRef.current?.click()} style={btnStyle} disabled={uploading}>
+              <FileButton onFile={handleFile} style={btnStyle} disabled={uploading}>
                 <Upload size={14} />{uploading ? 'מעלה...' : 'החלף'}
-              </motion.button>
-              <motion.button whileTap={{ scale: 0.97 }} type="button" onPointerDown={(e) => e.stopPropagation()} onClick={() => onUploaded?.('')} style={{ ...btnStyle, color: 'var(--color-accent)' }} disabled={uploading}>
+              </FileButton>
+              <motion.button whileTap={{ scale: 0.97 }} type="button"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() => onUploaded?.('')}
+                style={{ ...btnStyle, color: 'var(--color-accent)' }} disabled={uploading}>
                 <X size={14} />הסר
               </motion.button>
             </div>
@@ -100,21 +126,15 @@ export default function LogoUploader({ currentUrl, onUploaded }) {
             <>
               <Upload size={26} color="var(--color-text-muted)" strokeWidth={1.5} />
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-text-muted)', margin: 0 }}>PNG / JPG / SVG עד 5MB</p>
-              <motion.button whileTap={{ scale: 0.97 }} type="button" onPointerDown={(e) => e.stopPropagation()} onClick={() => fileRef.current?.click()} style={{ ...btnStyle, width: '100%' }}>
+              <FileButton onFile={handleFile} style={{ ...btnStyle, width: '100%' }} disabled={uploading}>
                 <Upload size={14} />בחרי קובץ
-              </motion.button>
+              </FileButton>
             </>
           )}
         </div>
       )}
 
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFile}
-        style={{ display: 'none' }}
-      />
+      {/* אין יותר input נסתר — FileButton מטפל ישירות */}
 
       <AnimatePresence>
         {success && (

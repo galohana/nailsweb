@@ -30,14 +30,16 @@ const LOGOS = [
   { key: 'adminLogo', label: 'לוגו אדמין למסך הבית', hint: 'האייקון כשמוסיפים את אתר הניהול למסך הבית, ומוצג גם בראש פאנל הניהול' },
 ];
 
-/* d>0 = קדימה (החלקה ימינה): הפריט החדש נכנס מצד שמאל ונע ימינה למרכז,
-   הישן יוצא ימינה — כך התוכן נע באותו כיוון של האצבע ושל נקודת-הניווט (סנכרון מלא). */
+/* התנהגות קרוסלה סטנדרטית (כמו iOS / Instagram):
+   החלקה שמאלה = הבא, ימינה = הקודם.
+   הפריט הבא נכנס מימין (x>0→+60) ויוצא שמאלה (x<0→-60).
+   נקודת הניווט (LTR) נעה ימינה כשהאינדקס עולה — כיוון אחיד עם UX סטנדרטי. */
 const logoSlide = {
-  enter:  (d) => ({ x: d > 0 ? -64 : 64, opacity: 0 }),
+  enter:  (d) => ({ x: d > 0 ? 60 : -60, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit:   (d) => ({ x: d > 0 ? 64 : -64, opacity: 0 }),
+  exit:   (d) => ({ x: d > 0 ? -60 : 60, opacity: 0 }),
 };
-const LOGO_SPRING = { type: 'spring', stiffness: 520, damping: 40, mass: 0.7 };
+const LOGO_SPRING = { type: 'spring', stiffness: 440, damping: 36, mass: 0.8 };
 
 // ── Inline save button — appears in card header, only when dirty ──
 function InlineSaveBtn({ dirty, saved, onSave }) {
@@ -214,11 +216,11 @@ export default function ContactTab() {
               key={LOGOS[logoIdx].key}
               custom={logoDir} variants={logoSlide} initial="enter" animate="center" exit="exit"
               transition={LOGO_SPRING}
-              drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.18}
+              drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.14}
               onDragEnd={(e, i) => {
-                // החלקה ימינה → הלוגו הבא; שמאלה → הקודם
-                if (i.offset.x > 50 || i.velocity.x > 350) goLogo(1);
-                else if (i.offset.x < -50 || i.velocity.x < -350) goLogo(-1);
+                // סטנדרט: החלקה שמאלה → הבא (אינדקס+ → נקודה ימינה), ימינה → הקודם
+                if (i.offset.x < -45 || i.velocity.x < -300) goLogo(1);
+                else if (i.offset.x > 45 || i.velocity.x > 300) goLogo(-1);
               }}
             >
               <LogoUploader
