@@ -111,40 +111,22 @@ function isIOS() {
 }
 
 /* ── הפונקציה הראשית ── */
-export async function applyDynamicPWA({ clinicName, isAdmin = false, colors = {}, headingFont, pwaLogo, adminLogo } = {}) {
+export async function applyDynamicPWA({ clinicName, isAdmin = false, colors = {}, headingFont, pwaLogo, adminLogo, pwaAppName } = {}) {
   if (typeof document === 'undefined') return;
-  const name = (clinicName || '').trim() || 'הסטודיו';
-  // שם התצוגה תלוי-דף: באדמין → "שם הקליניקה admin"
-  const displayName = isAdmin ? `${name} admin` : name;
+  const name = (clinicName || '').trim() || 'הסטודיו';          // שם העסק (לתיאור/מונוגרמה)
+  // שם האפליקציה ל-PWA — ניתן לעריכה מהאדמין; ריק → שם העסק כברירת מחדל
+  const appName = (pwaAppName || '').trim() || name;
+  // שם התצוגה תלוי-דף: באדמין → "שם האפליקציה admin"
+  const displayName = isAdmin ? `${appName} admin` : appName;
   const ios = isIOS();
 
-  // ── כותרת + manifest מוגדרים מיד (סינכרוני) — לפני כל await ──
-  // iOS קורא את apple-mobile-web-app-title וה-manifest כשהמשתמש לוחץ "הוסף למסך הבית".
+  // ── כותרת + מטא של iOS (סינכרוני) ──
+  // ה-manifest עצמו מוגש דינמית ע"י Edge Function (/api/manifest, /api/manifest-admin)
+  // ומקושר ב-index.html — אין צורך לדרוס אותו כאן. כאן רק title + apple metas.
   if (displayName !== _lastKey) {
     _lastKey = displayName;
     document.title = displayName;
     upsertMeta('apple-mobile-web-app-title', displayName);
-    if (ios) {
-      // קובץ manifest אמיתי לפי הדף — iOS מכבד את ה-start_url שלו.
-      // השם/אייקון ב-iOS ממילא מגיעים מ-apple-mobile-web-app-title + apple-touch-icon.
-      upsertLink('manifest', isAdmin ? '/manifest-admin.json' : '/manifest.json');
-    } else {
-      // אנדרואיד/דסקטופ — data URL דינמי. חובה כתובות מוחלטות: ב-data: URL כתובות
-      // יחסיות נפתרות מול ה-data URL (בסיס לא חוקי) → start_url/id נשברים. origin מתקן.
-      const origin = location.origin;
-      const path   = isAdmin ? '/manage-x7k2' : '/';
-      upsertLink('manifest', 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify({
-        id: origin + path,
-        lang: 'he', dir: 'rtl',
-        name: displayName,
-        short_name: displayName.length <= 12 ? displayName : initials(displayName).toUpperCase(),
-        description: `קביעת תורים — ${name}`,
-        start_url: origin + path,
-        scope: origin + path,   // scope צר לאדמין → אפליקציה נפרדת (תבנית Apple shop/forums)
-        display: 'standalone',
-        orientation: 'portrait',
-      })));
-    }
   }
 
   // ── אייקון תלוי-מצב: אדמין ← adminLogo, ראשי ← pwaLogo (כל אחד fallback למונוגרמה) ──
@@ -159,37 +141,10 @@ export async function applyDynamicPWA({ clinicName, isAdmin = false, colors = {}
     const logo = isAdmin ? (adminLogo || '') : (pwaLogo || '');
     _iconCache[modeKey] = await buildIconPair({ logo, primary, primary2, fg, mono, headingFont });
   }
-  const { icon192, icon512 } = _iconCache[modeKey];
+  const { icon192 } = _iconCache[modeKey];
   try { window.__risePwaIcon = icon192; } catch {}
   // apple-touch-icon מתעדכן בכל מעבר דף → iOS לוקח אותו בעת "הוסף למסך הבית"
+  // (ה-manifest מגיע מ-Edge Function; כאן רק האייקון הייעודי ל-iOS + theme-color)
   upsertLink('apple-touch-icon', icon192);
   if (!_themeSet) { upsertMeta('theme-color', primary); _themeSet = true; }
-
-  // ── manifest מתעדכן עכשיו עם אייקונים מלאים (אנדרואיד/דסקטופ בלבד) ──
-  // ב-iOS משאירים את קובץ ה-manifest האמיתי (אחרת data URL ישבור את start_url).
-  if (ios) return;
-  const origin = location.origin;
-  const path   = isAdmin ? '/manage-x7k2' : '/';
-  const manifest = {
-    // כתובות מוחלטות (origin) — חובה ב-data: URL manifest, אחרת start_url/id נשברים.
-    // id+scope נפרדים → אנדרואיד רואה את האדמין והראשי כשתי אפליקציות נפרדות.
-    id: origin + path,
-    lang: 'he',
-    dir: 'rtl',
-    name: displayName,
-    short_name: displayName.length <= 12 ? displayName : initials(displayName).toUpperCase(),
-    description: `קביעת תורים — ${name}`,
-    start_url: origin + path,
-    scope: origin + path,   // scope צר לאדמין → אפליקציה נפרדת (תבנית Apple shop/forums)
-    display: 'standalone',
-    orientation: 'portrait',
-    theme_color: primary,
-    background_color: bg,
-    icons: [
-      { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any' },
-      { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-    ],
-  };
-  upsertLink('manifest', 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(manifest)));
 }

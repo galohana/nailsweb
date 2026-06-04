@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { db } from '../utils/db';
+
+/* טקסט ברירת מחדל לחלונית ההורדה (ללקוחות, באתר הראשי) — ניתן לעריכה מהאדמין */
+export const DEFAULT_PWA_INSTALL_TEXT = 'הורידי את האתר למסך הבית לחוויה מלאה וקביעת תורים מהירה 📲';
 
 /* ═══════════════════════════════════════════════════════════════════
    InstallButton — PWA "הוספה למסך הבית" לתבנית RISE.
@@ -94,47 +98,49 @@ export default function InstallButton() {
   const [mode, setMode]         = useState('hidden');   // 'hidden' | 'android' | 'ios'
   const [popupOpen, setPopup]   = useState(false);      // כרטיס/overlay אוטומטי
   const [overlayOpen, setOverlay] = useState(false);    // overlay של iOS מתוך הכפתור הצף
+  const [customText, setCustomText] = useState('');     // טקסט עריך מהאדמין (ללקוחות)
   const deferred = useRef(null);                        // beforeinstallprompt event
 
-  // ── זיהוי מצב בעת טעינה ──
+  // ── טעינת טקסט חלונית ההורדה מ-Supabase (ניתן לעריכה מהאדמין) ──
+  useEffect(() => {
+    db.settings.get('pwaInstallText', '')
+      .then((t) => setCustomText((typeof t === 'string' ? t : '').trim()))
+      .catch(() => {});
+  }, []);
+
+  // ── זיהוי מצב + פתיחה אוטומטית ──
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (isStandalone() || localStorage.getItem(LS_INSTALLED) === '1') {
-      setMode('hidden');
-      return;
-    }
+    // רק כשרצים כאפליקציה מותקנת (standalone) לא מציגים. בדפדפן — תמיד מציגים,
+    // כדי ללמד את המשתמשים שאפשר להתקין (גם אם כבר הותקן פעם).
+    if (isStandalone()) { setMode('hidden'); return; }
 
-    let resolvedMode = 'hidden';
-    if (isIphone()) {
-      resolvedMode = 'ios';
-      setMode('ios');
-    }
+    // המצב נקבע מיד, ללא תלות ב-beforeinstallprompt: אייפון → ios, אחרת → android.
+    // כך החלונית נפתחת מיד גם כשאנדרואיד לא יורה את האירוע בזמן.
+    const iphone = isIphone();
+    setMode(iphone ? 'ios' : 'android');
 
     const onBIP = (e) => {
       e.preventDefault();          // מונע את ה-mini-infobar הדיפולטי
       deferred.current = e;
-      resolvedMode = 'android';
-      setMode('android');
+      if (!iphone) setMode('android');   // יש מסלול התקנה נייטיב
     };
     const onInstalled = () => {
-      localStorage.setItem(LS_INSTALLED, '1');
-      setMode('hidden');
-      setPopup(false);
-      setOverlay(false);
+      try { localStorage.setItem(LS_INSTALLED, '1'); } catch {}
+      setMode('hidden'); setPopup(false); setOverlay(false);
     };
-
     window.addEventListener('beforeinstallprompt', onBIP);
     window.addEventListener('appinstalled', onInstalled);
 
-    // popup אוטומטי — נפתח לבד פעם אחת בכל כניסה מהדפדפן (session), גם באדמין וגם בראשי,
-    // כדי שמשתמשים יבינו שאפשר להתקין. לא נחסם ע"י dismiss קבוע — רק פעם אחת per-session.
+    // popup אוטומטי — נפתח מיד (1.2s), בשתי הפלטפורמות (iOS+Android) ובשני המצבים.
+    // פעם אחת לכל מצב (ראשי/אדמין) ב-session → גם הראשי וגם /manage-x7k2 נפתחים.
+    const adminPage = window.location.pathname.indexOf('/manage-x7k2') === 0;
+    const key = LS_AUTOSHOWN + (adminPage ? '_admin' : '_main');
     const timer = setTimeout(() => {
-      if (sessionStorage.getItem(LS_AUTOSHOWN) === '1') return;
-      if (resolvedMode === 'android' || resolvedMode === 'ios') {
-        setPopup(true);
-        try { sessionStorage.setItem(LS_AUTOSHOWN, '1'); } catch {}
-      }
-    }, 2500);
+      if (sessionStorage.getItem(key) === '1') return;
+      setPopup(true);
+      try { sessionStorage.setItem(key, '1'); } catch {}
+    }, 1200);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', onBIP);
@@ -165,17 +171,20 @@ export default function InstallButton() {
   // ── לחיצה על הכפתור הצף ──
   const onFab = useCallback(() => {
     try { navigator.vibrate?.(12); } catch {}
-    if (mode === 'android') triggerAndroid();
-    else if (mode === 'ios') setOverlay(true);
+    if (mode === 'android' && deferred.current) triggerAndroid();   // מסלול נייטיב
+    else setOverlay(true);                                          // iOS / אנדרואיד-ידני → הוראות
   }, [mode, triggerAndroid]);
 
   if (mode === 'hidden') return null;
 
   const EASE = [0.16, 1, 0.3, 1];
-  const showIosOverlay = mode === 'ios' && (overlayOpen || popupOpen);
-  const showAndroidCard = mode === 'android' && popupOpen;
-  // האם אנחנו בפאנל הניהול — רק שם מציגים את טיפ הלוגו
+  const hasNative = mode === 'android' && !!deferred.current;
+  // אנדרואיד עם מסלול נייטיב → כרטיס התקנה; אחרת (iOS או אנדרואיד-ידני) → overlay הוראות
+  const showAndroidCard = hasNative && popupOpen;
+  const showIosOverlay = (mode === 'ios' || (mode === 'android' && !deferred.current)) && (overlayOpen || popupOpen);
+  // האם אנחנו בפאנל הניהול — שם מציגים טיפ לוגו; בראשי מציגים את הטקסט העריך ללקוחות
   const isAdmin = typeof window !== 'undefined' && window.location.pathname === '/manage-x7k2';
+  const clientText = (customText || DEFAULT_PWA_INSTALL_TEXT);
 
   return (
     <div dir="rtl">
@@ -238,7 +247,7 @@ export default function InstallButton() {
               <p style={{
                 fontFamily: 'var(--demo-body-font)', fontSize: 14, lineHeight: 1.7,
                 color: 'var(--color-text-muted, #7D5A47)', marginBottom: 20,
-              }}>הוסיפי את האתר למסך הבית — קביעת תור במגע אחד, בלי לחפש בדפדפן ✨</p>
+              }}>{isAdmin ? 'הוסיפי את אתר הניהול למסך הבית — גישה מהירה בלי לחפש בדפדפן ✨' : clientText}</p>
               {isAdmin && <AdminLogoTip />}
               <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={triggerAndroid} style={{
@@ -293,8 +302,15 @@ export default function InstallButton() {
               <IOSShareGlyph reduce={reduce} />
               <h3 style={{
                 fontFamily: 'var(--demo-heading-font)', fontSize: 22, fontWeight: 600,
-                color: 'var(--color-text)', margin: '16px 0 14px',
+                color: 'var(--color-text)', margin: '16px 0 10px',
               }}>להוספת האפליקציה למסך הבית</h3>
+
+              {!isAdmin && (
+                <p style={{
+                  fontFamily: 'var(--demo-body-font)', fontSize: 13.5, lineHeight: 1.65,
+                  color: 'var(--color-text-muted, #7D5A47)', margin: '0 0 16px',
+                }}>{clientText}</p>
+              )}
 
               <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 22 }}>
                 <Step n="1">

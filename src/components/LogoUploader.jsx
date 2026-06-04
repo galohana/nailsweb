@@ -24,7 +24,7 @@ const btnStyle = {
 /* ── FileButton — כפתור עם input מיוצב מעליו לפתיחת בורר הקבצים ──
    מונע את בעיית ה-"user gesture" (הקרוסלה חוטפת אירועי pointer מ-framer-motion).
    הinput מכסה את הכפתור ב-opacity:0 → הקשה ישירה על הinput = "trusted" event. */
-function FileButton({ onFile, children, style, disabled }) {
+function FileButton({ onFile, onPick, children, style, disabled }) {
   const id = useRef(`fu-${Math.random().toString(36).slice(2)}`);
   return (
     <div style={{ ...style, position: 'relative', overflow: 'hidden' }}>
@@ -35,7 +35,8 @@ function FileButton({ onFile, children, style, disabled }) {
         accept="image/*"
         disabled={disabled}
         onChange={onFile}
-        onPointerDown={(e) => e.stopPropagation()}
+        onClick={onPick}
+        onPointerDown={(e) => { e.stopPropagation(); onPick?.(); }}
         style={{
           position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer',
           fontSize: 0, width: '100%', height: '100%',
@@ -45,23 +46,37 @@ function FileButton({ onFile, children, style, disabled }) {
   );
 }
 
-export default function LogoUploader({ currentUrl, onUploaded }) {
+export default function LogoUploader({ currentUrl, onUploaded, onBusyChange }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError]         = useState('');
   const [success, setSuccess]     = useState(false);
+  const uploadingRef = useRef(false);
+
+  // לחיצה על "החלף/בחרי קובץ" → עוצרים את הקרוסלה. חידוש: בסיום העלאה (finally)
+  // או כשהמשתמש ביטל את בורר הקבצים (החלון חוזר ל-focus בלי שהתחילה העלאה).
+  const handlePick = useCallback(() => {
+    onBusyChange?.(true);
+    const onFocus = () => {
+      window.removeEventListener('focus', onFocus);
+      setTimeout(() => { if (!uploadingRef.current) onBusyChange?.(false); }, 400);
+    };
+    window.addEventListener('focus', onFocus);
+  }, [onBusyChange]);
 
   const handleFile = async (e) => {
     setError('');
     setSuccess(false);
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) { onBusyChange?.(false); return; }
 
     if (file.size > MAX_IMG) {
       setError('הקובץ גדול מ-5MB');
       e.target.value = '';
+      onBusyChange?.(false);
       return;
     }
 
+    uploadingRef.current = true;
     setUploading(true);
     try {
       const ext      = extOf(file);
@@ -83,8 +98,10 @@ export default function LogoUploader({ currentUrl, onUploaded }) {
     } catch (err) {
       setError(`שגיאה: ${err?.message || String(err)}`);
     } finally {
+      uploadingRef.current = false;
       setUploading(false);
       e.target.value = '';
+      onBusyChange?.(false);   // הסיטואציה הסתיימה → הקרוסלה ממשיכה
     }
   };
 
@@ -101,7 +118,7 @@ export default function LogoUploader({ currentUrl, onUploaded }) {
           <div style={{ flex: 1 }}>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 6 }}>לוגו נוכחי</p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <FileButton onFile={handleFile} style={btnStyle} disabled={uploading}>
+              <FileButton onFile={handleFile} onPick={handlePick} style={btnStyle} disabled={uploading}>
                 <Upload size={14} />{uploading ? 'מעלה...' : 'החלף'}
               </FileButton>
               <motion.button whileTap={{ scale: 0.97 }} type="button"
@@ -126,7 +143,7 @@ export default function LogoUploader({ currentUrl, onUploaded }) {
             <>
               <Upload size={26} color="var(--color-text-muted)" strokeWidth={1.5} />
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-text-muted)', margin: 0 }}>PNG / JPG / SVG עד 5MB</p>
-              <FileButton onFile={handleFile} style={{ ...btnStyle, width: '100%' }} disabled={uploading}>
+              <FileButton onFile={handleFile} onPick={handlePick} style={{ ...btnStyle, width: '100%' }} disabled={uploading}>
                 <Upload size={14} />בחרי קובץ
               </FileButton>
             </>

@@ -97,7 +97,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
       if (h?.imageUrl)  setHeroImg(h.imageUrl);
       if (h?.videoUrl)  setHeroVid(h.videoUrl);
       if (h?.mediaType) setHeroMT(h.mediaType);
-      if (ci?.name) { setBizName(ci.name); document.title = ci.name; }
+      if (ci?.name) { setBizName(ci.name); }   // document.title מנוהל ע"י dynamicPWA (שם האפליקציה)
       if (ci?.ownerName) setOwnerName(ci.ownerName);
       if (Array.isArray(st)) setStats(st.filter(s => s && s.enabled));
       const resolvedLogo = (typeof logo === 'string' && logo) ? logo

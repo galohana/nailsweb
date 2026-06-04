@@ -5,6 +5,7 @@ import { DEFAULT_CLINIC_INFO, DEFAULT_ABOUT } from '../../utils/defaults';
 import * as S from '../../utils/adminStyles';
 import MediaUploader from '../../components/MediaUploader';
 import LogoUploader from '../../components/LogoUploader';
+import { DEFAULT_PWA_INSTALL_TEXT } from '../../components/InstallButton';
 
 const FIELDS = [
   ['name',          'שם הקליניקה',                'הכותרת שמופיעה למעלה בכל האתר',                'text'],
@@ -87,12 +88,19 @@ export default function ContactTab() {
   // ── Logo carousel ── (0=ראשי, 1=מסך הבית, 2=אדמין) — מתחיל בראשי
   const [logoIdx, setLogoIdx] = useState(0);
   const [logoDir, setLogoDir] = useState(0);
+  const [logoBusy, setLogoBusy] = useState(false);   // העלאת תמונה פעילה → עוצרים את הקרוסלה
 
-  // החלפה אוטומטית ימינה לבא כל 5 שניות; כל שינוי (ידני/אוטומטי) מאפס את הטיימר
+  // טקסט חלונית ההורדה (ללקוחות) — ניתן לעריכה
+  const [installText, setInstallText] = useState('');
+  // שם האפליקציה ל-PWA (ברירת מחדל) — ניתן לעריכה
+  const [appName, setAppName] = useState('');
+
+  // החלפה אוטומטית ימינה לבא כל 5 שניות. נעצר כשמעלים תמונה (logoBusy).
   useEffect(() => {
+    if (logoBusy) return;   // לחיצה על "החלף/בחרי קובץ" עוצרת עד שהסיטואציה מסתיימת
     const t = setTimeout(() => { setLogoDir(1); setLogoIdx(i => (i + 1) % 3); }, 5000);
     return () => clearTimeout(t);
-  }, [logoIdx]);
+  }, [logoIdx, logoBusy]);
 
   // Flash indicator — which section just saved
   const [flashSection, setFlashSection] = useState(null);
@@ -105,12 +113,16 @@ export default function ContactTab() {
       db.settings.get('heroStats', DEFAULT_STATS),
       db.settings.get('ownerEmail', ''),
       db.settings.get('adminPassword', ''),
-    ]).then(([ci, ab, st, oe, ap]) => {
+      db.settings.get('pwaInstallText', ''),
+      db.settings.get('pwaAppName', ''),
+    ]).then(([ci, ab, st, oe, ap, pit, pan]) => {
       setInfo(ci);
       setAbout(ab);
       setStats(Array.isArray(st) && st.length === 3 ? st : DEFAULT_STATS);
       setOwnerEmail(typeof oe === 'string' ? oe : '');
       setAdminPassword(typeof ap === 'string' ? ap : '');
+      setInstallText(typeof pit === 'string' ? pit : '');
+      setAppName(typeof pan === 'string' ? pan : '');
     });
   }, []);
 
@@ -135,6 +147,8 @@ export default function ContactTab() {
   const handleSaveInfo = () => {
     db.settings.set('clinicInfo', info);
     db.settings.set('ownerEmail', ownerEmail.trim());
+    db.settings.set('pwaInstallText', installText.trim());
+    db.settings.set('pwaAppName', appName.trim());
     setInfoDirty(false);
     flashFor('info');
   };
@@ -226,6 +240,7 @@ export default function ContactTab() {
               <LogoUploader
                 currentUrl={info[LOGOS[logoIdx].key] || ''}
                 onUploaded={(url) => saveLogo(LOGOS[logoIdx].key, url)}
+                onBusyChange={setLogoBusy}
               />
             </motion.div>
           </AnimatePresence>
@@ -299,6 +314,34 @@ export default function ContactTab() {
             value={ownerEmail}
             onChange={e => { setOwnerEmail(e.target.value); setInfoDirty(true); }}
             placeholder="you@gmail.com"
+          />
+        </div>
+
+        {/* ── שם האפליקציה (PWA) ── */}
+        <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--color-border-soft)' }}>
+          <label style={{ ...S.label, marginBottom: 4 }}>שם האפליקציה (ברירת מחדל)</label>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-hint)', marginBottom: 6, lineHeight: 1.4 }}>
+            השם שיופיע על מסך הבית של הלקוחות בהורדת האפליקציה
+          </p>
+          <input
+            type="text" dir="rtl" style={S.input}
+            value={appName}
+            onChange={e => { setAppName(e.target.value); setInfoDirty(true); }}
+            placeholder={info?.name || 'שם העסק'}
+          />
+        </div>
+
+        {/* ── טקסט חלונית ההורדה (ללקוחות) ── */}
+        <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--color-border-soft)' }}>
+          <label style={{ ...S.label, marginBottom: 4 }}>טקסט חלונית הורדה (ללקוחות)</label>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-hint)', marginBottom: 6, lineHeight: 1.4 }}>
+            הטקסט שלקוחות רואות בחלונית "הוספה למסך הבית" באתר הראשי. ריק → טקסט ברירת מחדל.
+          </p>
+          <textarea
+            rows={3} dir="rtl" style={{ ...S.input, resize: 'vertical', lineHeight: 1.6 }}
+            value={installText}
+            onChange={e => { setInstallText(e.target.value); setInfoDirty(true); }}
+            placeholder={DEFAULT_PWA_INSTALL_TEXT}
           />
         </div>
 

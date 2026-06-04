@@ -15,7 +15,7 @@
         try {
           var m = document.getElementById('rise-manifest');
           var isAdmin = location.pathname.indexOf('/manage-x7k2') === 0;
-          if (m) m.setAttribute('href', isAdmin ? '/manifest-admin.json' : '/manifest.json');
+          if (m) m.setAttribute('href', isAdmin ? '/api/manifest-admin' : '/api/manifest');
         } catch (e) {}
       })();
     </script>

@@ -154,6 +154,22 @@ function readableOn(hex) {
   return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.55 ? '#1A1410' : '#FDFAF7';
 }
 
+/* luminance 0..1 */
+function lumOf(hex) {
+  const [r, g, b] = hexToRgb(hex);
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+}
+
+/* inkOn — accent (primary/menu) כ-foreground על רקע בהיר. אם ה-accent בהיר מדי
+   לקריאה → דיו כהה ניטרלי; אם הכל כהה → דיו בהיר; אחרת משאיר את ה-accent. */
+function inkOn(surfaceHex, accentHex) {
+  const sLum = lumOf(surfaceHex);
+  const aLum = lumOf(accentHex);
+  if (sLum > 0.5 && aLum > 0.55) return '#33271F';
+  if (sLum < 0.4 && aLum < 0.4) return '#F3ECE3';
+  return accentHex;
+}
+
 function fontStack(headingFont) {
   const hebrewPartner = HEBREW_FONT_MAP[headingFont] || 'Heebo';
   return `"${headingFont}", "${hebrewPartner}", "Heebo", sans-serif`;
@@ -302,6 +318,9 @@ export function applyDesign(design) {
     '--color-on-menu':        readableOn(menuColor),
     '--color-on-section-rgb': (() => { const [r,g,b] = hexToRgb(readableOn(colors.section)); return `${r},${g},${b}`; })(),
     '--color-on-menu-rgb':    (() => { const [r,g,b] = hexToRgb(readableOn(menuColor)); return `${r},${g},${b}`; })(),
+    /* ink — accent כ-foreground בלי "בהיר על בהיר": primary אם קריא על surface, אחרת דיו כהה */
+    '--color-primary-ink':    inkOn('#FDFAF7', colors.primary),
+    '--color-menu-ink':       inkOn(cardTint, menuColor),
   };
 
   const root = document.documentElement;

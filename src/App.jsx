@@ -42,6 +42,7 @@ export default function App() {
   const [clinicName, setClinicName]   = useState('');    // שם הסטודיו (ל-PWA + כותרת)
   const [pwaLogo, setPwaLogo]         = useState('');    // לוגו ייעודי ל-PWA הראשי (אם הועלה)
   const [adminLogo, setAdminLogo]     = useState('');    // לוגו ייעודי ל-PWA האדמין (אם הועלה)
+  const [pwaAppName, setPwaAppName]   = useState('');    // שם האפליקציה ל-PWA (ניתן לעריכה)
 
   // ── בדיקת סטטוס אי-הגעות בסילנט (לא חוסמת טעינה) ───────────
   const checkNoShowStatus = (phone) => {
@@ -97,6 +98,9 @@ export default function App() {
         setAdminLogo((ci?.adminLogo || '').trim());
       })
       .catch(() => {});
+    db.settings.get('pwaAppName', '')
+      .then((n) => setPwaAppName((typeof n === 'string' ? n : '').trim()))
+      .catch(() => {});
   }, []);
 
   // ── זהות PWA דינמית: שם + לוגו (מועלה או מונוגרמה אוטומטית); אדמין → "+admin" ──
@@ -109,8 +113,9 @@ export default function App() {
       headingFont: design.headingFont,
       pwaLogo,
       adminLogo,
+      pwaAppName,
     });
-  }, [clinicName, page, pwaLogo, adminLogo]);
+  }, [clinicName, page, pwaLogo, adminLogo, pwaAppName]);
 
   // ── Admin-only splash: shows on every entry to /manage-x7k2 ──
   // Image loads via background-image; if /splash.jpg is missing, BG color shows.
