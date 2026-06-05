@@ -20,7 +20,7 @@ const C = {
 const SHADOW = '0 6px 20px rgba(92,61,46,0.10)';
 const GLASS  = { backgroundColor: 'rgba(253,250,247,0.7)', backdropFilter: 'blur(16px) saturate(170%)', WebkitBackdropFilter: 'blur(16px) saturate(170%)' };
 
-export default function Shop({ user, onNavigate }) {
+export default function Shop({ user, onNavigate, onMenuOpen }) {
   const [products, setProducts]       = useState([]);
   const [descriptions, setDescs]      = useState({});
   const [labels, setLabels]           = useState({});
@@ -135,7 +135,7 @@ export default function Shop({ user, onNavigate }) {
   if (!user) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
-        <PageHeader />
+        <PageHeader title="חנות" onMenuOpen={onMenuOpen} />
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '120px 24px 24px', textAlign: 'center', minHeight: '100vh' }}>
           <motion.div
             initial={{ scale: 0.85, opacity: 0 }}
@@ -180,7 +180,7 @@ export default function Shop({ user, onNavigate }) {
         whileTap={{ scale: 0.93 }}
         whileHover={{ scale: 1.05 }}
         style={{
-          position: 'fixed', top: 75, insetInlineEnd: 16, zIndex: 90,
+          position: 'fixed', top: 'calc(70px + env(safe-area-inset-top))', insetInlineEnd: 16, zIndex: 90,
           width: 48, height: 48, borderRadius: '50%',
           ...GLASS, border: `1px solid ${C.border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -210,16 +210,13 @@ export default function Shop({ user, onNavigate }) {
         </AnimatePresence>
       </motion.button>
 
-      {/* ── Hero header ── */}
+      {/* ── Hero subtitle (הכותרת הראשית "חנות" עברה ל-PageHeader) ── */}
       <motion.div
         initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        style={{ padding: '88px 20px 20px', paddingInlineEnd: 68 }}
+        style={{ padding: 'calc(72px + env(safe-area-inset-top)) 20px 12px' }}
       >
-        <h1 style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 32, fontWeight: 600, color: C.text, letterSpacing: '0.02em' }}>
-          חנות
-        </h1>
-        <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 13, color: C.muted, marginTop: 4 }}>
+        <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 14, color: C.muted }}>
           מוצרי טיפוח נבחרים 💕
         </p>
       </motion.div>

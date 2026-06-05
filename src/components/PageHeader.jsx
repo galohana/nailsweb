@@ -1,8 +1,17 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { db } from '../utils/db';
 import { DEFAULT_CLINIC_INFO } from '../utils/defaults';
 
-export default function PageHeader() {
+/* ── PageHeader — header מאוחד לעמודי-תת (Booking / Shop / MyAppointments)
+   ┌──────────────────────────────────────────────────────────┐
+   │ [→ חזרה]          כותרת העמוד          [☰ תפריט]        │
+   └──────────────────────────────────────────────────────────┘
+   • paddingTop: env(safe-area-inset-top) → הבר יושב מתחת ל-notch/Dynamic Island
+   • z-index 102 (מעל הכל). הכפתור הצף של BubbleMenu מוסתר בעמודי-תת.
+   • RTL: חץ חזרה inlineStart (ימין), המבורגר inlineEnd (שמאל).            */
+
+export default function PageHeader({ onMenuOpen, onBack, title }) {
   const [name, setName] = useState('');
 
   useEffect(() => {
@@ -11,22 +20,52 @@ export default function PageHeader() {
     });
   }, []);
 
+  const ICON_BTN = {
+    width: 40, height: 40, borderRadius: 'var(--demo-radius-card, 12px)',
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    border: '1px solid rgba(255,255,255,0.28)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    cursor: 'pointer', flexShrink: 0, color: 'var(--color-surface)',
+    WebkitTapHighlightColor: 'transparent',
+  };
+
   return (
     <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, height: 60, zIndex: 90,
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 102,
+      paddingTop: 'env(safe-area-inset-top)',
       backgroundColor: 'var(--color-primary)',
       backgroundImage: 'var(--demo-navbar-mat-overlay, none)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
       boxShadow: 'var(--shadow-sm)',
       direction: 'rtl',
     }}>
-      <span style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 21, fontWeight: 400, letterSpacing: '0.1em',
-        color: 'var(--color-surface)', whiteSpace: 'nowrap',
-      }}>
-        {name}
-      </span>
+      <div style={{ height: 56, display: 'flex', alignItems: 'center', gap: 8, padding: '0 10px' }}>
+        {/* חץ חזרה — inlineStart (ימין ב-RTL) */}
+        {onBack ? (
+          <motion.button onClick={onBack} whileTap={{ scale: 0.9 }} style={ICON_BTN} aria-label="חזרה">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </motion.button>
+        ) : <div style={{ width: 40, flexShrink: 0 }} />}
+
+        {/* כותרת ממורכזת */}
+        <span style={{
+          flex: 1, textAlign: 'center',
+          fontFamily: 'var(--font-display)',
+          fontSize: 20, fontWeight: 500, letterSpacing: '0.06em',
+          color: 'var(--color-surface)',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
+          {title || name}
+        </span>
+
+        {/* המבורגר — inlineEnd (שמאל ב-RTL) */}
+        {onMenuOpen ? (
+          <motion.button onClick={onMenuOpen} whileTap={{ scale: 0.9 }} style={ICON_BTN} aria-label="תפריט">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {[0,1,2].map(i => <span key={i} style={{ width: 16, height: 1.6, borderRadius: 2, backgroundColor: 'var(--color-surface)' }} />)}
+            </div>
+          </motion.button>
+        ) : <div style={{ width: 40, flexShrink: 0 }} />}
+      </div>
     </nav>
   );
 }

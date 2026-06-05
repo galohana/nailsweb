@@ -11,41 +11,46 @@ const ITEMS = [
   { id: 'contact',      label: 'צרי קשר' },
 ];
 
-export default function BubbleMenu({ onNavigate, showStore = false, user, onLogout, onProfile }) {
-  const [open, setOpen] = useState(false);
-  const close = () => setOpen(false);
+export default function BubbleMenu({ onNavigate, showStore = false, user, onLogout, onProfile, hideButton, open: extOpen, onToggle }) {
+  const [localOpen, setLocalOpen] = useState(false);
+
+  const open   = extOpen !== undefined ? extOpen : localOpen;
+  const toggle = () => { if (onToggle) onToggle(); else setLocalOpen(o => !o); };
+  const close  = () => { if (onToggle) onToggle(false); else setLocalOpen(false); };
 
   const items = [...ITEMS, ...(showStore ? [{ id: 'shop', label: 'חנות' }] : [])];
 
   return (
     <>
-      {/* Floating hamburger button */}
-      <motion.button
-        onClick={() => setOpen(o => !o)}
-        whileTap={{ scale: 0.92 }}
-        style={{
-          position: 'fixed', top: 'calc(8px + env(safe-area-inset-top))', right: 16, zIndex: 101,
-          width: 44, height: 44, borderRadius: 'var(--demo-radius-card)',
-          backgroundColor: 'rgba(253,250,247,0.15)',
-          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-          border: '1px solid rgba(253,250,247,0.3)',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 5,
-          cursor: 'pointer',
-        }}
-      >
-        {[0, 1, 2].map(i => (
-          <motion.div
-            key={i}
-            animate={open ? {
-              rotate: i === 0 ? 45 : i === 2 ? -45 : 0,
-              y: i === 0 ? 7 : i === 2 ? -7 : 0,
-              opacity: i === 1 ? 0 : 1,
-            } : { rotate: 0, y: 0, opacity: 1 }}
-            style={{ width: 18, height: 1.5, backgroundColor: 'var(--color-surface)', borderRadius: 2 }}
-          />
-        ))}
-      </motion.button>
+      {/* Floating hamburger button — מוסתר בעמודי-תת (PageHeader מחליף) */}
+      {!hideButton && (
+        <motion.button
+          onClick={toggle}
+          whileTap={{ scale: 0.92 }}
+          style={{
+            position: 'fixed', top: 'calc(8px + env(safe-area-inset-top))', right: 16, zIndex: 101,
+            width: 44, height: 44, borderRadius: 'var(--demo-radius-card)',
+            backgroundColor: 'rgba(253,250,247,0.15)',
+            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+            border: '1px solid rgba(253,250,247,0.3)',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 5,
+            cursor: 'pointer',
+          }}
+        >
+          {[0, 1, 2].map(i => (
+            <motion.div
+              key={i}
+              animate={open ? {
+                rotate: i === 0 ? 45 : i === 2 ? -45 : 0,
+                y: i === 0 ? 7 : i === 2 ? -7 : 0,
+                opacity: i === 1 ? 0 : 1,
+              } : { rotate: 0, y: 0, opacity: 1 }}
+              style={{ width: 18, height: 1.5, backgroundColor: 'var(--color-surface)', borderRadius: 2 }}
+            />
+          ))}
+        </motion.button>
+      )}
 
       <AnimatePresence>
         {open && (
