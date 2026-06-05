@@ -108,7 +108,7 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
   if (!user) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
-        <PageHeader title="התורים שלי" onMenuOpen={onMenuOpen} />
+        <PageHeader title="התורים שלי" onBack={() => onNavigate('home')} />
         <div style={{ fontSize: 56, marginBottom: 16 }}>📅</div>
         <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 8 }}>התורים שלי</h2>
         <p style={{ color: C.muted, fontSize: 14, marginBottom: 24 }}>כדי לראות תורים, קבעי תור תחילה</p>

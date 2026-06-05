@@ -135,7 +135,7 @@ export default function Shop({ user, onNavigate, onMenuOpen }) {
   if (!user) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
-        <PageHeader title="חנות" onMenuOpen={onMenuOpen} />
+        <PageHeader title="חנות" onBack={() => onNavigate('home')} />
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '120px 24px 24px', textAlign: 'center', minHeight: '100vh' }}>
           <motion.div
             initial={{ scale: 0.85, opacity: 0 }}

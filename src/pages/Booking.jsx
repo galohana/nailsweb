@@ -419,7 +419,7 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
-        <PageHeader title="קביעת תור" onMenuOpen={onMenuOpen} />
+        <PageHeader title="קביעת תור" onBack={() => onNavigate('home')} />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px 24px', textAlign: 'center' }}>
           <motion.div
             initial={{ scale: 0.85, opacity: 0 }}
@@ -461,8 +461,7 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
       <PageHeader
         title="קביעת תור"
-        onMenuOpen={onMenuOpen}
-        onBack={step > 0 && step < 4 ? back : null}
+        onBack={step > 0 && step < 4 ? back : () => onNavigate('home')}
       />
 
       {/* תת-כותרת שלב (הכותרת הראשית עברה ל-PageHeader) */}
