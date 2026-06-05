@@ -172,7 +172,7 @@ export default function Shop({ user, onNavigate, onMenuOpen }) {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
-      <PageHeader />
+      <PageHeader title="חנות" onBack={() => onNavigate('home')} />
 
       {/* ── Floating cart badge ── */}
       <motion.button

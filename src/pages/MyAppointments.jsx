@@ -150,7 +150,7 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
-      <PageHeader title="התורים שלי" onMenuOpen={onMenuOpen} />
+      <PageHeader title="התורים שלי" onBack={() => onNavigate('home')} />
       <div style={{ padding: 'calc(72px + env(safe-area-inset-top)) 16px 8px' }}>
         <p style={{ fontSize: 13, color: C.muted, fontWeight: 600 }}>{user.name || user.firstName}</p>
       </div>
