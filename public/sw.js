@@ -52,3 +52,34 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+/* ── Web Push — הצגת התראה כשמגיע push מהשרת ── */
+self.addEventListener('push', (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (e) { data = {}; }
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'RISE', {
+      body: data.body || '',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      data: { url: data.url || '/' },
+      dir: 'rtl',
+      lang: 'he',
+      vibrate: [200, 100, 200],
+    })
+  );
+});
+
+/* ── לחיצה על התראה → פתיחת/מיקוד החלון בכתובת הרצויה ── */
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if ('focus' in c) { c.navigate(target); return c.focus(); }
+      }
+      return self.clients.openWindow(target);
+    })
+  );
+});

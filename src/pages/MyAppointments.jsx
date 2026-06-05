@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../utils/db';
 import { fmtDuration } from '../utils/format';
 import { notifyOwnerCancellation } from '../utils/sms';
+import { notifyWaitlistForDate } from '../utils/waitlist';
 import { features } from '../config/features';
 import PageHeader from '../components/PageHeader';
 import PayButtons from '../components/PayButtons';
@@ -19,6 +20,17 @@ const C = {
 
 function fmtDate(d) {
   return new Date(d + 'T00:00:00').toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+// כותרת יום בולטת: "היום · יום שני 12 ביוני" / "מחר · ..." / תאריך רגיל
+function fmtDayHeader(d) {
+  const date = new Date(d + 'T00:00:00');
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const diff = Math.round((date - today) / 86400000);
+  const base = date.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+  if (diff === 0) return `היום · ${base}`;
+  if (diff === 1) return `מחר · ${base}`;
+  return base;
 }
 
 function normPhone(p) {
@@ -87,6 +99,7 @@ export default function MyAppointments({ user, onNavigate }) {
     }
     await db.appointments.cancel(apt.id);
     notifyOwnerCancellation({ clientName: apt.userName, clientPhone: apt.phone, service: apt.serviceName, date: apt.date, time: apt.time });
+    notifyWaitlistForDate(apt.date);
     load();
   };
 
@@ -107,13 +120,24 @@ export default function MyAppointments({ user, onNavigate }) {
     );
   }
 
-  const upcoming = apts.filter(a => a.status === 'confirmed' && isUpcoming(a));
-  const past     = apts.filter(a => !isUpcoming(a) || a.status === 'cancelled');
+  // קרובים: ממויין לפי מועד התור — מהקרוב לרחוק
+  const upcoming = apts
+    .filter(a => a.status === 'confirmed' && isUpcoming(a))
+    .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+  const past = apts.filter(a => !isUpcoming(a) || a.status === 'cancelled');
+
+  // קיבוץ הקרובים לפי יום (שומר על הסדר העולה)
+  const upcomingByDay = [];
+  for (const apt of upcoming) {
+    let g = upcomingByDay.find(x => x.date === apt.date);
+    if (!g) { g = { date: apt.date, items: [] }; upcomingByDay.push(g); }
+    g.items.push(apt);
+  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
       <PageHeader />
-      <div style={{ padding: '80px 16px 8px' }}>
+      <div style={{ padding: '80px 16px 8px', paddingInlineEnd: 68 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: C.text }}>התורים שלי</h1>
         <p style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{user.name || user.firstName}</p>
       </div>
@@ -142,23 +166,37 @@ export default function MyAppointments({ user, onNavigate }) {
             {upcoming.length > 0 && (
               <div style={{ marginBottom: 24 }}>
                 <p style={{ color: C.accent, fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', marginBottom: 10 }}>תורים קרובים</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {upcoming.map(apt => (
-                    <AptCard
-                      key={apt.id} apt={apt} isUpcoming
-                      onCancel={() => cancel(apt)}
-                      cancelWindow={cancelWindow}
-                      confirmed={!!confirmations[apt.id]}
-                      onConfirm={() => confirmAttendance(apt.id)}
-                      clinicName={clinicName}
-                      isPaid={!!payments[apt.id]}
-                      ownerPhone={ownerPhone}
-                      bitAccount={features.reports && payVisible.bit ? bitAccount : ''}
-                      onNavigate={onNavigate}
-                      staffName={features.staff && apt.staffId ? (staffList.find(s => s.id === apt.staffId)?.name || '') : ownerName}
-                    />
-                  ))}
-                </div>
+                {upcomingByDay.map(group => (
+                  <div key={group.date} style={{ marginBottom: 18 }}>
+                    {/* כותרת יום בולטת + קו מפריד */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 10px' }}>
+                      <h3 style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 17, fontWeight: 700, color: C.text, whiteSpace: 'nowrap', margin: 0 }}>
+                        {fmtDayHeader(group.date)}
+                      </h3>
+                      <span style={{ flex: 1, height: 1, backgroundColor: C.border, opacity: 0.6 }} />
+                      <span style={{ fontSize: 11, fontWeight: 600, color: C.muted, backgroundColor: 'var(--color-surface)', border: `1px solid ${C.border}`, borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>
+                        {group.items.length} {group.items.length === 1 ? 'תור' : 'תורים'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {group.items.map(apt => (
+                        <AptCard
+                          key={apt.id} apt={apt} isUpcoming
+                          onCancel={() => cancel(apt)}
+                          cancelWindow={cancelWindow}
+                          confirmed={!!confirmations[apt.id]}
+                          onConfirm={() => confirmAttendance(apt.id)}
+                          clinicName={clinicName}
+                          isPaid={!!payments[apt.id]}
+                          ownerPhone={ownerPhone}
+                          bitAccount={features.reports && payVisible.bit ? bitAccount : ''}
+                          onNavigate={onNavigate}
+                          staffName={features.staff && apt.staffId ? (staffList.find(s => s.id === apt.staffId)?.name || '') : ownerName}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Scissors, Clock, CalendarX, XCircle, Bell, ShoppingBag, Users, Image, MapPin, UserCircle, BarChart3, LogOut, Heart, X, FileText, Lock } from 'lucide-react';
 import TabBoundary from '../components/TabBoundary';
+import PushPrompt from '../components/PushPrompt';
 import { db } from '../utils/db';
 
 import ServicesTab          from './admin-tabs/ServicesTab';
@@ -365,6 +366,9 @@ export default function AdminPanel() {
       </div>
 
       <div style={{ padding: '8px 16px' }}>
+        {/* כרטיס הפעלת התראות Push לבעלת העסק — תמיד גלוי */}
+        <PushPrompt mode="admin" userIdentifier="admin" />
+
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
