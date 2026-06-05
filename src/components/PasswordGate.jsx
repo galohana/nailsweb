@@ -58,8 +58,15 @@ export default function PasswordGate({ children }) {
           <Lock size={28} color="#5C3D2E" strokeWidth={1.5} />
         </div>
         <h2 style={{ fontFamily: 'var(--demo-heading-font)', fontSize: '26px', color: 'var(--color-text)', marginBottom: '8px', fontWeight: 500 }}>ניהול הסטודיו</h2>
-        <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: '13px', color: 'var(--color-section)', marginBottom: '24px' }}>
-          {loading ? 'טוענת...' : 'הזיני סיסמת ניהול'}
+        <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: '13px', color: 'var(--color-section)', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          {loading && (
+            <span style={{
+              display: 'inline-block', width: 13, height: 13, borderRadius: '50%',
+              border: '2px solid #C8A882', borderTopColor: 'var(--color-primary)',
+              animation: 'spin 0.7s linear infinite',
+            }} />
+          )}
+          {loading ? 'מתחברת לשרת...' : 'הזיני סיסמת ניהול'}
         </p>
         <input
           type="password"

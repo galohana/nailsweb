@@ -103,6 +103,20 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
     load();
   };
 
+  const reschedule = async (apt) => {
+    setError('');
+    if (!cancelWindow.allow) { setError('שינוי שעה אינו מורשה.'); return; }
+    const diff = (new Date(`${apt.date}T${apt.time}`) - new Date()) / 3600000;
+    if (diff < cancelWindow.hours) {
+      setError(`לא ניתן לשנות שעה — פחות מ-${cancelWindow.hours} שעות לתור.`);
+      return;
+    }
+    await db.appointments.cancel(apt.id);
+    notifyOwnerCancellation({ clientName: apt.userName, clientPhone: apt.phone, service: apt.serviceName, date: apt.date, time: apt.time });
+    notifyWaitlistForDate(apt.date);
+    onNavigate('booking');
+  };
+
   const isUpcoming = (apt) => new Date(`${apt.date}T${apt.time}`) > new Date();
 
   if (!user) {
@@ -114,7 +128,7 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
         <p style={{ color: C.muted, fontSize: 14, marginBottom: 24 }}>כדי לראות תורים, קבעי תור תחילה</p>
         <button onClick={() => onNavigate('booking')}
           style={{ backgroundColor: C.accent, color: 'var(--color-surface)', borderRadius: 'var(--demo-radius-card)', height: 48, padding: '0 32px', fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer', boxShadow: '0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)' }}>
-          קביעת תור ←
+          קביעת תור
         </button>
       </div>
     );
@@ -157,7 +171,7 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
             <p style={{ color: C.muted, fontSize: 15, marginBottom: 20 }}>אין תורים קבועים</p>
             <button onClick={() => onNavigate('booking')}
               style={{ backgroundColor: C.accent, color: 'var(--color-surface)', borderRadius: 'var(--demo-radius-card)', height: 48, padding: '0 28px', fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer', boxShadow: '0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)' }}>
-              קביעת תור ראשון ←
+              קביעת תור ראשון
             </button>
           </div>
         ) : (
@@ -182,6 +196,7 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
                         <AptCard
                           key={apt.id} apt={apt} isUpcoming
                           onCancel={() => cancel(apt)}
+                          onReschedule={() => reschedule(apt)}
                           cancelWindow={cancelWindow}
                           confirmed={!!confirmations[apt.id]}
                           onConfirm={() => confirmAttendance(apt.id)}
@@ -217,7 +232,7 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
   );
 }
 
-function AptCard({ apt, isUpcoming, onCancel, cancelWindow, confirmed, onConfirm, clinicName, isPaid, ownerPhone, bitAccount, onNavigate, staffName }) {
+function AptCard({ apt, isUpcoming, onCancel, onReschedule, cancelWindow, confirmed, onConfirm, clinicName, isPaid, ownerPhone, bitAccount, onNavigate, staffName }) {
   const [payOpen, setPayOpen] = useState(false);
 
   const cancelled     = apt.status === 'cancelled';
@@ -347,23 +362,40 @@ function AptCard({ apt, isUpcoming, onCancel, cancelWindow, confirmed, onConfirm
                     ))}
                   </div>
 
-                  {/* Row 2: [calendar | cancel] */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {/* Row 2: [calendar | reschedule | cancel] */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
                     <motion.button whileTap={{ scale: 0.97 }}
                       onClick={() => window.open(buildCalendarUrl(), '_blank', 'noopener')}
                       style={{
                         height: 40, borderRadius: 'var(--demo-radius-card)',
                         border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)',
-                        color: 'var(--color-primary-ink)', fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 500,
+                        color: 'var(--color-primary-ink)', fontFamily: 'var(--demo-body-font)', fontSize: 11, fontWeight: 500,
                         cursor: 'pointer', touchAction: 'manipulation',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
                       }}>
-                      📅 יומן Google
+                      📅 יומן
                     </motion.button>
+
+                    {cancelAllowed && onReschedule ? (
+                      <motion.button whileTap={{ scale: 0.97 }}
+                        onClick={onReschedule}
+                        style={{
+                          height: 40, borderRadius: 'var(--demo-radius-card)',
+                          border: '1px solid rgba(107,79,58,0.3)',
+                          backgroundColor: 'rgba(107,79,58,0.05)',
+                          color: 'var(--color-primary-ink)',
+                          fontFamily: 'var(--demo-body-font)', fontSize: 11, fontWeight: 600,
+                          cursor: 'pointer', touchAction: 'manipulation',
+                        }}>
+                        שנה שעה
+                      </motion.button>
+                    ) : (
+                      <div style={{ height: 40 }} />
+                    )}
 
                     {cancelWindow?.allow === false ? (
                       <div style={{ height: 40, borderRadius: 'var(--demo-radius-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', border: '1px solid var(--color-border)' }}>
-                        <span style={{ fontFamily: 'var(--demo-body-font)', fontSize: 10, color: 'var(--color-border-dark)', textAlign: 'center' }}>ביטול לא מורשה</span>
+                        <span style={{ fontFamily: 'var(--demo-body-font)', fontSize: 9, color: 'var(--color-border-dark)', textAlign: 'center' }}>ביטול<br/>לא מורשה</span>
                       </div>
                     ) : (
                       <motion.button whileTap={cancelAllowed ? { scale: 0.97 } : {}}
@@ -374,11 +406,11 @@ function AptCard({ apt, isUpcoming, onCancel, cancelWindow, confirmed, onConfirm
                           border: `1px solid ${cancelAllowed ? 'rgba(229,115,115,0.35)' : '#E8DCC8'}`,
                           backgroundColor: cancelAllowed ? 'rgba(229,115,115,0.05)' : 'transparent',
                           color: cancelAllowed ? '#C62828' : '#C8A882',
-                          fontFamily: 'var(--demo-body-font)', fontSize: 12, fontWeight: 500,
+                          fontFamily: 'var(--demo-body-font)', fontSize: 11, fontWeight: 500,
                           cursor: cancelAllowed ? 'pointer' : 'not-allowed',
                           touchAction: 'manipulation',
                         }}>
-                        ביטול תור
+                        ביטול
                       </motion.button>
                     )}
                   </div>

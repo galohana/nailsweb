@@ -140,7 +140,7 @@ export default function InstallButton() {
       if (sessionStorage.getItem(key) === '1') return;
       setPopup(true);
       try { sessionStorage.setItem(key, '1'); } catch {}
-    }, 1200);
+    }, 30000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', onBIP);
