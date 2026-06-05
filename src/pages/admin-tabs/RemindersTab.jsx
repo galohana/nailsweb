@@ -316,71 +316,6 @@ function PlaceholderGuide() {
   );
 }
 
-// ── Admin weekly reminder card (in-app Sunday banner) ─────────
-function AdminWeeklyReminderCard() {
-  const DEFAULT_TEXT = 'אל תשכחי לקבוע שעות עבודה ❤️';
-  const DEFAULT_TIME = '09:00';
-  const [enabled, setEnabled] = useState(true);
-  const [text, setText]       = useState(DEFAULT_TEXT);
-  const [time, setTime]       = useState(DEFAULT_TIME);
-  const [saved, setSaved]     = useState(false);
-  const [dirty, setDirty]     = useState(false);
-
-  useEffect(() => {
-    db.settings.get('adminReminder', { enabled: true, text: DEFAULT_TEXT, time: DEFAULT_TIME }).then(r => {
-      setEnabled(r?.enabled !== false);
-      setText(r?.text || DEFAULT_TEXT);
-      setTime(r?.time || DEFAULT_TIME);
-    });
-  }, []);
-
-  const save = (patch) => {
-    const next = { enabled, text, time, ...patch };
-    setEnabled(next.enabled); setText(next.text); setTime(next.time);
-    db.settings.set('adminReminder', next);
-    setDirty(false);
-    setSaved(true); setTimeout(() => setSaved(false), 1400);
-  };
-
-  return (
-    <div style={S.card}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <p style={S.heading}>תזכורת ראשון (באתר הניהול)</p>
-        <AnimatePresence mode="wait">
-          {saved ? (
-            <motion.span key="saved" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              style={{ color: 'var(--color-success)', fontSize: 12, fontFamily: 'var(--font-body)' }}>✓ נשמר</motion.span>
-          ) : dirty ? (
-            <motion.button key="btn" whileTap={{ scale: 0.97 }} onClick={() => save({})}
-              initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 6 }}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 11px', borderRadius: 7, backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', border: 'var(--demo-primary-mat-border, none)', color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              שמורי 💾
-            </motion.button>
-          ) : null}
-        </AnimatePresence>
-      </div>
-      <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 10, lineHeight: 1.5 }}>
-        הודעה שתופיע בעת כניסה לאתר הניהול ביום ראשון. ניתן לסגור — תוצג שוב בראשון הבא.
-      </p>
-      <div style={S.toggleRow}>
-        <span style={S.toggleLabel}>הפעלת תזכורת</span>
-        <button onClick={() => save({ enabled: !enabled })}
-          style={{ width: 46, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', position: 'relative', backgroundColor: enabled ? 'var(--color-success)' : '#C8A882', transition: 'background-color 0.2s' }}>
-          <span style={{ position: 'absolute', top: 3, insetInlineStart: enabled ? 23 : 3, width: 20, height: 20, borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-surface)', transition: 'inset-inline-start 0.2s' }} />
-        </button>
-      </div>
-      <label style={{ ...S.label, marginTop: 14 }}>טקסט התזכורת</label>
-      <input type="text" style={S.input} value={text}
-        onChange={e => { setText(e.target.value); setDirty(true); }} placeholder={DEFAULT_TEXT} />
-      <label style={{ ...S.label, marginTop: 10 }}>שעת הצגה ביום ראשון</label>
-      <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-hint)', marginBottom: 6 }}>התזכורת תופיע רק אחרי השעה הזו</p>
-      <input type="time"
-        style={{ ...S.input, direction: 'ltr', textAlign: 'center', marginBottom: 0, maxWidth: '160px', width: '100%', boxSizing: 'border-box' }}
-        value={time} onChange={e => { setTime(e.target.value); setDirty(true); }} />
-    </div>
-  );
-}
-
 // ── Main ──────────────────────────────────────────────────────
 export default function RemindersTab() {
   const [tpl, setTpl] = useState(null);
@@ -403,9 +338,6 @@ export default function RemindersTab() {
     <div>
       {/* ── Push notifications (2 חלוניות נפרדות) ─────────────────── */}
       <PushSettingsSection />
-
-      {/* ── Admin weekly reminder (in-app) ─────────────────────── */}
-      <AdminWeeklyReminderCard />
 
       {/* ── Client SMS templates ──────────────────────────────── */}
       <div style={S.card}>

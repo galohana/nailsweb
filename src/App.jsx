@@ -37,6 +37,11 @@ export default function App() {
   const [urgentOpen, setUrgentOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  // ── menuOpen — מצב controlled ל-BubbleMenu בעמודי-תת ──────────────
+  const [menuOpen, setMenuOpen]     = useState(false);
+  const SUB_PAGES = ['booking', 'appointments', 'shop'];
+  const openMenu  = () => setMenuOpen(true);
+  const toggleMenu = () => setMenuOpen(o => !o);
   const [showWarning, setShowWarning] = useState('');   // אזהרת אי-הגעה — הודעה או ''
   const [blockedUser, setBlockedUser] = useState(false); // חסימה מלאה
   const [clinicName, setClinicName]   = useState('');    // שם הסטודיו (ל-PWA + כותרת)
@@ -176,13 +181,13 @@ export default function App() {
   const renderPage = () => {
     switch (page) {
       case 'home':           return <HeroNew user={user} onNavigate={navigate} onLogout={logout} showStore={features.reports} />;
-      case 'booking':        return <Booking user={user} onUserSave={saveUser} onNavigate={navigate} />;
-      case 'appointments':   return <MyAppointments user={user} onNavigate={navigate} />;
+      case 'booking':        return <Booking user={user} onUserSave={saveUser} onNavigate={navigate} onMenuOpen={openMenu} />;
+      case 'appointments':   return <MyAppointments user={user} onNavigate={navigate} onMenuOpen={openMenu} />;
       case 'gallery':        return <GalleryAbout onNavigate={navigate} />;
       case 'reviews':        return <ReviewsPage onNavigate={navigate} />;
       case 'manage-reviews': return <ManageReviews />;
       case 'contact':        return <ContactPage onNavigate={navigate} />;
-      case 'shop':           return features.reports ? <Shop user={user} onNavigate={navigate} /> : null;
+      case 'shop':           return features.reports ? <Shop user={user} onNavigate={navigate} onMenuOpen={openMenu} /> : null;
       case 'register':       return <Register onUserSave={saveUser} onNavigate={navigate} />;
       case 'admin':          return <PasswordGate><AdminPanel /></PasswordGate>;
       case 'rise':           return <RisePage />;
@@ -308,6 +313,9 @@ export default function App() {
             user={user}
             onLogout={logout}
             onProfile={() => setProfileOpen(true)}
+            hideButton={SUB_PAGES.includes(page)}
+            open={SUB_PAGES.includes(page) ? menuOpen : undefined}
+            onToggle={SUB_PAGES.includes(page) ? toggleMenu : undefined}
           />
         )}
 

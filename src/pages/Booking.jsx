@@ -98,7 +98,7 @@ function SuccessCheck() {
   );
 }
 
-export default function Booking({ user, onUserSave, onNavigate }) {
+export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
   const [step, setStep]               = useState(user ? 1 : 0);
   const [login, setLogin]             = useState({ name: '', phone: '' });
   const [service, setService]         = useState(null);
@@ -459,21 +459,19 @@ export default function Booking({ user, onUserSave, onNavigate }) {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
-      <PageHeader />
+      <PageHeader
+        title="קביעת תור"
+        onMenuOpen={onMenuOpen}
+        onBack={step > 0 && step < 4 ? back : null}
+      />
 
-      {/* Header */}
-      <div style={{ padding: '80px 16px 8px', display: 'flex', alignItems: 'center', gap: 10 }}>
-        {step > 0 && step < 4 && (
-          <motion.button onClick={back} whileTap={{ scale: 0.93 }}
-            style={{ width: 36, height: 36, borderRadius: 'var(--demo-radius-card)', backgroundColor: C.surface, border: `1px solid ${C.border}`, boxShadow: SHADOW, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted, flexShrink: 0 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </motion.button>
-        )}
-        <div>
-          <h1 style={{ fontSize: 19, fontWeight: 700, color: C.text }}>קביעת תור</h1>
-          {step > 0 && step < 4 && <p style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{stepLabels[step]}</p>}
+      {/* שלב נוכחי — רק כותרת שלב ללא כפתור חזרה (עבר ל-PageHeader) */}
+      {step > 0 && step < 4 && (
+        <div style={{ padding: '68px 16px 2px' }}>
+          <p style={{ fontSize: 12, color: C.muted }}>{stepLabels[step]}</p>
         </div>
-      </div>
+      )}
+      {step === 0 && <div style={{ height: 68 }} />}
 
       {/* Progress bar */}
       {step > 0 && step < 4 && (

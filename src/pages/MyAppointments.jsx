@@ -39,7 +39,7 @@ function normPhone(p) {
   return d;
 }
 
-export default function MyAppointments({ user, onNavigate }) {
+export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
   const [apts, setApts]         = useState([]);
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(true);
@@ -108,7 +108,7 @@ export default function MyAppointments({ user, onNavigate }) {
   if (!user) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
-        <PageHeader />
+        <PageHeader onMenuOpen={onMenuOpen} />
         <div style={{ fontSize: 56, marginBottom: 16 }}>📅</div>
         <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 8 }}>התורים שלי</h2>
         <p style={{ color: C.muted, fontSize: 14, marginBottom: 24 }}>כדי לראות תורים, קבעי תור תחילה</p>
@@ -136,8 +136,8 @@ export default function MyAppointments({ user, onNavigate }) {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
-      <PageHeader />
-      <div style={{ padding: '80px 16px 8px', paddingInlineEnd: 68 }}>
+      <PageHeader onMenuOpen={onMenuOpen} />
+      <div style={{ padding: '72px 16px 8px' }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: C.text }}>התורים שלי</h1>
         <p style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{user.name || user.firstName}</p>
       </div>
