@@ -1,0 +1,408 @@
+name: Build Client Site
+# מופעל מ-rise-builder/api/auto-build.js כשלקוחה חדשה ממלאת את הטופס
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_slug:
+        description: 'Repo slug (kebab-case, e.g. ora-beauty)'
+        required: true
+        type: string
+      business_type:
+        description: 'eyebrows | nails | barber'
+        required: true
+        type: string
+        default: 'eyebrows'
+      client_json:
+        description: 'Client info JSON (clinic_name, owner_name, phone, email, admin_password, ...)'
+        required: true
+        type: string
+      design_json:
+        description: 'Design config JSON'
+        required: true
+        type: string
+      features_json:
+        description: 'Feature flags JSON'
+        required: true
+        type: string
+      supabase_org_id:
+        description: 'Supabase organization ID for this business type'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      # ── 1. Checkout template ──────────────────────────────────
+      - name: Checkout template
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install npm deps
+        run: npm ci
+
+      # ── 2. Create Supabase project ────────────────────────────
+      - name: Create Supabase project
+        id: supabase
+        env:
+          SB_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          ORG_ID: ${{ inputs.supabase_org_id }}
+          REPO_SLUG: ${{ inputs.repo_slug }}
+        run: |
+          set -e
+          DB_PASS="Rise$(openssl rand -hex 8)!"
+          RESP=$(curl -sf -X POST "https://api.supabase.com/v1/projects" \
+            -H "Authorization: Bearer $SB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"name\":\"$REPO_SLUG\",\"organization_id\":\"$ORG_ID\",\"region\":\"eu-central-1\",\"plan\":\"free\",\"db_pass\":\"$DB_PASS\"}")
+          PROJECT_ID=$(echo $RESP | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+          echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
+          echo "Created Supabase project: $PROJECT_ID"
+
+          # Poll until project is ready (up to 3 min)
+          for i in $(seq 1 36); do
+            STATUS=$(curl -sf "https://api.supabase.com/v1/projects/$PROJECT_ID" \
+              -H "Authorization: Bearer $SB_TOKEN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('status',''))")
+            echo "Status: $STATUS ($i/36)"
+            if [ "$STATUS" = "ACTIVE_HEALTHY" ]; then break; fi
+            sleep 5
+          done
+          if [ "$STATUS" != "ACTIVE_HEALTHY" ]; then echo "Supabase timeout" && exit 1; fi
+
+          # Get API keys
+          KEYS=$(curl -sf "https://api.supabase.com/v1/projects/$PROJECT_ID/api-keys" \
+            -H "Authorization: Bearer $SB_TOKEN")
+          ANON_KEY=$(echo $KEYS | python3 -c "import sys,json; ks=json.load(sys.stdin); print(next(k['api_key'] for k in ks if k['name']=='anon'))")
+          SERVICE_KEY=$(echo $KEYS | python3 -c "import sys,json; ks=json.load(sys.stdin); print(next(k['api_key'] for k in ks if k['name']=='service_role'))")
+
+          SB_URL="https://$PROJECT_ID.supabase.co"
+          echo "sb_url=$SB_URL" >> $GITHUB_OUTPUT
+          echo "anon_key=$ANON_KEY" >> $GITHUB_OUTPUT
+          echo "service_key=$SERVICE_KEY" >> $GITHUB_OUTPUT
+          echo "Supabase ready: $SB_URL"
+
+      # ── 3. Run schema.sql ────────────────────────────────────
+      - name: Run schema SQL
+        env:
+          SB_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PROJECT_ID: ${{ steps.supabase.outputs.project_id }}
+        run: |
+          SCHEMA=$(cat docs/schema.sql | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
+          curl -sf -X POST "https://api.supabase.com/v1/projects/$PROJECT_ID/database/query" \
+            -H "Authorization: Bearer $SB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\": $SCHEMA}" > /dev/null
+          echo "Schema applied"
+
+      # ── 4. RLS + Storage + push_subscriptions ────────────────
+      - name: Run RLS and Storage SQL
+        env:
+          SB_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PROJECT_ID: ${{ steps.supabase.outputs.project_id }}
+        run: |
+          SQL="
+          GRANT SELECT, INSERT, UPDATE, DELETE
+            ON TABLE appointments, clients, gallery, orders, products,
+                    reviews, services, settings, staff, waitlist
+            TO anon, authenticated;
+
+          INSERT INTO storage.buckets (id, name, public)
+          VALUES ('media', 'media', true)
+          ON CONFLICT (id) DO NOTHING;
+
+          DROP POLICY IF EXISTS anon_all_media ON storage.objects;
+          CREATE POLICY anon_all_media ON storage.objects
+            FOR ALL TO anon, authenticated
+            USING (bucket_id = 'media')
+            WITH CHECK (bucket_id = 'media');
+
+          CREATE TABLE IF NOT EXISTS public.push_subscriptions (
+            id uuid primary key default gen_random_uuid(),
+            user_type text not null,
+            user_identifier text not null,
+            subscription jsonb not null,
+            device_info text,
+            active boolean not null default true,
+            created_at timestamptz not null default now()
+          );
+          CREATE INDEX IF NOT EXISTS push_subscriptions_lookup_idx
+            ON public.push_subscriptions (user_type, user_identifier, active);
+          CREATE UNIQUE INDEX IF NOT EXISTS push_subscriptions_endpoint_uidx
+            ON public.push_subscriptions ((subscription->>'endpoint'));
+          ALTER TABLE public.push_subscriptions ENABLE ROW LEVEL SECURITY;
+          GRANT INSERT, DELETE ON TABLE public.push_subscriptions TO anon;
+          GRANT ALL ON TABLE public.push_subscriptions TO service_role;
+          DROP POLICY IF EXISTS anon_insert_subscription ON public.push_subscriptions;
+          CREATE POLICY anon_insert_subscription ON public.push_subscriptions FOR INSERT TO anon WITH CHECK (true);
+          DROP POLICY IF EXISTS anon_delete_own_endpoint ON public.push_subscriptions;
+          CREATE POLICY anon_delete_own_endpoint ON public.push_subscriptions FOR DELETE TO anon USING (true);
+          "
+          ENCODED=$(echo "$SQL" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
+          curl -sf -X POST "https://api.supabase.com/v1/projects/$PROJECT_ID/database/query" \
+            -H "Authorization: Bearer $SB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\": $ENCODED}" > /dev/null
+          echo "RLS + Storage + push_subscriptions applied"
+
+      # ── 5. Generate VAPID keys ────────────────────────────────
+      - name: Generate VAPID keys
+        id: vapid
+        run: |
+          node << 'EOF'
+          const { webcrypto } = require('crypto');
+          (async () => {
+            const kp = await webcrypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey']);
+            const pub = Buffer.from(await webcrypto.subtle.exportKey('raw', kp.publicKey));
+            const priv = Buffer.from(await webcrypto.subtle.exportKey('pkcs8', kp.privateKey));
+            const b64u = b => b.toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+            // P-256 pkcs8: 36 bytes header + 32 bytes private key
+            const privRaw = priv.slice(36, 68);
+            console.log('VAPID_PUBLIC=' + b64u(pub));
+            console.log('VAPID_PRIVATE=' + b64u(privRaw));
+          })();
+          EOF
+          node << 'EOF' >> $GITHUB_OUTPUT
+          const { webcrypto } = require('crypto');
+          (async () => {
+            const kp = await webcrypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey']);
+            const pub = Buffer.from(await webcrypto.subtle.exportKey('raw', kp.publicKey));
+            const priv = Buffer.from(await webcrypto.subtle.exportKey('pkcs8', kp.privateKey));
+            const b64u = b => b.toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+            const privRaw = priv.slice(36, 68);
+            process.stdout.write('public=' + b64u(pub) + '\n');
+            process.stdout.write('private=' + b64u(privRaw) + '\n');
+          })();
+          EOF
+
+      # ── 6. Update client-specific files ──────────────────────
+      - name: Generate client files
+        env:
+          DESIGN_JSON: ${{ inputs.design_json }}
+          FEATURES_JSON: ${{ inputs.features_json }}
+          CLIENT_JSON: ${{ inputs.client_json }}
+          REPO_SLUG: ${{ inputs.repo_slug }}
+        run: |
+          node << 'EOF'
+          const fs = require('fs');
+          const design = JSON.parse(process.env.DESIGN_JSON);
+          const features = JSON.parse(process.env.FEATURES_JSON);
+          const client = JSON.parse(process.env.CLIENT_JSON);
+          const slug = process.env.REPO_SLUG;
+
+          // design.js
+          fs.writeFileSync('src/config/design.js',
+            `/* Auto-generated for ${client.clinic_name} */\nexport const design = ${JSON.stringify(design, null, 2)};\n`
+          );
+
+          // features.js
+          fs.writeFileSync('src/config/features.js',
+            `export const features = ${JSON.stringify({...features, smsReminders: false}, null, 2)};\n`
+          );
+
+          // vercel.json
+          const vj = JSON.parse(fs.readFileSync('vercel.json','utf8'));
+          vj.alias = [slug + '.vercel.app'];
+          fs.writeFileSync('vercel.json', JSON.stringify(vj, null, 2) + '\n');
+
+          // manifest.json
+          try {
+            const mpath = 'public/manifest.json';
+            if (fs.existsSync(mpath)) {
+              const m = JSON.parse(fs.readFileSync(mpath,'utf8'));
+              m.name = client.clinic_name;
+              m.short_name = (client.clinic_name||'').slice(0,12);
+              m.theme_color = design.colors.primary;
+              m.background_color = design.colors.bg;
+              fs.writeFileSync(mpath, JSON.stringify(m, null, 2) + '\n');
+            }
+          } catch(e) { console.log('manifest skip:', e.message); }
+
+          console.log('Client files written OK');
+          EOF
+
+      # ── 7. Create .env ────────────────────────────────────────
+      - name: Write .env
+        env:
+          CLIENT_JSON: ${{ inputs.client_json }}
+          SB_URL: ${{ steps.supabase.outputs.sb_url }}
+          SB_ANON: ${{ steps.supabase.outputs.anon_key }}
+          SB_SVC: ${{ steps.supabase.outputs.service_key }}
+          VAPID_PUB: ${{ steps.vapid.outputs.public }}
+          VAPID_PRIV: ${{ steps.vapid.outputs.private }}
+        run: |
+          CLIENT=$(echo "$CLIENT_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('owner_phone',''))")
+          cat > .env << ENVEOF
+          VITE_SUPABASE_URL=${SB_URL}
+          VITE_SUPABASE_KEY=${SB_ANON}
+          VITE_VAPID_PUBLIC_KEY=${VAPID_PUB}
+          TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_PHONE=${{ secrets.TWILIO_PHONE }}
+          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+          OWNER_PHONE=$CLIENT
+          VAPID_PUBLIC_KEY=${VAPID_PUB}
+          VAPID_PRIVATE_KEY=${VAPID_PRIV}
+          SUPABASE_SERVICE_KEY=${SB_SVC}
+          ENVEOF
+          echo ".env written"
+
+      # ── 8. Build npm ──────────────────────────────────────────
+      - name: npm run build
+        run: npm run build
+
+      # ── 9. Create GitHub repo + push ─────────────────────────
+      - name: Create GitHub repo and push
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          REPO_SLUG: ${{ inputs.repo_slug }}
+        run: |
+          git config user.email "boltagent8@gmail.com"
+          git config user.name "RISE Auto-Builder"
+          git remote remove origin || true
+          git add -A
+          git commit -m "init: $REPO_SLUG" || true
+          gh repo create galohana/$REPO_SLUG --private --source=. --remote=origin --push
+          echo "Pushed to galohana/$REPO_SLUG"
+
+      # ── 10. Deploy to Vercel ──────────────────────────────────
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Vercel initial deploy
+        id: vercel_deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          REPO_SLUG: ${{ inputs.repo_slug }}
+        run: |
+          OUTPUT=$(vercel --prod --token=$VERCEL_TOKEN --yes 2>&1)
+          echo "$OUTPUT"
+          DEPLOY_URL=$(echo "$OUTPUT" | grep -oP 'https://[a-zA-Z0-9-]+\.vercel\.app' | grep -v "$REPO_SLUG" | head -1)
+          echo "deploy_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "Deployed: $DEPLOY_URL"
+
+      # ── 11. Add env vars to Vercel ────────────────────────────
+      - name: Add Vercel env vars
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          CLIENT_JSON: ${{ inputs.client_json }}
+          SB_URL: ${{ steps.supabase.outputs.sb_url }}
+          SB_ANON: ${{ steps.supabase.outputs.anon_key }}
+          SB_SVC: ${{ steps.supabase.outputs.service_key }}
+          VAPID_PUB: ${{ steps.vapid.outputs.public }}
+          VAPID_PRIV: ${{ steps.vapid.outputs.private }}
+        run: |
+          CLIENT_PHONE=$(echo "$CLIENT_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('owner_phone',''))")
+
+          add_env() {
+            echo "$2" | vercel env add "$1" production --token=$VERCEL_TOKEN --yes 2>/dev/null || true
+          }
+
+          add_env VITE_SUPABASE_URL "$SB_URL"
+          add_env VITE_SUPABASE_KEY "$SB_ANON"
+          add_env SUPABASE_SERVICE_KEY "$SB_SVC"
+          add_env VITE_VAPID_PUBLIC_KEY "$VAPID_PUB"
+          add_env VAPID_PUBLIC_KEY "$VAPID_PUB"
+          add_env VAPID_PRIVATE_KEY "$VAPID_PRIV"
+          add_env VAPID_SUBJECT "mailto:boltagent8@gmail.com"
+          add_env OWNER_PHONE "$CLIENT_PHONE"
+          add_env TWILIO_ACCOUNT_SID "${{ secrets.TWILIO_ACCOUNT_SID }}"
+          add_env TWILIO_AUTH_TOKEN "${{ secrets.TWILIO_AUTH_TOKEN }}"
+          add_env TWILIO_PHONE "${{ secrets.TWILIO_PHONE }}"
+          add_env RESEND_API_KEY "${{ secrets.RESEND_API_KEY }}"
+          echo "Env vars added"
+
+      - name: Vercel redeploy with env vars
+        id: vercel_final
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          REPO_SLUG: ${{ inputs.repo_slug }}
+        run: |
+          OUTPUT=$(vercel --prod --token=$VERCEL_TOKEN --yes 2>&1)
+          echo "$OUTPUT"
+          DEPLOY_URL=$(echo "$OUTPUT" | grep -oP 'https://[a-zA-Z0-9-]+\.vercel\.app' | grep -v "$REPO_SLUG" | head -1)
+          vercel alias set "$DEPLOY_URL" "${REPO_SLUG}.vercel.app" --token=$VERCEL_TOKEN 2>&1 || true
+          echo "final_url=https://${REPO_SLUG}.vercel.app" >> $GITHUB_OUTPUT
+
+      # ── 12. Insert Supabase client data ───────────────────────
+      - name: Insert Supabase data
+        env:
+          CLIENT_JSON: ${{ inputs.client_json }}
+          SB_URL: ${{ steps.supabase.outputs.sb_url }}
+          SB_SVC: ${{ steps.supabase.outputs.service_key }}
+        run: |
+          node << 'EOF'
+          const client = JSON.parse(process.env.CLIENT_JSON);
+          const url = process.env.SB_URL;
+          const key = process.env.SB_SVC;
+
+          const headers = {
+            'apikey': key, 'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates',
+          };
+
+          const phone = client.phone || '';
+          const inserts = [
+            { key: 'clinicInfo', value: {
+              name: client.clinic_name, ownerName: client.owner_name,
+              ownerFullName: client.owner_full_name || client.owner_name,
+              phone, whatsapp: phone, ownerWhatsapp: phone,
+              address: client.address || '', instagram: client.instagram || '',
+              bitAccount: phone, ownerEmail: client.email,
+            }},
+            { key: 'bitAccount', value: phone },
+            { key: 'adminPassword', value: client.admin_password },
+            { key: 'ownerEmail', value: client.email },
+            { key: 'terms', value: 'ברוכות הבאות לקליניקה! בקביעת תור את מאשרת את תנאי הביטול — ביטול פחות מ-24 שעות לפני התור יחויב בדמי ביטול.' },
+          ];
+
+          Promise.all(inserts.map(({ key, value }) =>
+            fetch(`${url}/rest/v1/settings`, {
+              method: 'POST', headers,
+              body: JSON.stringify({ key, value }),
+            }).then(r => r.text()).then(t => console.log(key, ':', t.slice(0,60)))
+          )).then(() => process.exit(0)).catch(e => { console.error(e.message); process.exit(1); });
+          EOF
+
+      # ── 13. Send completion notification ─────────────────────
+      - name: Notify Gal
+        env:
+          CLIENT_JSON: ${{ inputs.client_json }}
+          REPO_SLUG: ${{ inputs.repo_slug }}
+          FINAL_URL: ${{ steps.vercel_final.outputs.final_url }}
+        run: |
+          node << 'EOF'
+          const client = JSON.parse(process.env.CLIENT_JSON);
+          const slug = process.env.REPO_SLUG;
+          const url = process.env.FINAL_URL || `https://${slug}.vercel.app`;
+
+          fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${{ secrets.RESEND_API_KEY }}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'RISE Auto-Builder <noreply@rise-booking.com>',
+              to: ['boltagent8@gmail.com'],
+              subject: `✅ האתר מוכן — ${client.clinic_name}`,
+              text: [
+                `האתר של ${client.clinic_name} עלה בהצלחה! 🎉`,
+                '',
+                `🌐 אתר: ${url}`,
+                `🔧 Admin: ${url}/manage-x7k2`,
+                `🔑 סיסמה: ${client.admin_password}`,
+                `📦 GitHub: https://github.com/galohana/${slug}`,
+                '',
+                `לקוחה: ${client.owner_name} | ${client.phone} | ${client.email}`,
+              ].join('\n'),
+            }),
+          }).then(r => r.json()).then(console.log).catch(console.error);
+          EOF
+          echo "Notification sent"
