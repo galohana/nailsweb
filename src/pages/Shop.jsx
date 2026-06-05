@@ -20,7 +20,7 @@ const C = {
 const SHADOW = '0 6px 20px rgba(92,61,46,0.10)';
 const GLASS  = { backgroundColor: 'rgba(253,250,247,0.7)', backdropFilter: 'blur(16px) saturate(170%)', WebkitBackdropFilter: 'blur(16px) saturate(170%)' };
 
-export default function Shop({ user, onNavigate, onMenuOpen }) {
+export default function Shop({ user, onNavigate }) {
   const [products, setProducts]       = useState([]);
   const [descriptions, setDescs]      = useState({});
   const [labels, setLabels]           = useState({});
@@ -135,7 +135,7 @@ export default function Shop({ user, onNavigate, onMenuOpen }) {
   if (!user) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: C.bg, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
-        <PageHeader onMenuOpen={onMenuOpen} />
+        <PageHeader />
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '120px 24px 24px', textAlign: 'center', minHeight: '100vh' }}>
           <motion.div
             initial={{ scale: 0.85, opacity: 0 }}
@@ -214,7 +214,7 @@ export default function Shop({ user, onNavigate, onMenuOpen }) {
       <motion.div
         initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        style={{ padding: '72px 20px 20px' }}
+        style={{ padding: '88px 20px 20px', paddingInlineEnd: 68 }}
       >
         <h1 style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 32, fontWeight: 600, color: C.text, letterSpacing: '0.02em' }}>
           חנות
