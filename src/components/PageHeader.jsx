@@ -5,9 +5,9 @@ import { DEFAULT_CLINIC_INFO } from '../utils/defaults';
 
 /* ── PageHeader — header מאוחד לעמודי-תת (Booking / Shop / MyAppointments)
    ┌──────────────────────────────────────────────────────────┐
-   │                   כותרת העמוד                  [→ חזרה]   │
+   │   [→ חזרה]                כותרת העמוד                      │
    └──────────────────────────────────────────────────────────┘
-   • כפתור חזרה במיקום inlineEnd (שמאל ב-RTL) — במקום ההמבורגר.
+   • כפתור חזרה במיקום inlineStart (ימין ב-RTL).
    • paddingTop: env(safe-area-inset-top) → הבר יושב מתחת ל-notch/Dynamic Island.
    • z-index 102.                                                       */
 
@@ -39,8 +39,12 @@ export default function PageHeader({ onBack, title }) {
       direction: 'rtl',
     }}>
       <div style={{ height: 56, display: 'flex', alignItems: 'center', gap: 8, padding: '0 10px' }}>
-        {/* spacer inlineStart (ימין ב-RTL) — לאיזון מרכוז הכותרת */}
-        <div style={{ width: 40, flexShrink: 0 }} />
+        {/* כפתור חזרה — inlineStart (ימין ב-RTL) */}
+        {onBack ? (
+          <motion.button onClick={onBack} whileTap={{ scale: 0.9 }} style={ICON_BTN} aria-label="חזרה">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </motion.button>
+        ) : <div style={{ width: 40, flexShrink: 0 }} />}
 
         {/* כותרת ממורכזת */}
         <span style={{
@@ -53,12 +57,8 @@ export default function PageHeader({ onBack, title }) {
           {title || name}
         </span>
 
-        {/* כפתור חזרה — inlineEnd (שמאל ב-RTL), במקום ההמבורגר */}
-        {onBack ? (
-          <motion.button onClick={onBack} whileTap={{ scale: 0.9 }} style={ICON_BTN} aria-label="חזרה">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          </motion.button>
-        ) : <div style={{ width: 40, flexShrink: 0 }} />}
+        {/* spacer inlineEnd (שמאל ב-RTL) — לאיזון מרכוז הכותרת */}
+        <div style={{ width: 40, flexShrink: 0 }} />
       </div>
     </nav>
   );
