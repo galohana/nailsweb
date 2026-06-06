@@ -522,6 +522,7 @@ function WeekCalendar() {
   // ── exclude-from-stats modal — אדמין מסמנת תורים שלא ייכנסו לדוחות ──
   const [excludeModal, setExcludeModal] = useState(null);   // { ds, apts } | null
   const [excludedFromStats, setExcludedFromStats] = useState({}); // { aptId: true }
+  const [approvalManual, setApprovalManual] = useState(false);
 
   useEffect(() => {
     db.services.list().then(setServices);
@@ -530,6 +531,7 @@ function WeekCalendar() {
     db.settings.get('appointmentConfirmations', {}).then(c => setConfirmations(c || {}));
     db.settings.get('workingHours', DEFAULT_WORKING_HOURS).then(setCalWh);
     db.settings.get('excludedFromStats', {}).then(m => setExcludedFromStats(m && typeof m === 'object' ? m : {}));
+    db.settings.get('approvalSettings', { autoApprove: true }).then(a => { if (a && typeof a === 'object') setApprovalManual(!a.autoApprove); });
   }, []);
 
   // Toggle exclude-from-stats for a single appointment — persists immediately to DB
@@ -775,26 +777,32 @@ function WeekCalendar() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {dayApts.map(a => {
                       const isPendingApt = a.status === 'pending';
-                      const pay      = isPendingApt
+                      const pay      = (approvalManual && isPendingApt)
                         ? { bg: 'rgba(230,158,44,0.12)', dot: '#E69E2C', label: '⏳ ממתין לאישור' }
                         : payColor(a.id);
                       const aptDT    = new Date(`${a.date}T${a.time || '00:00'}`);
                       const isFuture = aptDT > now;
                       return (
-                        <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', backgroundColor: pay.bg, borderRadius: 'var(--radius-sm)', border: isPendingApt ? '1px solid rgba(230,158,44,0.3)' : 'none' }}>
-                          <button onClick={() => !isPendingApt && cyclePayment(a.id)}
+                        <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', backgroundColor: pay.bg, borderRadius: 'var(--radius-sm)', border: (approvalManual && isPendingApt) ? '1px solid rgba(230,158,44,0.3)' : 'none' }}>
+                          <button onClick={() => !(approvalManual && isPendingApt) && cyclePayment(a.id)}
                             title={pay.label}
-                            style={{ width: 12, height: 12, borderRadius: '50%', border: 'none', backgroundColor: pay.dot, cursor: isPendingApt ? 'default' : 'pointer', padding: 0, flexShrink: 0 }} />
+                            style={{ width: 12, height: 12, borderRadius: '50%', border: 'none', backgroundColor: pay.dot, cursor: (approvalManual && isPendingApt) ? 'default' : 'pointer', padding: 0, flexShrink: 0 }} />
                           <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700, color: 'var(--color-text)', minWidth: 42 }}>{(a.time || '').slice(0, 5)}</span>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.serviceName}</p>
-                            <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: isPendingApt ? '#E69E2C' : 'var(--color-text-muted)' }}>
-                              {isPendingApt ? '⏳ ממתין לאישור · ' : ''}{a.userName}
+                            <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {a.serviceName}
+                              {approvalManual && isPendingApt
+                                ? <span style={{ marginInlineStart: 6, fontSize: 9, fontWeight: 700, color: '#B8791A' }}>⏳ ממתין</span>
+                                : <span style={{ marginInlineStart: 6, fontSize: 9, fontWeight: 700, color: '#16A34A' }}>✓ אושר</span>
+                              }
+                            </p>
+                            <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--color-text-muted)' }}>
+                              {a.userName}
                             </p>
                           </div>
                           <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: 'var(--color-primary-ink)' }}>₪{a.price}</span>
-                          {/* Approve button — only pending future appointments */}
-                          {isPendingApt && isFuture && (
+                          {/* Approve button — only pending future appointments, when manual approval is active */}
+                          {approvalManual && isPendingApt && isFuture && (
                             <motion.button
                               whileTap={{ scale: 0.9 }}
                               onClick={() => handleApprove(a)}
