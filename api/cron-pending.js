@@ -6,8 +6,6 @@ import { createClient } from '@supabase/supabase-js';
 import twilio from 'twilio';
 import { sendPushToAudience } from './_push.js';
 
-const ONE_H = 60 * 60 * 1000;
-const TWENTY_FOUR_H = 24 * 60 * 60 * 1000;
 
 function toE164(phone) {
   if (!phone) return null;
@@ -33,6 +31,10 @@ async function sendSms(body, to) {
 }
 
 export default async function handler(req, res) {
+  const ISRAEL_OFFSET_MS = 2 * 60 * 60 * 1000;
+  if (new Date(Date.now() + ISRAEL_OFFSET_MS).getUTCHours() !== 20) {
+    return res.status(200).json({ ok: true, skipped: 'outside-digest-window' });
+  }
   const supabase = sb();
   try {
     // 1. Skip if auto-approve is on — no pending appointments expected
@@ -55,13 +57,16 @@ export default async function handler(req, res) {
     const log = (logRow?.value && typeof logRow.value === 'object') ? { ...logRow.value } : {};
 
     const now = Date.now();
+    const todayIsrael = new Date(now + ISRAEL_OFFSET_MS).toISOString().slice(0, 10);
+    const cutoff4pmUtc = new Date(todayIsrael + 'T14:00:00Z').getTime();
     const logUpdated = { ...log };
     let notified = 0;
 
     for (const apt of pending) {
       const createdAt = apt.created_at ? new Date(apt.created_at).getTime() : 0;
-      if (now - createdAt < ONE_H) continue;                   // too fresh — wait at least 1h
-      if (log[apt.id] && now - log[apt.id] < TWENTY_FOUR_H) continue;  // notified recently
+      if (new Date(createdAt + ISRAEL_OFFSET_MS).toISOString().slice(0, 10) === todayIsrael && createdAt >= cutoff4pmUtc) continue;
+      const lastNotifiedDate = log[apt.id] ? new Date(log[apt.id] + ISRAEL_OFFSET_MS).toISOString().slice(0, 10) : null;
+      if (lastNotifiedDate === todayIsrael) continue;
 
       const name = apt.user_name || '';
       const time = (apt.time || '').slice(0, 5);
