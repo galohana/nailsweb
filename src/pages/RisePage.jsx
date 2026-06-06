@@ -15,46 +15,36 @@ export default function RisePage({ embedded = false }) {
         transition={{ duration: 0.5, type: 'spring', stiffness: 120 }}
         style={{ width: '100%', maxWidth: '360px', backgroundColor: 'var(--color-surface)', borderRadius: '20px', padding: '24px 20px', boxShadow: '0 2px 16px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04)', marginTop: '12px' }}
       >
-        {/* לוגו RISE — עצמאי, ללא מסגרת עגולה (הלוגו לא מותאם לעיגול) */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: 'spring', stiffness: 220 }}
-          style={{ width: '140px', height: 'auto', margin: '0 auto 14px', display: 'flex', justifyContent: 'center' }}
+          style={{ width: '120px', height: 'auto', margin: '0 auto 12px', display: 'flex', justifyContent: 'center' }}
         >
           <img src="/assets/rise-brand.png" alt="RISE" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
         </motion.div>
 
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
-          style={{ fontFamily: 'var(--demo-body-font)', fontSize: '11px', color: 'var(--color-section)', textAlign: 'center', letterSpacing: '2px', marginBottom: '16px', textTransform: 'uppercase' }}
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+          style={{ fontFamily: 'var(--demo-body-font)', fontSize: '11px', color: 'var(--color-section)', textAlign: 'center', letterSpacing: '2px', marginBottom: '14px', textTransform: 'uppercase' }}
         >
           אתרי תורים לעסקים
         </motion.p>
 
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
-          style={{ fontFamily: 'var(--demo-body-font)', fontSize: '13px', lineHeight: 1.75, color: 'var(--color-text)', textAlign: 'center', marginBottom: '6px' }}
+        <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          style={{ fontFamily: 'var(--demo-body-font)', fontSize: '13px', lineHeight: 1.75, color: 'var(--color-text)', textAlign: 'center', marginBottom: '18px' }}
         >
-          <p style={{ marginBottom: '8px', fontWeight: 600 }}>עמוסה מלנהל לעצמך את העסק?</p>
-          <p style={{ marginBottom: '8px', fontWeight: 600 }}>לא רוצה להוציא הון על מזכירה?</p>
-          <p style={{ marginBottom: '12px', fontFamily: 'Cormorant Garamond', fontSize: '18px', color: 'var(--color-primary-ink)', fontWeight: 600 }}>
-            הפתרון המושלם עבורך!
-          </p>
-          <p style={{ color: 'var(--color-primary-ink)', opacity: 0.8, fontSize: '12.5px', lineHeight: 1.7 }}>
-            מערכת RISE קובעת עבורך תורים, מעדכנת אותך ואת הלקוחות בכל תור, הופכת את העסק שלך למקצועי ואסתטי, ובעיקר הופכת את היומיום שלך לרגוע וקל.
-          </p>
-        </motion.div>
-
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}
-          style={{ fontFamily: 'var(--demo-body-font)', fontSize: '12px', color: 'var(--color-section)', textAlign: 'center', margin: '14px 0' }}
-        >
-          לפרטים לחצי ⬇
+          תורים, תזכורות ולקוחות — הכל אוטומטי.
+          <br />
+          האתר שלך חי ב-24 שעות, בלי לגייס מזכירה.
+          <br />
+          עיצוב אישי 100% — נבנה בשבילך.
         </motion.p>
 
         <motion.a
           href={whatsappLink} target="_blank" rel="noopener noreferrer"
           initial={{ opacity: 0, scale: 0.6 }}
           animate={{ opacity: 1, scale: 1, y: [0, -6, 0] }}
-          transition={{ opacity: { delay: 0.9 }, scale: { delay: 0.9, type: 'spring', stiffness: 200 }, y: { delay: 1.4, duration: 2.5, repeat: Infinity, ease: 'easeInOut' } }}
+          transition={{ opacity: { delay: 0.6 }, scale: { delay: 0.6, type: 'spring', stiffness: 200 }, y: { delay: 1.2, duration: 2.5, repeat: Infinity, ease: 'easeInOut' } }}
           whileTap={{ scale: 0.95 }}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '13px', backgroundColor: '#25D366', borderRadius: '14px', textDecoration: 'none', boxShadow: '0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)' }}
         >
@@ -68,7 +58,7 @@ export default function RisePage({ embedded = false }) {
         </motion.a>
       </motion.div>
 
-      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.45 }} transition={{ delay: 1.4 }}
+      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.45 }} transition={{ delay: 1.0 }}
         style={{ fontFamily: 'var(--demo-body-font)', fontSize: '10px', color: 'var(--color-section)', marginTop: '20px', textAlign: 'center' }}
       >
         Powered by RISE
