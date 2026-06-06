@@ -37,8 +37,127 @@ function fmtRange(start) {
   return `${s} – ${e}`;
 }
 
+// ── תורים חדשים מאז הביקור האחרון — כותרת יום ──────────────────
+function fmtNewDayHeader(d) {
+  const date = new Date(d + 'T00:00:00');
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const diff = Math.round((date - today) / 86400000);
+  const base = date.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+  if (diff === 0) return `היום · ${base}`;
+  if (diff === 1) return `מחר · ${base}`;
+  return base;
+}
+
+// צבע שורה לפי סטטוס תשלום/אישור — מסונכרן עם payColor של הלוח
+function newAptColor(payments, confirmations, pendingPays, id) {
+  const m = payments[id];
+  if (m === 'bit')       return { bg: 'rgba(76,175,80,0.14)', dot: 'var(--color-success)', label: 'ביט ✓' };
+  if (m === 'cash')      return { bg: 'rgba(230,158,44,0.14)', dot: '#E69E2C', label: 'מזומן ✓' };
+  if (pendingPays[id])   return { bg: 'rgba(230,158,44,0.10)', dot: '#E69E2C', label: '⏳ ממתין' };
+  if (confirmations[id]) return { bg: 'rgba(124,92,191,0.12)', dot: '#7C5CBF', label: '✓ אישרה' };
+  return                   { bg: 'var(--color-brown-10)', dot: 'var(--color-text-hint)', label: 'חדש ✨' };
+}
+
+// חלונית "תורים חדשים שנקבעו" — נפתחת בכניסה לטאב, ממוינת קרוב→רחוק, מקובצת לפי יום, נגללת
+function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, onClose }) {
+  const sorted = [...apts].sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+  const byDay = [];
+  for (const a of sorted) {
+    let g = byDay.find(x => x.date === a.date);
+    if (!g) { g = { date: a.date, items: [] }; byDay.push(g); }
+    g.items.push(a);
+  }
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8, height: 0 }}
+      style={{ ...S.card, padding: 0, overflow: 'hidden', border: '1.5px solid var(--color-primary)', marginBottom: 14 }}
+    >
+      {/* כותרת */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-on-primary)', fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700 }}>
+          🔔 תורים חדשים שנקבעו
+          <span style={{ minWidth: 22, height: 22, padding: '0 6px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {apts.length}
+          </span>
+        </span>
+        <motion.button whileTap={{ scale: 0.95 }} onClick={onClose}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.15)', color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+          <Check size={13} /> ראיתי
+        </motion.button>
+      </div>
+      {/* רשימה נגללת */}
+      <div style={{ maxHeight: 320, overflowY: 'auto', padding: '6px 12px 12px' }}>
+        {byDay.map(g => (
+          <div key={g.date} style={{ marginTop: 8 }}>
+            {/* כותרת יום */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 7px' }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700, color: 'var(--color-primary-ink)', whiteSpace: 'nowrap' }}>
+                {fmtNewDayHeader(g.date)}
+              </span>
+              <span style={{ flex: 1, height: 1, backgroundColor: 'var(--color-border)', opacity: 0.55 }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 999, padding: '1px 8px' }}>
+                {g.items.length}
+              </span>
+            </div>
+            {g.items.map(a => {
+              const c = newAptColor(payments, confirmations, pendingPays, a.id);
+              return (
+                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', marginBottom: 6, borderRadius: 'var(--radius-md)', backgroundColor: c.bg, border: '1px solid var(--color-border-soft)' }}>
+                  <span style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: c.dot, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: 'var(--color-text)' }}>{(a.time || '').slice(0, 5)}</span>
+                      <span style={{ fontSize: 13, color: 'var(--color-text)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.serviceName}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {a.userName || 'לקוחה'}{a.phone ? ` · ${a.phone}` : ''}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'end', flexShrink: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-primary-ink)' }}>₪{a.price}</div>
+                    <div style={{ fontSize: 9.5, color: c.dot, fontWeight: 700 }}>{c.label}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function HoursTab() {
   const [sub, setSub] = useState('hours');  // 'hours' | 'calendar'
+  // ── תורים חדשים מאז הביקור האחרון ──
+  const [newApts, setNewApts]         = useState([]);
+  const [newAptsOpen, setNewAptsOpen] = useState(true);
+  const [payMap, setPayMap]           = useState({});
+  const [confMap, setConfMap]         = useState({});
+  const [pendMap, setPendMap]         = useState({});
+  const [calSeen, setCalSeen]         = useState(false);
+
+  useEffect(() => {
+    const lastSeen = Number(localStorage.getItem('adminLastSeen_hours')) || 0;
+    const nd = new Date();
+    const todayStr = `${nd.getFullYear()}-${String(nd.getMonth() + 1).padStart(2, '0')}-${String(nd.getDate()).padStart(2, '0')}`;
+    Promise.all([
+      db.appointments.list().catch(() => []),
+      db.settings.get('appointmentPayments', {}).catch(() => ({})),
+      db.settings.get('appointmentConfirmations', {}).catch(() => ({})),
+      db.settings.get('pendingPayments', {}).catch(() => ({})),
+    ]).then(([apts, pay, conf, pend]) => {
+      const fresh = (apts || []).filter(a =>
+        a.status !== 'cancelled' &&
+        a.date >= todayStr &&
+        new Date(a.createdAt || 0).getTime() > lastSeen
+      );
+      setNewApts(fresh);
+      setPayMap(pay || {}); setConfMap(conf || {}); setPendMap(pend || {});
+      // קידום ה-timestamp — כדי שלא ייספרו שוב בכניסה הבאה
+      try { localStorage.setItem('adminLastSeen_hours', String(Date.now())); } catch {}
+    }).catch(() => {});
+  }, []);
   const [wh, setWh] = useState(null);
   const [weekStart, setWeekStart] = useState(() => getSunday(new Date()));
   const [weekDays, setWeekDays] = useState(null);
@@ -153,10 +272,28 @@ export default function HoursTab() {
 
   return (
     <div>
+      {/* תורים חדשים מאז הביקור האחרון */}
+      <AnimatePresence>
+        {newAptsOpen && newApts.length > 0 && (
+          <NewAppointmentsPanel
+            apts={newApts} payments={payMap} confirmations={confMap} pendingPays={pendMap}
+            onClose={() => setNewAptsOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
         <button style={S.subTab(sub === 'hours')} onClick={() => setSub('hours')}>שעות עבודה</button>
-        <button style={S.subTab(sub === 'calendar')} onClick={() => setSub('calendar')}>לוח תורים</button>
+        <button style={{ ...S.subTab(sub === 'calendar'), position: 'relative' }}
+          onClick={() => { setSub('calendar'); setCalSeen(true); }}>
+          לוח תורים
+          {!calSeen && newApts.length > 0 && (
+            <span style={{ position: 'absolute', top: -7, insetInlineEnd: -7, minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999, backgroundColor: 'var(--color-accent)', color: 'var(--color-surface)', fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(168,90,74,0.4)' }}>
+              {newApts.length > 99 ? '99+' : newApts.length}
+            </span>
+          )}
+        </button>
       </div>
 
       {sub === 'calendar' && <WeekCalendar />}

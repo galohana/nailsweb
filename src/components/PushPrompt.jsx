@@ -56,17 +56,8 @@ export default function PushPrompt({ mode, userIdentifier, welcomeText }) {
 
   if (phase === 'hidden') return null;
 
-  if (phase === 'granted') {
-    if (mode === 'client') return null;
-    return (
-      <div style={{ ...cardBase, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
-        <Check size={18} color="var(--color-success, #4CAF50)" />
-        <span style={{ fontFamily: 'var(--demo-body-font)', fontSize: 14, fontWeight: 600, color: 'var(--color-on-card-tint, var(--color-text))' }}>
-          התראות פעילות ✅
-        </span>
-      </div>
-    );
-  }
+  // ✅ פעיל (subscription רשום) → הכרטיס נעלם לגמרי (גם admin וגם client)
+  if (phase === 'granted') return null;
 
   const isAdmin = mode === 'admin';
 

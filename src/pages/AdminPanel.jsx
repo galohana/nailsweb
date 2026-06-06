@@ -130,7 +130,7 @@ function UpsellScreen({ tab }) {
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('services');
-  const [notif, setNotif]         = useState({ 'clients-reviews': 0, shop: 0 });
+  const [notif, setNotif]         = useState({ 'clients-reviews': 0, shop: 0, hours: 0 });
   const [reminder, setReminder]   = useState({ show: false, text: DEFAULT_REMINDER_TEXT, enabled: true });
   const [adminLogo, setAdminLogo] = useState('');   // לוגו ייעודי לפאנל הניהול
 
@@ -155,12 +155,14 @@ export default function AdminPanel() {
   };
 
   const refreshNotif = useCallback(() => {
-    const lastSeen = getLastSeen('clientsReviews');
+    const lastSeen      = getLastSeen('clientsReviews');
+    const lastSeenHours = getLastSeen('hours');
     Promise.all([
       db.reviews.list(false).catch(() => []),
       db.orders.list().catch(() => []),
       db.settings.get('pendingPayments', {}).catch(() => ({})),
-    ]).then(([reviews, orders, pendingPays]) => {
+      db.appointments.list().catch(() => []),
+    ]).then(([reviews, orders, pendingPays, appts]) => {
       // סופר רק ביקורות חדשות (pending + נוצרו אחרי הצפייה האחרונה)
       const reviewsCount = (reviews || []).filter(r => {
         if (r.status === 'approved') return false;
@@ -169,7 +171,15 @@ export default function AdminPanel() {
       }).length;
       const ordersPending = (orders || []).filter(o => o.status === 'pending').length;
       const paysPending = Object.keys(pendingPays || {}).length;
-      setNotif({ 'clients-reviews': reviewsCount, shop: ordersPending + paysPending });
+      // תורים חדשים שנקבעו מאז הכניסה האחרונה (עתידיים בלבד — תאריך מהיום והלאה)
+      const nd = new Date();
+      const todayStr = `${nd.getFullYear()}-${String(nd.getMonth() + 1).padStart(2, '0')}-${String(nd.getDate()).padStart(2, '0')}`;
+      const newAppts = (appts || []).filter(a =>
+        a.status !== 'cancelled' &&
+        a.date >= todayStr &&
+        new Date(a.createdAt || 0).getTime() > lastSeenHours
+      ).length;
+      setNotif({ 'clients-reviews': reviewsCount, shop: ordersPending + paysPending, hours: newAppts });
     });
   }, []);
 
@@ -178,6 +188,10 @@ export default function AdminPanel() {
     if (activeTab === 'clients-reviews') {
       markSeen('clientsReviews');
       setNotif(prev => ({ ...prev, 'clients-reviews': 0 }));
+    }
+    // טאב שעות ותורים — ניקוי ויזואלי מיידי של ה-badge (HoursTab מקדם את ה-timestamp)
+    if (activeTab === 'hours') {
+      setNotif(prev => ({ ...prev, hours: 0 }));
     }
   }, [activeTab]);
 
