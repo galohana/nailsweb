@@ -40,14 +40,17 @@ export default function ContactPage({ onNavigate, embedded = false }) {
     }}>
       {!embedded && <PageHeader />}
       {!embedded && (
-        <h1 style={{
-          fontFamily: 'var(--demo-heading-font)',
-          fontSize: 34, fontWeight: 400,
-          color: 'var(--color-surface)', textAlign: 'center',
-          marginBottom: 32, letterSpacing: '0.04em',
-        }}>
-          צרי קשר
-        </h1>
+        <>
+          <h1 style={{
+            fontFamily: 'var(--demo-heading-font)',
+            fontSize: 34, fontWeight: 400,
+            color: 'var(--color-surface)', textAlign: 'center',
+            marginBottom: 6, letterSpacing: '0.04em',
+          }}>
+            צרי קשר
+          </h1>
+          <div className="rise-divider" />
+        </>
       )}
 
       {/* Map card — outer wrapper carries .demo-tinted (color + material).
