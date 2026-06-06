@@ -155,7 +155,7 @@ export const db = {
     },
     byDate: async (date, staffId = null) => {
       let q = supabase.from('appointments').select()
-        .eq('date', date).eq('status', 'confirmed');
+        .eq('date', date).in('status', ['confirmed', 'pending']);
       if (staffId) q = q.eq('staff_id', staffId);
       const { data } = await q;
       return (data || []).map(mapApt);
@@ -176,11 +176,14 @@ export const db = {
           service_id: apt.serviceId, service_name: apt.serviceName,
           service_duration: apt.serviceDuration,
           date: apt.date, time: apt.time, price: apt.price,
-          status: 'confirmed', staff_id: apt.staffId || null,
+          status: apt.status || 'confirmed', staff_id: apt.staffId || null,
           addons: apt.addons || [],
         })
         .select().single();
       return data ? mapApt(data) : null;
+    },
+    approve: async (id) => {
+      await supabase.from('appointments').update({ status: 'confirmed' }).eq('id', id);
     },
     cancel: async (id) => {
       await supabase.from('appointments').update({ status: 'cancelled' }).eq('id', id);

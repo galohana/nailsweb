@@ -4,6 +4,8 @@ import { db } from '../../utils/db';
 import { DEFAULT_ADMIN_SETTINGS, DEFAULT_TERMS } from '../../utils/defaults';
 import * as S from '../../utils/adminStyles';
 
+const DEFAULT_APPROVAL = { autoApprove: true, manualWithinHours: 0 };
+
 export default function CancellationsTab() {
   const [s, setS] = useState(null);
   const [saved, setSaved] = useState(false);
@@ -11,16 +13,29 @@ export default function CancellationsTab() {
   const [termsDirty, setTermsDirty] = useState(false);
   const [termsSaved, setTermsSaved] = useState(false);
   const termsTimer = useRef(null);
+  // ── אישור תורים ──
+  const [approval, setApproval] = useState(null);
+  const [apprSaved, setApprSaved] = useState(false);
 
   useEffect(() => {
     Promise.all([
       db.settings.get('adminSettings', DEFAULT_ADMIN_SETTINGS),
       db.settings.get('terms', DEFAULT_TERMS),
-    ]).then(([adminS, t]) => {
+      db.settings.get('approvalSettings', DEFAULT_APPROVAL),
+    ]).then(([adminS, t, appr]) => {
       setS(adminS);
       setTerms(typeof t === 'string' ? t : DEFAULT_TERMS);
+      setApproval(appr && typeof appr === 'object' ? { ...DEFAULT_APPROVAL, ...appr } : DEFAULT_APPROVAL);
     });
   }, []);
+
+  const updApproval = (patch) => {
+    const n = { ...approval, ...patch };
+    setApproval(n);
+    db.settings.set('approvalSettings', n);
+    setApprSaved(true);
+    setTimeout(() => setApprSaved(false), 1600);
+  };
 
   const saveTerms = () => {
     db.settings.set('terms', terms);
@@ -34,7 +49,7 @@ export default function CancellationsTab() {
   const updCancel = (k, v) => { const n = { ...s, cancellation: { ...s.cancellation, [k]: v } }; setS(n); db.settings.set('adminSettings', n); flash(); };
   const updNS     = (k, v) => { const n = { ...s, noShow: { ...s.noShow, [k]: v } }; setS(n); db.settings.set('adminSettings', n); flash(); };
 
-  if (!s || terms === null) return <p style={{ ...S.emptyText, padding: '20px 0', textAlign: 'center' }}>טוענת...</p>;
+  if (!s || terms === null || !approval) return <p style={{ ...S.emptyText, padding: '20px 0', textAlign: 'center' }}>טוענת...</p>;
 
   const Toggle = ({ value, onChange }) => (
     <button onClick={() => onChange(!value)} style={{ width: 44, height: 24, borderRadius: 'var(--demo-radius-card)', border: 'none', cursor: 'pointer', position: 'relative', backgroundColor: value ? 'var(--color-primary)' : '#D4B896', touchAction: 'manipulation' }}>
@@ -44,6 +59,49 @@ export default function CancellationsTab() {
 
   return (
     <div>
+      {/* ── אישור תורים ── */}
+      <div style={S.card}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <p style={S.heading}>אישור תורים</p>
+          <AnimatePresence>{apprSaved && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ color: '#4CAF50', fontSize: 12 }}>✓ נשמר</motion.span>}</AnimatePresence>
+        </div>
+        <div style={S.toggleRow}>
+          <span style={S.toggleLabel}>אישור אוטומטי</span>
+          <Toggle value={approval.autoApprove} onChange={v => updApproval({ autoApprove: v })} />
+        </div>
+        <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 11, color: 'var(--color-section)', marginTop: 6, lineHeight: 1.6 }}>
+          {approval.autoApprove
+            ? 'כל תור מאושר מיד אוטומטית. את יכולה רק לבטל תור מלוח התורים.'
+            : 'כל תור נכנס כ"ממתין לאישור" — צריך לאשר אותו ידנית מלוח התורים.'}
+        </p>
+
+        {!approval.autoApprove && (
+          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--color-border-soft)' }}>
+            <div style={S.toggleRow}>
+              <span style={S.toggleLabel}>אישור ידני רק לתורים קרובים</span>
+              <Toggle
+                value={(approval.manualWithinHours || 0) > 0}
+                onChange={v => updApproval({ manualWithinHours: v ? 3 : 0 })}
+              />
+            </div>
+            {(approval.manualWithinHours || 0) > 0 && (
+              <>
+                <label style={{ ...S.label, marginTop: 14 }}>דרוש אישור ידני רק לתורים בפחות מ-{approval.manualWithinHours} שעות מעכשיו</label>
+                <input
+                  type="range" min="1" max="48"
+                  value={approval.manualWithinHours}
+                  onChange={e => updApproval({ manualWithinHours: Number(e.target.value) })}
+                  style={{ width: '100%', accentColor: 'var(--color-primary)' }}
+                />
+                <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 11, color: 'var(--color-section)', marginTop: 6, lineHeight: 1.6 }}>
+                  תור שנקבע לעוד פחות מ-{approval.manualWithinHours} שעות דורש אישור ידני. תור רחוק יותר — מאושר אוטומטית.
+                </p>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
       <div style={S.card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <p style={S.heading}>הגדרות ביטולים</p>

@@ -513,9 +513,10 @@ function WeekCalendar() {
   // ── now-line ────────────────────────────────────────────────────
   const [now, setNow]                     = useState(() => new Date());
   const [calWh, setCalWh]                 = useState(null);
-  // ── cancel confirm ──────────────────────────────────────────────
+  // ── cancel / approve ─────────────────────────────────────────────
   const [cancelConfirm, setCancelConfirm] = useState(null);
   const [busyCancel, setBusyCancel]       = useState(false);
+  const [busyApprove, setBusyApprove]     = useState(false);
   // ── calendar export modal ────────────────────────────────────────
   const [calendarModal, setCalendarModal] = useState(null); // { ds, apts } | null
   // ── exclude-from-stats modal — אדמין מסמנת תורים שלא ייכנסו לדוחות ──
@@ -584,6 +585,22 @@ function WeekCalendar() {
   };
 
   const todayStr = toDS(new Date());
+
+  // ── Approve handler (pending → confirmed) ───────────────────────
+  const handleApprove = async (apt) => {
+    if (busyApprove) return;
+    setBusyApprove(true);
+    try {
+      await db.appointments.approve(apt.id);
+      setAptsByDay(prev => {
+        const next = { ...prev };
+        if (next[apt.date]) next[apt.date] = next[apt.date].map(a =>
+          a.id === apt.id ? { ...a, status: 'confirmed' } : a);
+        return next;
+      });
+      try { navigator.vibrate?.([30, 20, 30]); } catch {}
+    } finally { setBusyApprove(false); }
+  };
 
   // ── Cancel handler ───────────────────────────────────────────────
   const handleAdminCancel = async (apt) => {
@@ -667,7 +684,7 @@ function WeekCalendar() {
           const date   = addDays(weekStart, i);
           const ds     = toDS(date);
           const allDayApts = (aptsByDay[ds] || [])
-            .filter(a => a.status === 'confirmed')
+            .filter(a => a.status === 'confirmed' || a.status === 'pending')
             .sort((x, y) => (x.time || '').localeCompare(y.time || ''));
           const dayApts = allDayApts.filter(a => !filter || a.serviceId === filter);
           const isToday   = ds === todayStr;
@@ -757,20 +774,35 @@ function WeekCalendar() {
                   {/* ── Appointment rows ── */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {dayApts.map(a => {
-                      const pay      = payColor(a.id);
+                      const isPendingApt = a.status === 'pending';
+                      const pay      = isPendingApt
+                        ? { bg: 'rgba(230,158,44,0.12)', dot: '#E69E2C', label: '⏳ ממתין לאישור' }
+                        : payColor(a.id);
                       const aptDT    = new Date(`${a.date}T${a.time || '00:00'}`);
                       const isFuture = aptDT > now;
                       return (
-                        <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', backgroundColor: pay.bg, borderRadius: 'var(--radius-sm)' }}>
-                          <button onClick={() => cyclePayment(a.id)}
+                        <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', backgroundColor: pay.bg, borderRadius: 'var(--radius-sm)', border: isPendingApt ? '1px solid rgba(230,158,44,0.3)' : 'none' }}>
+                          <button onClick={() => !isPendingApt && cyclePayment(a.id)}
                             title={pay.label}
-                            style={{ width: 12, height: 12, borderRadius: '50%', border: 'none', backgroundColor: pay.dot, cursor: 'pointer', padding: 0, flexShrink: 0 }} />
+                            style={{ width: 12, height: 12, borderRadius: '50%', border: 'none', backgroundColor: pay.dot, cursor: isPendingApt ? 'default' : 'pointer', padding: 0, flexShrink: 0 }} />
                           <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700, color: 'var(--color-text)', minWidth: 42 }}>{(a.time || '').slice(0, 5)}</span>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.serviceName}</p>
-                            <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--color-text-muted)' }}>{a.userName}</p>
+                            <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: isPendingApt ? '#E69E2C' : 'var(--color-text-muted)' }}>
+                              {isPendingApt ? '⏳ ממתין לאישור · ' : ''}{a.userName}
+                            </p>
                           </div>
                           <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: 'var(--color-primary-ink)' }}>₪{a.price}</span>
+                          {/* Approve button — only pending future appointments */}
+                          {isPendingApt && isFuture && (
+                            <motion.button
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleApprove(a)}
+                              title="אשרי תור"
+                              style={{ padding: '3px 8px', borderRadius: 'var(--radius-xs)', border: '1px solid rgba(76,175,80,0.4)', backgroundColor: 'rgba(76,175,80,0.12)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, color: 'var(--color-success)', gap: 3 }}>
+                              <Check size={10} /> אשרי
+                            </motion.button>
+                          )}
                           {/* Cancel button — only future appointments */}
                           {isFuture && (
                             <motion.button

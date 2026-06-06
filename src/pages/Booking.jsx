@@ -134,6 +134,8 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
   const [owner, setOwner]                     = useState({ id: null, name: 'בעלת העסק', imageUrl: '', mediaType: 'image' });
   const [staffHours, setStaffHours]           = useState({});  // { staffId: hoursObject }
   const [postTimePicker, setPostTimePicker]   = useState(null);  // { time, candidates: [{id, name, imageUrl}] }
+  const [isPending, setIsPending]             = useState(false);
+  const [approval, setApproval]               = useState({ autoApprove: true, manualWithinHours: 0 });
 
   useEffect(() => {
     db.services.list().then(setServices);
@@ -156,6 +158,8 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
       db.settings.get('paymentVisibility', { bit: true }).then(pv => setPayVisible({ bit: pv?.bit !== false })),
     ]).then(() => setPaySettingsLoaded(true)).catch(() => setPaySettingsLoaded(true));
     if (features.staff) db.staff.list().then(setStaff);
+    db.settings.get('approvalSettings', { autoApprove: true, manualWithinHours: 0 })
+      .then(a => { if (a && typeof a === 'object') setApproval(a); }).catch(() => {});
   }, []);
 
   // Load per-staff hours
@@ -335,6 +339,17 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
   const doBook = async () => {
     if (!service || !date || !time) return;
     setLoading(true);
+    // Approval logic
+    let aptStatus = 'confirmed';
+    if (!approval.autoApprove) {
+      const within = Number(approval.manualWithinHours) || 0;
+      if (within > 0) {
+        const hoursUntil = (new Date(`${toDS(date)}T${time}`) - new Date()) / 3600000;
+        aptStatus = hoursUntil < within ? 'pending' : 'confirmed';
+      } else {
+        aptStatus = 'pending';
+      }
+    }
     const fullName = service.name + (selectedAddons.length ? ' + ' + selectedAddons.map(a => a.name).join(' + ') : '');
     const apt = await db.appointments.create({
       phone: user.phone, userName: user.name || user.firstName,
@@ -342,9 +357,11 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
       serviceDuration: effectiveDuration,
       date: toDS(date), time, price: effectivePrice, staffId,
       addons: selectedAddons,
+      status: aptStatus,
     });
     setLoading(false);
     if (apt) {
+      setIsPending(aptStatus === 'pending');
       vibrate([30, 20, 30]);
       setConfirmed(apt);
       setStep(4);
@@ -724,11 +741,11 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
               <SuccessCheck />
               <motion.h2 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
                 style={{ fontSize: 24, fontWeight: 700, color: C.text, marginBottom: 4 }}>
-                התור אושר! 🎉
+                {isPending ? 'הבקשה התקבלה ✓' : 'התור אושר! 🎉'}
               </motion.h2>
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
                 style={{ fontSize: 13, color: C.muted }}>
-                נשלח לך SMS עם הפרטים
+                {isPending ? 'הבקשה בהמתנה לאישור בעלת העסק' : 'נשלח לך SMS עם הפרטים'}
               </motion.p>
               <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.05 }}
                 style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 26, fontWeight: 600, color: C.accent, marginTop: 14, letterSpacing: '0.01em' }}>
