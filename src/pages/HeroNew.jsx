@@ -429,6 +429,16 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore }) {
 
         {/* ── Contact (48px gap above) ── */}
         <div id="section-contact" style={{ position: 'relative', zIndex: 1, paddingTop: 48 }}>
+          <motion.h2
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
+            style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 28, fontWeight: 400, color: 'var(--color-on-section)', textAlign: 'center', letterSpacing: '0.04em', margin: '0 0 6px' }}
+          >
+            צרי קשר
+          </motion.h2>
+          <div className="rise-divider" />
           <ContactPage embedded={true} onNavigate={onNavigate} />
         </div>
 
