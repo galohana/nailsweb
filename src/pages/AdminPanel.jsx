@@ -189,10 +189,8 @@ export default function AdminPanel() {
       markSeen('clientsReviews');
       setNotif(prev => ({ ...prev, 'clients-reviews': 0 }));
     }
-    // טאב שעות ותורים — ניקוי ויזואלי מיידי של ה-badge (HoursTab מקדם את ה-timestamp)
-    if (activeTab === 'hours') {
-      setNotif(prev => ({ ...prev, hours: 0 }));
-    }
+    // טאב שעות ותורים — הבאדג' נשאר עד שלוחצים "ראיתי"/מחוץ לחלונית.
+    // HoursTab קורא ל-onBadgeUpdate (=refreshNotif) רק אחרי סימון, אז הבאדג' מתאפס שם.
   }, [activeTab]);
 
   useEffect(() => {

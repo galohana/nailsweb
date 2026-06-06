@@ -68,12 +68,20 @@ function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, onCl
     g.items.push(a);
   }
   return (
+    // backdrop — לחיצה מחוץ לחלונית = "ראיתי" (מונע באג של התראות תקועות)
     <motion.div
-      initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8, height: 0 }}
-      style={{ ...S.card, padding: 0, overflow: 'hidden', border: '1.5px solid var(--color-primary)', marginBottom: 14 }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, backgroundColor: 'var(--color-overlay)', zIndex: 'var(--z-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, direction: 'rtl' }}
     >
+      <motion.div
+        onClick={e => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.94, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 8 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 30 }}
+        style={{ ...S.card, padding: 0, overflow: 'hidden', border: '1.5px solid var(--color-primary)', margin: 0, width: '100%', maxWidth: 420, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
+      >
       {/* כותרת */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)' }}>
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-on-primary)', fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700 }}>
           🔔 תורים חדשים שנקבעו
           <span style={{ minWidth: 22, height: 22, padding: '0 6px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -86,7 +94,7 @@ function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, onCl
         </motion.button>
       </div>
       {/* רשימה נגללת */}
-      <div style={{ maxHeight: 320, overflowY: 'auto', padding: '6px 12px 12px' }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '6px 12px 12px' }}>
         {byDay.map(g => (
           <div key={g.date} style={{ marginTop: 8 }}>
             {/* כותרת יום */}
@@ -123,19 +131,20 @@ function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, onCl
           </div>
         ))}
       </div>
+      </motion.div>
     </motion.div>
   );
 }
 
-export default function HoursTab() {
+export default function HoursTab({ onBadgeUpdate }) {
   const [sub, setSub] = useState('hours');  // 'hours' | 'calendar'
   // ── תורים חדשים מאז הביקור האחרון ──
   const [newApts, setNewApts]         = useState([]);
-  const [newAptsOpen, setNewAptsOpen] = useState(true);
+  const [panelOpen, setPanelOpen]     = useState(false); // חלונית מרחפת — נפתחת רק בכניסה ל"לוח תורים"
   const [payMap, setPayMap]           = useState({});
   const [confMap, setConfMap]         = useState({});
   const [pendMap, setPendMap]         = useState({});
-  const [calSeen, setCalSeen]         = useState(false);
+  const [calSeen, setCalSeen]         = useState(false); // נשאר false עד שלוחצים "ראיתי"/לחיצה מחוץ לחלונית
 
   useEffect(() => {
     const lastSeen = Number(localStorage.getItem('adminLastSeen_hours')) || 0;
@@ -154,10 +163,17 @@ export default function HoursTab() {
       );
       setNewApts(fresh);
       setPayMap(pay || {}); setConfMap(conf || {}); setPendMap(pend || {});
-      // קידום ה-timestamp — כדי שלא ייספרו שוב בכניסה הבאה
-      try { localStorage.setItem('adminLastSeen_hours', String(Date.now())); } catch {}
+      // ⚠️ לא מקדמים את ה-timestamp כאן — רק בלחיצה על "ראיתי"/מחוץ לחלונית
     }).catch(() => {});
   }, []);
+
+  // סימון "ראיתי" — גם מכפתור "ראיתי" וגם מלחיצה מחוץ לחלונית (backdrop).
+  const markHoursSeen = () => {
+    try { localStorage.setItem('adminLastSeen_hours', String(Date.now())); } catch {}
+    setCalSeen(true);
+    setPanelOpen(false);
+    onBadgeUpdate?.();  // refreshNotif ב-AdminPanel — מאפס את הבאדג' של טאב "שעות ותורים"
+  };
   const [wh, setWh] = useState(null);
   const [weekStart, setWeekStart] = useState(() => getSunday(new Date()));
   const [weekDays, setWeekDays] = useState(null);
@@ -272,12 +288,12 @@ export default function HoursTab() {
 
   return (
     <div>
-      {/* תורים חדשים מאז הביקור האחרון */}
+      {/* תורים חדשים מאז הביקור האחרון — חלונית מרחפת (overlay), נפתחת רק בכניסה ל"לוח תורים" */}
       <AnimatePresence>
-        {newAptsOpen && newApts.length > 0 && (
+        {panelOpen && newApts.length > 0 && (
           <NewAppointmentsPanel
             apts={newApts} payments={payMap} confirmations={confMap} pendingPays={pendMap}
-            onClose={() => setNewAptsOpen(false)}
+            onClose={markHoursSeen}
           />
         )}
       </AnimatePresence>
@@ -286,7 +302,7 @@ export default function HoursTab() {
       <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
         <button style={S.subTab(sub === 'hours')} onClick={() => setSub('hours')}>שעות עבודה</button>
         <button style={{ ...S.subTab(sub === 'calendar'), position: 'relative' }}
-          onClick={() => { setSub('calendar'); setCalSeen(true); }}>
+          onClick={() => { setSub('calendar'); if (!calSeen && newApts.length > 0) setPanelOpen(true); }}>
           לוח תורים
           {!calSeen && newApts.length > 0 && (
             <span style={{ position: 'absolute', top: -7, insetInlineEnd: -7, minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999, backgroundColor: 'var(--color-accent)', color: 'var(--color-surface)', fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(168,90,74,0.4)' }}>
