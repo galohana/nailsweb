@@ -23,6 +23,10 @@ export async function notifyOwnerNewAppointment({ clientName, clientPhone, servi
   await post({ type: 'new_appointment', clientName, clientPhone, service, date, time, aptId });
 }
 
+export async function notifyOwnerPendingAppointment({ clientName, clientPhone, service, date, time, aptId }) {
+  await post({ type: 'new_pending_appointment', clientName, clientPhone, service, date, time, aptId });
+}
+
 export async function notifyOwnerCancellation({ clientName, clientPhone, service, date, time }) {
   await post({ type: 'cancellation', clientName, clientPhone, service, date, time });
 }
@@ -56,6 +60,10 @@ export async function notifyOwnerAppointmentPaid({ clientName, clientPhone, serv
 }
 
 // ── Client notifications ──────────────────────────────────────────────────────
+export async function notifyClientAppointmentApproved({ clientPhone }) {
+  await post({ type: 'appointment_approved', clientPhone });
+}
+
 // Only welcome SMS remains. All other client notifications removed (website only).
 export async function notifyClientWelcome({ clientPhone, clientName }) {
   await post({ type: 'welcome', clientPhone, clientName });

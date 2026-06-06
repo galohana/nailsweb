@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../utils/db';
 import { fmtDuration } from '../utils/format';
-import { notifyOwnerNewAppointment, notifyOwnerCancellation, notifyOwnerNewClient, notifyClientWelcome, notifyOwnerWaitlistJoin, notifyOwnerWaitlistFilled, notifyOwnerAppointmentPaid } from '../utils/sms';
+import { notifyOwnerNewAppointment, notifyOwnerPendingAppointment, notifyOwnerCancellation, notifyOwnerNewClient, notifyClientWelcome, notifyOwnerWaitlistJoin, notifyOwnerWaitlistFilled, notifyOwnerAppointmentPaid } from '../utils/sms';
 import PageHeader from '../components/PageHeader';
 import PayButtons from '../components/PayButtons';
 import PaymentConfirmModal from '../components/PaymentConfirmModal';
@@ -365,7 +365,11 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
       vibrate([30, 20, 30]);
       setConfirmed(apt);
       setStep(4);
-      notifyOwnerNewAppointment({ clientName: user.name || user.firstName, clientPhone: user.phone, service: service.name, date: toDS(date), time, aptId: apt.id });
+      if (aptStatus === 'pending') {
+        notifyOwnerPendingAppointment({ clientName: user.name || user.firstName, clientPhone: user.phone, service: service.name, date: toDS(date), time, aptId: apt.id });
+      } else {
+        notifyOwnerNewAppointment({ clientName: user.name || user.firstName, clientPhone: user.phone, service: service.name, date: toDS(date), time, aptId: apt.id });
+      }
       // If user was on waitlist for this date → notify owner + remove from waitlist
       if (FEAT_WAITLIST) {
         try {

@@ -10,13 +10,15 @@ import { createClient } from '@supabase/supabase-js';
 
 const DEFAULT_TEXTS = {
   admin: {
-    new_booking: 'תור חדש נקבע! 📅', cancellation: 'תור בוטל ❌', new_client: 'לקוחה חדשה הצטרפה 🌸',
+    new_booking: 'תור חדש נקבע! 📅', pending_booking: 'בקשת תור חדשה ממתינה לאישורך ⏳',
+    cancellation: 'תור בוטל ❌', new_client: 'לקוחה חדשה הצטרפה 🌸',
     waitlist_join: 'לקוחה נכנסה לרשימת המתנה', waitlist_promoted: 'לקוחה עברה מהמתנה לתור ✅',
     shop_order_pending: 'הזמנה ממתינה לאישורך 🛍️', shop_purchase: 'קנייה חדשה בחנות! 💰',
   },
   client: {
     reminder1: 'תזכורת: יש לך תור מחר 💅', reminder2: 'תזכורת: התור שלך מתקרב ⏰',
     appointment_confirmed: 'התשלום אושר, התור שלך מאושר! ✅',
+    appointment_approved: 'התור שלך אושר! ✅',
     shop_payment_confirmed: 'הקנייה אושרה! 🛍️', shop_order_confirmed: 'ההזמנה שלך אושרה ✅',
     welcome: 'ברוכה הבאה! שמחים שהצטרפת 🌸',
     waitlist_available: 'התפנה מקום בתאריך שביקשת! מהרי לקבוע תור 🎉',

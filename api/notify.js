@@ -10,8 +10,9 @@ import { firePushEvent, firePushOrSms } from './_push.js';
 // notify type → { audience, key } ב-push_settings
 const PUSH_MAP = {
   // ── אדמין (בעלת העסק) ──
-  new_appointment:        { audience: 'admin', key: 'new_booking' },
-  cancellation:           { audience: 'admin', key: 'cancellation' },
+  new_appointment:         { audience: 'admin', key: 'new_booking' },
+  new_pending_appointment: { audience: 'admin', key: 'pending_booking' },
+  cancellation:            { audience: 'admin', key: 'cancellation' },
   new_client:             { audience: 'admin', key: 'new_client' },
   waitlist_join:          { audience: 'admin', key: 'waitlist_join' },
   waitlist_filled:        { audience: 'admin', key: 'waitlist_promoted' },
@@ -20,6 +21,7 @@ const PUSH_MAP = {
   appointment_paid:       { audience: 'admin', key: 'new_booking' }, // mapped to generic admin push
   // ── לקוחה (אישורים מתוך לוח הניהול) ──
   appointment_confirmed:  { audience: 'client', key: 'appointment_confirmed' },
+  appointment_approved:   { audience: 'client', key: 'appointment_approved' },
   shop_payment_confirmed: { audience: 'client', key: 'shop_payment_confirmed' },
   shop_order_confirmed:   { audience: 'client', key: 'shop_order_confirmed' },
   welcome:                { audience: 'client', key: 'welcome' },

@@ -601,6 +601,14 @@ function WeekCalendar() {
         return next;
       });
       try { navigator.vibrate?.([30, 20, 30]); } catch {}
+      if (apt.phone) {
+        try {
+          await fetch('/api/notify', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'appointment_approved', clientPhone: apt.phone }),
+          });
+        } catch {}
+      }
     } finally { setBusyApprove(false); }
   };
 

@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import twilio from 'twilio';
 import { sendPushToAudience } from './_push.js';
 
+const ONE_H = 60 * 60 * 1000;
 const TWENTY_FOUR_H = 24 * 60 * 60 * 1000;
 
 function toE164(phone) {
@@ -59,7 +60,7 @@ export default async function handler(req, res) {
 
     for (const apt of pending) {
       const createdAt = apt.created_at ? new Date(apt.created_at).getTime() : 0;
-      if (now - createdAt < TWENTY_FOUR_H) continue;          // too fresh
+      if (now - createdAt < ONE_H) continue;                   // too fresh — wait at least 1h
       if (log[apt.id] && now - log[apt.id] < TWENTY_FOUR_H) continue;  // notified recently
 
       const name = apt.user_name || '';
