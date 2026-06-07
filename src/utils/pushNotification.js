@@ -1,6 +1,6 @@
 // Web Push — client utility. Chrome (Android + iOS Safari PWA).
 // ה-public key בלבד חי ב-client (VITE_VAPID_PUBLIC_KEY) — ה-private רק בשרת.
-// keys updated 2026-06-07
+// keys synced from eyebrowsweb 2026-06-07
 
 import { supabase } from '../lib/supabase';
 
