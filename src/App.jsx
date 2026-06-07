@@ -20,6 +20,7 @@ import ManageReviews from './pages/ManageReviews';
 import ContactPage from './pages/ContactPage';
 import RisePage from './pages/RisePage';
 import PrivacyPage from './pages/PrivacyPage';
+import ExistingModal from './components/ExistingModal';
 import { features } from './config/features';
 import { design } from './config/design';
 import { DEFAULT_CLINIC_INFO } from './utils/defaults';
@@ -38,6 +39,7 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [menuOpen, setMenuOpen]       = useState(false); // BubbleMenu controlled (עמודי-תת)
+  const [existingOpen, setExistingOpen] = useState(false);
   const SUB_PAGES  = ['booking', 'appointments', 'shop'];
   const openMenu   = () => setMenuOpen(true);
   const toggleMenu = () => setMenuOpen(o => !o);
@@ -179,7 +181,7 @@ export default function App() {
 
   const renderPage = () => {
     switch (page) {
-      case 'home':           return <HeroNew user={user} onNavigate={navigate} onLogout={logout} showStore={features.reports} />;
+      case 'home':           return <HeroNew user={user} onNavigate={navigate} onLogout={logout} showStore={features.reports} onOpenExisting={() => setExistingOpen(true)} />;
       case 'booking':        return <Booking user={user} onUserSave={saveUser} onNavigate={navigate} onMenuOpen={openMenu} />;
       case 'appointments':   return <MyAppointments user={user} onNavigate={navigate} onMenuOpen={openMenu} />;
       case 'gallery':        return <GalleryAbout onNavigate={navigate} />;
@@ -198,6 +200,9 @@ export default function App() {
   return (
     <div className="min-h-screen font-heebo" style={{ backgroundColor: 'var(--color-bg)', backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat', color: 'var(--color-primary-ink)' }} dir="rtl">
       {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
+
+      {/* ── תור קיים — חיפוש וביטול ── */}
+      <ExistingModal open={existingOpen} onClose={() => setExistingOpen(false)} />
 
       {/* ── מסך חסימה מלא — לא ניתן לסגור ── */}
       {blockedUser && page !== 'admin' && (
