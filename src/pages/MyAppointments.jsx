@@ -267,6 +267,7 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
 
 function AptCard({ apt, isUpcoming, onCancel, onReschedule, cancelWindow, confirmed, onConfirm, clinicName, isPaid, ownerPhone, bitAccount, onNavigate, staffName }) {
   const [payOpen, setPayOpen] = useState(false);
+  const [cancelConfirm, setCancelConfirm] = useState(false);
 
   const cancelled     = apt.status === 'cancelled';
   const hoursLeft     = (new Date(`${apt.date}T${apt.time}`) - new Date()) / 3600000;
@@ -430,9 +431,9 @@ function AptCard({ apt, isUpcoming, onCancel, onReschedule, cancelWindow, confir
                       <div style={{ height: 40, borderRadius: 'var(--demo-radius-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', border: '1px solid var(--color-border)' }}>
                         <span style={{ fontFamily: 'var(--demo-body-font)', fontSize: 9, color: 'var(--color-border-dark)', textAlign: 'center' }}>ביטול<br/>לא מורשה</span>
                       </div>
-                    ) : (
+                    ) : !cancelConfirm ? (
                       <motion.button whileTap={cancelAllowed ? { scale: 0.97 } : {}}
-                        onClick={cancelAllowed ? onCancel : undefined}
+                        onClick={cancelAllowed ? () => setCancelConfirm(true) : undefined}
                         disabled={!cancelAllowed}
                         style={{
                           height: 40, borderRadius: 'var(--demo-radius-card)',
@@ -445,6 +446,29 @@ function AptCard({ apt, isUpcoming, onCancel, onReschedule, cancelWindow, confir
                         }}>
                         ביטול
                       </motion.button>
+                    ) : (
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <motion.button whileTap={{ scale: 0.97 }}
+                          onClick={() => { onCancel(); setCancelConfirm(false); }}
+                          style={{
+                            flex: 1, height: 40, borderRadius: 'var(--demo-radius-card)',
+                            border: 'none', backgroundColor: '#C62828',
+                            color: '#fff', fontFamily: 'var(--demo-body-font)',
+                            fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                          }}>
+                          כן, בטלי
+                        </motion.button>
+                        <motion.button whileTap={{ scale: 0.97 }}
+                          onClick={() => setCancelConfirm(false)}
+                          style={{
+                            flex: 1, height: 40, borderRadius: 'var(--demo-radius-card)',
+                            border: '1px solid var(--color-border-dark)', backgroundColor: 'transparent',
+                            color: 'var(--color-text)', fontFamily: 'var(--demo-body-font)',
+                            fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                          }}>
+                          השארי
+                        </motion.button>
+                      </div>
                     )}
                   </div>
                 </div>

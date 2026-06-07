@@ -383,24 +383,6 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore, onOpenE
             </motion.button>
           </Ripple>
 
-          {/* ── Secondary link: existing appointment ── */}
-          {onOpenExisting && (
-            <motion.button
-              onClick={onOpenExisting}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                fontFamily: 'var(--demo-body-font)', fontSize: 13,
-                color: 'rgba(253,250,247,0.55)', textDecoration: 'underline',
-                textDecorationColor: 'rgba(253,250,247,0.25)',
-                textUnderlineOffset: 3, padding: '4px 8px',
-                letterSpacing: '0.02em',
-              }}
-            >
-              יש לי תור — צפייה / ביטול
-            </motion.button>
-          )}
         </motion.div>
 
         {/* ── Stats badges (counter animation in viewport) ── */}
