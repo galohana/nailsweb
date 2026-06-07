@@ -98,9 +98,15 @@ export default function ContactPage({ onNavigate, embedded = false }) {
                 backgroundColor: 'var(--color-surface)', color: 'var(--color-section)', padding: '10px 20px',
                 borderRadius: 50, fontFamily: 'var(--demo-body-font)', fontSize: 14, fontWeight: 700,
                 boxShadow: '0 2px 12px rgba(0,0,0,0.06)', whiteSpace: 'nowrap',
+                display: 'flex', alignItems: 'center', gap: 8,
               }}
             >
-              פתחי ניווט ב-waze ←
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Waze_logo.svg/2048px-Waze_logo.svg.png"
+                alt="Waze"
+                style={{ width: 40, height: 40, objectFit: 'contain' }}
+              />
+              פתחי ניווט ב-Waze
             </motion.div>
           </motion.a>
 
