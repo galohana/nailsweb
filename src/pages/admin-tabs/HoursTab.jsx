@@ -113,7 +113,6 @@ function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, appr
     g.items.push(a);
   }
   const now = new Date();
-  const pendingFutureCount = approvalManual ? localApts.filter(a => a.status === 'pending' && new Date(`${a.date}T${a.time || '00:00'}`) > now).length : 0;
   return (
     // backdrop — לחיצה מחוץ לחלונית = "ראיתי" (מונע באג של התראות תקועות)
     <motion.div
@@ -136,7 +135,7 @@ function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, appr
           </span>
         </span>
         <div style={{ display: 'flex', gap: 6 }}>
-          {pendingFutureCount > 0 && (
+          {approvalManual && (
             <motion.button whileTap={{ scale: 0.95 }} onClick={handleApproveAll} disabled={busyApprove}
               style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(76,175,80,0.5)', backgroundColor: 'rgba(76,175,80,0.22)', color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: busyApprove ? 0.6 : 1 }}>
               <Check size={12} /> אשרי הכל
@@ -754,7 +753,7 @@ function WeekCalendar() {
             <AlertTriangle size={14} />
           </button>
         </div>
-        {approvalManual && Object.values(aptsByDay).flat().some(a => a.status === 'pending' && new Date(`${a.date}T${a.time || '00:00'}`) > now) && (
+        {approvalManual && (
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={handleApproveAll}
