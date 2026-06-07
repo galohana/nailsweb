@@ -59,14 +59,37 @@ function newAptColor(payments, confirmations, pendingPays, id) {
 }
 
 // חלונית "תורים חדשים שנקבעו" — נפתחת בכניסה לטאב, ממוינת קרוב→רחוק, מקובצת לפי יום, נגללת
-function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, onClose }) {
-  const sorted = [...apts].sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, approvalManual, onApprove, onClose }) {
+  const [busyApprove, setBusyApprove] = useState(false);
+  const [localApts, setLocalApts] = useState(apts);
+
+  const handleApprove = async (apt) => {
+    if (busyApprove) return;
+    setBusyApprove(true);
+    try {
+      await db.appointments.approve(apt.id);
+      setLocalApts(prev => prev.map(a => a.id === apt.id ? { ...a, status: 'confirmed' } : a));
+      try { navigator.vibrate?.([30, 20, 30]); } catch {}
+      if (apt.phone) {
+        try {
+          await fetch('/api/notify', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'appointment_approved', clientPhone: apt.phone }),
+          });
+        } catch {}
+      }
+      onApprove?.();
+    } finally { setBusyApprove(false); }
+  };
+
+  const sorted = [...localApts].sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
   const byDay = [];
   for (const a of sorted) {
     let g = byDay.find(x => x.date === a.date);
     if (!g) { g = { date: a.date, items: [] }; byDay.push(g); }
     g.items.push(a);
   }
+  const now = new Date();
   return (
     // backdrop — לחיצה מחוץ לחלונית = "ראיתי" (מונע באג של התראות תקועות)
     <motion.div
@@ -108,9 +131,13 @@ function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, onCl
               </span>
             </div>
             {g.items.map(a => {
-              const c = newAptColor(payments, confirmations, pendingPays, a.id);
+              const isPending = approvalManual && a.status === 'pending';
+              const isFuture = new Date(`${a.date}T${a.time || '00:00'}`) > now;
+              const c = isPending
+                ? { bg: 'rgba(230,158,44,0.12)', dot: '#E69E2C', label: '⏳ ממתין לאישור' }
+                : newAptColor(payments, confirmations, pendingPays, a.id);
               return (
-                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', marginBottom: 6, borderRadius: 'var(--radius-md)', backgroundColor: c.bg, border: '1px solid var(--color-border-soft)' }}>
+                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', marginBottom: 6, borderRadius: 'var(--radius-md)', backgroundColor: c.bg, border: isPending ? '1px solid rgba(230,158,44,0.3)' : '1px solid var(--color-border-soft)' }}>
                   <span style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: c.dot, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
@@ -121,9 +148,20 @@ function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, onCl
                       {a.userName || 'לקוחה'}{a.phone ? ` · ${a.phone}` : ''}
                     </div>
                   </div>
-                  <div style={{ textAlign: 'end', flexShrink: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-primary-ink)' }}>₪{a.price}</div>
-                    <div style={{ fontSize: 9.5, color: c.dot, fontWeight: 700 }}>{c.label}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                    <div style={{ textAlign: 'end' }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-primary-ink)' }}>₪{a.price}</div>
+                      <div style={{ fontSize: 9.5, color: c.dot, fontWeight: 700 }}>{c.label}</div>
+                    </div>
+                    {isPending && isFuture && (
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        disabled={busyApprove}
+                        onClick={() => handleApprove(a)}
+                        style={{ padding: '4px 10px', borderRadius: 'var(--radius-xs)', border: '1px solid rgba(76,175,80,0.4)', backgroundColor: 'rgba(76,175,80,0.14)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, color: 'var(--color-success)', opacity: busyApprove ? 0.6 : 1 }}>
+                        <Check size={10} /> אשרי
+                      </motion.button>
+                    )}
                   </div>
                 </div>
               );
@@ -145,6 +183,7 @@ export default function HoursTab({ onBadgeUpdate }) {
   const [confMap, setConfMap]         = useState({});
   const [pendMap, setPendMap]         = useState({});
   const [calSeen, setCalSeen]         = useState(false); // נשאר false עד שלוחצים "ראיתי"/לחיצה מחוץ לחלונית
+  const [approvalManual, setApprovalManual] = useState(false);
 
   useEffect(() => {
     const lastSeen = Number(localStorage.getItem('adminLastSeen_hours')) || 0;
@@ -155,7 +194,8 @@ export default function HoursTab({ onBadgeUpdate }) {
       db.settings.get('appointmentPayments', {}).catch(() => ({})),
       db.settings.get('appointmentConfirmations', {}).catch(() => ({})),
       db.settings.get('pendingPayments', {}).catch(() => ({})),
-    ]).then(([apts, pay, conf, pend]) => {
+      db.settings.get('approvalSettings', { autoApprove: true }).catch(() => ({ autoApprove: true })),
+    ]).then(([apts, pay, conf, pend, approval]) => {
       const fresh = (apts || []).filter(a =>
         a.status !== 'cancelled' &&
         a.date >= todayStr &&
@@ -163,6 +203,7 @@ export default function HoursTab({ onBadgeUpdate }) {
       );
       setNewApts(fresh);
       setPayMap(pay || {}); setConfMap(conf || {}); setPendMap(pend || {});
+      if (approval && typeof approval === 'object') setApprovalManual(!approval.autoApprove);
       // ⚠️ לא מקדמים את ה-timestamp כאן — רק בלחיצה על "ראיתי"/מחוץ לחלונית
     }).catch(() => {});
   }, []);
@@ -293,6 +334,7 @@ export default function HoursTab({ onBadgeUpdate }) {
         {panelOpen && newApts.length > 0 && (
           <NewAppointmentsPanel
             apts={newApts} payments={payMap} confirmations={confMap} pendingPays={pendMap}
+            approvalManual={approvalManual} onApprove={() => {}}
             onClose={markHoursSeen}
           />
         )}
