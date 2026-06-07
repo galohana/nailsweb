@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 import { db } from '../utils/db';
 import { fmtDuration } from '../utils/format';
 import { notifyOwnerCancellation } from '../utils/sms';
@@ -52,6 +53,7 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
   const [staffList, setStaffList]         = useState([]);
   const [bitAccount, setBitAccount]       = useState('');
   const [payVisible, setPayVisible]       = useState({ bit: true });
+  const [historyOpen, setHistoryOpen]     = useState(false);
 
   useEffect(() => { if (user) load(); else setLoading(false); }, [user]);
 
@@ -216,13 +218,44 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
 
             {past.length > 0 && (
               <div>
-                <p style={{ color: C.muted, fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', marginBottom: 10 }}>היסטוריה</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {past.map(apt => (
-                    <AptCard key={apt.id} apt={apt} isUpcoming={false} isPaid={!!payments[apt.id]}
-                      staffName={features.staff && apt.staffId ? (staffList.find(s => s.id === apt.staffId)?.name || '') : ownerName} />
-                  ))}
-                </div>
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setHistoryOpen(o => !o)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    background: 'none', border: 'none', cursor: 'pointer', padding: '10px 0',
+                    marginBottom: historyOpen ? 10 : 0,
+                  }}>
+                  <span style={{ color: C.muted, fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    היסטוריית תורים
+                    <span style={{ fontSize: 10, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 999, padding: '1px 7px' }}>
+                      {past.length}
+                    </span>
+                  </span>
+                  <motion.span
+                    animate={{ rotate: historyOpen ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ color: C.muted, display: 'flex', alignItems: 'center' }}>
+                    <ChevronDown size={16} />
+                  </motion.span>
+                </motion.button>
+                <AnimatePresence>
+                  {historyOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      style={{ overflow: 'hidden' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {past.map(apt => (
+                          <AptCard key={apt.id} apt={apt} isUpcoming={false} isPaid={!!payments[apt.id]}
+                            staffName={features.staff && apt.staffId ? (staffList.find(s => s.id === apt.staffId)?.name || '') : ownerName} />
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
           </>
