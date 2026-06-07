@@ -215,6 +215,7 @@ export default function HoursTab({ onBadgeUpdate }) {
   const [pendMap, setPendMap]         = useState({});
   const [calSeen, setCalSeen]         = useState(false); // נשאר false עד שלוחצים "ראיתי"/לחיצה מחוץ לחלונית
   const [approvalManual, setApprovalManual] = useState(false);
+  const [calRefreshKey, setCalRefreshKey] = useState(0);
 
   useEffect(() => {
     const lastSeen = Number(localStorage.getItem('adminLastSeen_hours')) || 0;
@@ -365,7 +366,7 @@ export default function HoursTab({ onBadgeUpdate }) {
         {panelOpen && newApts.length > 0 && (
           <NewAppointmentsPanel
             apts={newApts} payments={payMap} confirmations={confMap} pendingPays={pendMap}
-            approvalManual={approvalManual} onApprove={() => {}}
+            approvalManual={approvalManual} onApprove={() => setCalRefreshKey(k => k + 1)}
             onClose={markHoursSeen}
           />
         )}
@@ -385,7 +386,7 @@ export default function HoursTab({ onBadgeUpdate }) {
         </button>
       </div>
 
-      {sub === 'calendar' && <WeekCalendar />}
+      {sub === 'calendar' && <WeekCalendar refreshKey={calRefreshKey} />}
       {sub === 'hours' && (
       <>
       <div style={S.card}>
@@ -573,7 +574,7 @@ function getNowLinePercent(date, now, wh) {
   return ((nowMin - startMin) / (endMin - startMin)) * 100;
 }
 
-function WeekCalendar() {
+function WeekCalendar({ refreshKey = 0 }) {
   const [weekStart, setWeekStart]         = useState(() => getSunday(new Date()));
   const [aptsByDay, setAptsByDay]         = useState({});
   const [services, setServices]           = useState([]);
@@ -636,7 +637,7 @@ function WeekCalendar() {
       setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [weekStart]);
+  }, [weekStart, refreshKey]);
 
   const cyclePayment = async (aptId) => {
     const order = ['cash', 'bit', null];
