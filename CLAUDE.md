@@ -1,7 +1,7 @@
-# CLAUDE.md — Eyebrows Project
+# CLAUDE.md — Nails Project
 
 ## זהות הפרויקט
-אתר קביעת תורים לסטודיואים קטנים (גבות, ציפורניים, ריסים).
+אתר קביעת תורים לסטודיו ציפורניים.
 בונה: גל אוחנה | מותג: RISE
 
 ## הסטאק
@@ -13,10 +13,11 @@
 - עברית RTL, פונט Heebo + Cormorant Garamond לכותרות
 
 ## כתובות
-- אתר: https://eyebrowsweb-app.vercel.app  ← הכתובת הנכונה והיחידה
-- Admin: https://eyebrowsweb-app.vercel.app/manage-x7k2
-- עמוד המותג (RISE) באתר: https://eyebrowsweb-app.vercel.app/rise (וגם /bolt עובד כ-legacy)
-- Supabase: https://expypgqdrjbthgxfddog.supabase.co
+- אתר: https://nailsweb.vercel.app  ← הכתובת הנכונה והיחידה
+- Admin: https://nailsweb.vercel.app/manage-x7k2
+- עמוד המותג (RISE) באתר: https://nailsweb.vercel.app/rise
+- GitHub: https://github.com/galohana/nailsweb (private)
+- Supabase: Rise - nailsweb project (Frankfurt EU)
 
 ## ⚠️ DEPLOY — חובה לקרוא
 - **כלל ברזל:** לעולם לא `vercel --prod` אחרי `git push` באותו session
@@ -91,7 +92,7 @@
 ## חוקי עבודה
 1. אל תמחק קוד קיים בלי לשאול
 2. כל שינוי — בדוק שלא שובר מודול אחר
-3. אחרי כל בנייה — הרץ vercel --prod מתוך eyebrowsweb-app
+3. אחרי כל בנייה — הרץ vercel --prod מתוך nailsweb
 4. אחרי כל deploy — git commit + git push עם תיאור קצר של מה שינית
 5. Double verification — אחרי כל פעולה בדוק שבוצעה
 6. SMS דרך Twilio בלבד
@@ -100,7 +101,7 @@
 9. RTL תמיד — logical properties בלבד (ms/me/ps/pe)
 
 ## GitHub
-- Repository: https://github.com/galohana/eyebrowsweb-app (private)
+- Repository: https://github.com/galohana/nailsweb (private)
 - Branch: master
 - gh CLI path: C:\Program Files\GitHub CLI\gh.exe
 - אחרי כל deploy: git add -A && git commit -m "תיאור" && git push
@@ -141,3 +142,6 @@
 ## Template
 האתר הזה הוא ה-template הרשמי.
 לקוחה חדשה = העתק template + שנה credentials + vercel --prod
+
+## Session End Rule
+בסוף כל session — חובה לעדכן CURRENT_STATE.md ו-TASKS.md לפני סגירה.
