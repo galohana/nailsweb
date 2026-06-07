@@ -13,7 +13,7 @@ function isIphone() {
    mode="client" → כרטיס עדין אחרי קביעת תור (user_identifier = טלפון)
    mode="admin"  → כרטיס בולט בראש האדמין (user_identifier = 'admin') */
 export default function PushPrompt({ mode, userIdentifier, welcomeText }) {
-  const [phase, setPhase] = useState('hidden'); // hidden | offer | granted | denied | working
+  const [phase, setPhase] = useState('hidden'); // hidden | offer | granted | denied | error | working
   const ios = isIphone();
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function PushPrompt({ mode, userIdentifier, welcomeText }) {
     } else if (res.reason === 'denied') {
       setPhase('denied');
     } else {
-      setPhase('denied');
+      setPhase('error'); // שגיאה טכנית (DB / subscribe-failed) — לא סירוב המשתמש
     }
   };
 
@@ -74,7 +74,7 @@ export default function PushPrompt({ mode, userIdentifier, welcomeText }) {
             backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            {phase === 'denied'
+            {(phase === 'denied' || phase === 'error')
               ? <BellRing size={20} color="var(--color-on-primary, #fff)" />
               : <Bell size={20} color="var(--color-on-primary, #fff)" />}
           </div>
@@ -83,28 +83,34 @@ export default function PushPrompt({ mode, userIdentifier, welcomeText }) {
             <h4 style={{ fontFamily: 'var(--demo-heading-font)', fontSize: isAdmin ? 17 : 16, fontWeight: 700, color: 'var(--color-on-card-tint, var(--color-text))', margin: '0 0 4px' }}>
               {phase === 'denied'
                 ? 'איך מפעילים התראות'
-                : isAdmin ? '📲 קבלי התראות על העסק שלך' : 'רוצה תזכורת לפני התור? 🔔'}
+                : phase === 'error'
+                  ? 'לא הצלחנו להפעיל התראות'
+                  : isAdmin ? '📲 קבלי התראות על העסק שלך' : 'רוצה תזכורת לפני התור? 🔔'}
             </h4>
 
             <p style={{ fontFamily: 'var(--demo-body-font)', fontSize: 13, lineHeight: 1.6, color: 'var(--color-text-muted, #7D5A47)', margin: 0 }}>
               {phase === 'denied'
                 ? (ios
-                    ? 'פתחי את האתר מהאייקון במסך הבית, ואז אפשרי התראות מההגדרות.'
+                    ? 'כנסי להגדרות הטלפון ← חפשי את שם האתר ← התראות ← אפשרי.'
                     : 'אפשרי התראות מהגדרות הדפדפן (🔒 ליד הכתובת ← Notifications ← Allow).')
-                : isAdmin
-                  ? (ios
-                      ? 'פתחי את כפתור השיתוף ← "הוסף למסך הבית". פתחי מהאייקון ← אפשרי התראות.'
-                      : 'חשוב: פתחי דף זה ב-Chrome (לא Samsung Internet). תפריט ← "הוסף למסך הבית", פתחי מהאייקון ← אשרי התראות.')
-                  : 'הורידי את האתר למסך הבית וקבלי התראה לפני התור'}
+                : phase === 'error'
+                  ? 'אירעה שגיאה טכנית. נסי שוב בעוד רגע.'
+                  : isAdmin
+                    ? (ios
+                        ? 'פתחי את כפתור השיתוף ← "הוסף למסך הבית". פתחי מהאייקון ← אפשרי התראות.'
+                        : 'חשוב: פתחי דף זה ב-Chrome (לא Samsung Internet). תפריט ← "הוסף למסך הבית", פתחי מהאייקון ← אשרי התראות.')
+                    : 'הורידי את האתר למסך הבית וקבלי התראה לפני התור'}
             </p>
 
             {phase !== 'denied' && (
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <motion.button whileTap={{ scale: 0.97 }} onClick={enable} disabled={phase === 'working'}
+                <motion.button whileTap={{ scale: 0.97 }}
+                  onClick={phase === 'error' ? () => setPhase('offer') : enable}
+                  disabled={phase === 'working'}
                   style={btnPrimary}>
-                  {phase === 'working' ? 'מפעיל…' : isAdmin ? 'אפשרי התראות' : 'כן, אני רוצה'}
+                  {phase === 'working' ? 'מפעיל…' : phase === 'error' ? 'נסי שוב' : isAdmin ? 'אפשרי התראות' : 'כן, אני רוצה'}
                 </motion.button>
-                {!isAdmin && (
+                {!isAdmin && phase !== 'error' && (
                   <motion.button whileTap={{ scale: 0.97 }} onClick={dismiss} style={btnGhost}>
                     לא תודה
                   </motion.button>
@@ -113,7 +119,7 @@ export default function PushPrompt({ mode, userIdentifier, welcomeText }) {
             )}
           </div>
 
-          {!isAdmin && phase !== 'denied' && (
+          {!isAdmin && phase !== 'denied' && phase !== 'error' && (
             <button onClick={dismiss} aria-label="סגור" style={closeBtn}><X size={16} /></button>
           )}
         </div>

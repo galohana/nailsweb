@@ -6,6 +6,7 @@ import { notifyOwnerNewAppointment, notifyOwnerPendingAppointment, notifyOwnerCa
 import PageHeader from '../components/PageHeader';
 import PayButtons from '../components/PayButtons';
 import PaymentConfirmModal from '../components/PaymentConfirmModal';
+import PushPrompt from '../components/PushPrompt';
 import { features } from '../config/features';
 
 const FEAT_WAITLIST = import.meta.env.VITE_FEATURE_WAITLIST !== 'false';
@@ -867,6 +868,9 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
                 );
               })()}
             </motion.div>
+
+            {/* ── כרטיס הפעלת Push — עדין, אחרי קביעת תור בהצלחה ── */}
+            <PushPrompt mode="client" userIdentifier={user?.phone || login.phone} />
           </motion.div>
         )}
       </div>
