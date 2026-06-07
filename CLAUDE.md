@@ -19,10 +19,9 @@
 - Supabase: https://expypgqdrjbthgxfddog.supabase.co
 
 ## ⚠️ DEPLOY — חובה לקרוא
-- תמיד לאחר `vercel --prod`: להריץ `vercel alias set <deployment-url> eyebrowsweb-app.vercel.app`
-- אסור לעבוד על gavot-app.vercel.app — הכתובת הזו לא בשימוש
-- אסור לציין gavot-app בשום הקשר
-- ⚠️ אל תוסיף alias `rise-builder.vercel.app` כאן! זה שייך לפרויקט נפרד `bolt-builder`
+- **כלל ברזל:** לעולם לא `vercel --prod` אחרי `git push` באותו session
+- בחר אחד בלבד: `git push` (Vercel עולה אוטומטי) **או** `vercel --prod` (בלי git push לפני) — לא שניהם
+- תמיד לאחר `vercel --prod`: להריץ `vercel alias set <deployment-url> nailsweb.vercel.app`
 
 ## עיצוב — עקרונות קבועים
 - תחושה: יוקרה, בגרות, מודרניות, נינוחות, חדשנות
