@@ -82,6 +82,29 @@ function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, appr
     } finally { setBusyApprove(false); }
   };
 
+  const handleApproveAll = async () => {
+    if (busyApprove) return;
+    const n = new Date();
+    const toApprove = localApts.filter(a => a.status === 'pending' && new Date(`${a.date}T${a.time || '00:00'}`) > n);
+    if (!toApprove.length) return;
+    setBusyApprove(true);
+    try {
+      await Promise.all(toApprove.map(async apt => {
+        await db.appointments.approve(apt.id);
+        if (apt.phone) {
+          try {
+            await fetch('/api/notify', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ type: 'appointment_approved', clientPhone: apt.phone }) });
+          } catch {}
+        }
+      }));
+      const ids = new Set(toApprove.map(a => a.id));
+      setLocalApts(prev => prev.map(a => ids.has(a.id) ? { ...a, status: 'confirmed' } : a));
+      try { navigator.vibrate?.([30, 20, 30]); } catch {}
+      onApprove?.();
+    } finally { setBusyApprove(false); }
+  };
+
   const sorted = [...localApts].sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
   const byDay = [];
   for (const a of sorted) {
@@ -90,6 +113,7 @@ function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, appr
     g.items.push(a);
   }
   const now = new Date();
+  const pendingFutureCount = approvalManual ? localApts.filter(a => a.status === 'pending' && new Date(`${a.date}T${a.time || '00:00'}`) > now).length : 0;
   return (
     // backdrop — לחיצה מחוץ לחלונית = "ראיתי" (מונע באג של התראות תקועות)
     <motion.div
@@ -111,10 +135,18 @@ function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, appr
             {apts.length}
           </span>
         </span>
-        <motion.button whileTap={{ scale: 0.95 }} onClick={onClose}
-          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.15)', color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-          <Check size={13} /> ראיתי
-        </motion.button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {pendingFutureCount > 0 && (
+            <motion.button whileTap={{ scale: 0.95 }} onClick={handleApproveAll} disabled={busyApprove}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(76,175,80,0.5)', backgroundColor: 'rgba(76,175,80,0.22)', color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: busyApprove ? 0.6 : 1 }}>
+              <Check size={12} /> אשרי הכל
+            </motion.button>
+          )}
+          <motion.button whileTap={{ scale: 0.95 }} onClick={onClose}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.15)', color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+            <Check size={13} /> ראיתי
+          </motion.button>
+        </div>
       </div>
       {/* רשימה נגללת */}
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '6px 12px 12px' }}>
@@ -654,6 +686,33 @@ function WeekCalendar() {
     } finally { setBusyApprove(false); }
   };
 
+  const handleApproveAll = async () => {
+    if (busyApprove) return;
+    const toApprove = Object.values(aptsByDay).flat().filter(a =>
+      a.status === 'pending' && new Date(`${a.date}T${a.time || '00:00'}`) > now
+    );
+    if (!toApprove.length) return;
+    setBusyApprove(true);
+    try {
+      await Promise.all(toApprove.map(async apt => {
+        await db.appointments.approve(apt.id);
+        if (apt.phone) {
+          try {
+            await fetch('/api/notify', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ type: 'appointment_approved', clientPhone: apt.phone }) });
+          } catch {}
+        }
+      }));
+      const ids = new Set(toApprove.map(a => a.id));
+      setAptsByDay(prev => {
+        const next = {};
+        for (const [d, list] of Object.entries(prev)) next[d] = list.map(a => ids.has(a.id) ? { ...a, status: 'confirmed' } : a);
+        return next;
+      });
+      try { navigator.vibrate?.([30, 20, 30]); } catch {}
+    } finally { setBusyApprove(false); }
+  };
+
   // ── Cancel handler ───────────────────────────────────────────────
   const handleAdminCancel = async (apt) => {
     if (busyCancel) return;
@@ -695,6 +754,15 @@ function WeekCalendar() {
             <AlertTriangle size={14} />
           </button>
         </div>
+        {approvalManual && Object.values(aptsByDay).flat().some(a => a.status === 'pending' && new Date(`${a.date}T${a.time || '00:00'}`) > now) && (
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={handleApproveAll}
+            disabled={busyApprove}
+            style={{ marginTop: 8, width: '100%', padding: '9px 16px', borderRadius: 'var(--demo-radius-card)', border: '1px solid rgba(76,175,80,0.4)', backgroundColor: 'rgba(76,175,80,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700, color: 'var(--color-success)', opacity: busyApprove ? 0.6 : 1 }}>
+            <Check size={14} /> אשרי הכל
+          </motion.button>
+        )}
         <AnimatePresence>
           {showLegend && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
