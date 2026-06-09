@@ -153,6 +153,18 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore, onOpenE
     return () => clearTimeout(timer);
   }, [announcement]);
 
+  const [isPWA, setIsPWA] = useState(() =>
+    window.matchMedia?.('(display-mode: standalone)').matches === true ||
+    window.navigator.standalone === true
+  );
+  useEffect(() => {
+    const mq = window.matchMedia?.('(display-mode: standalone)');
+    if (!mq) return;
+    const h = (e) => setIsPWA(e.matches);
+    mq.addEventListener('change', h);
+    return () => mq.removeEventListener('change', h);
+  }, []);
+
   const IMG_H = '80vh';
 
   // ── זיהוי שפה אוטומטי לאנימציית הכותרת ──
@@ -274,7 +286,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore, onOpenE
           ═══════════════════════════════════════════════════════════ */}
       <div style={{
         position: 'relative',
-        marginTop: -160,
+        marginTop: isPWA ? -191 : -300,
         marginLeft: '-20vw',
         marginRight: '-20vw',
         paddingLeft: '20vw',
@@ -284,7 +296,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore, onOpenE
         backgroundColor: 'var(--color-section)',
         backgroundImage: 'var(--demo-section-mat-surface)',
         backgroundRepeat: 'repeat',
-        paddingTop: 120,
+        paddingTop: 100,
       }}>
         <div aria-hidden style={{
           position: 'absolute', inset: 0,
@@ -298,7 +310,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore, onOpenE
         {/* ── Content (welcome + buttons + stats) — background מוסר, מתפרס ע"י parent ── */}
         <div style={{
           position: 'relative', zIndex: 1,
-          paddingTop: 40, paddingBottom: 48, paddingInline: 28,
+          paddingTop: 16, paddingBottom: 48, paddingInline: 28,
           display: 'flex', flexDirection: 'column', alignItems: 'center',
         }}>
         <motion.div

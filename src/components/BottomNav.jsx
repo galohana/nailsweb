@@ -10,8 +10,8 @@ const SHIMMER_CSS = `
   100% { transform: translateX(-150%) skewX(-22deg); opacity: 0; }
 }
 @keyframes bnPulse {
-  0%, 100% { box-shadow: 0 6px 24px rgba(92,61,46,0.28), 0 2px 8px rgba(0,0,0,0.10); }
-  50%       { box-shadow: 0 8px 32px rgba(92,61,46,0.38), 0 3px 12px rgba(0,0,0,0.14); }
+  0%, 100% { box-shadow: 0 6px 24px rgba(var(--color-menu-rgb, 92,61,46), 0.28), 0 2px 8px rgba(0,0,0,0.10); }
+  50%       { box-shadow: 0 8px 32px rgba(var(--color-menu-rgb, 92,61,46), 0.38), 0 3px 12px rgba(0,0,0,0.14); }
 }
 `;
 
@@ -79,7 +79,7 @@ function NavTab({ label, active, onClick }) {
           <div style={{
             position: 'absolute', inset: '4px 2px',
             borderRadius: 10,
-            backgroundColor: 'rgba(92,61,46,0.07)',
+            backgroundColor: 'rgba(var(--color-menu-rgb, 92,61,46), 0.07)',
           }} />
         ) : (
           <motion.div
@@ -87,7 +87,7 @@ function NavTab({ label, active, onClick }) {
             style={{
               position: 'absolute', inset: '4px 2px',
               borderRadius: 10,
-              backgroundColor: 'rgba(92,61,46,0.07)',
+              backgroundColor: 'rgba(var(--color-menu-rgb, 92,61,46), 0.07)',
             }}
             transition={{ type: 'spring', stiffness: 500, damping: 38 }}
           />
@@ -100,7 +100,7 @@ function NavTab({ label, active, onClick }) {
         fontFamily: 'var(--demo-body-font, inherit)',
         fontSize: active ? 11.5 : 11,
         fontWeight: active ? 700 : 400,
-        color: active ? 'var(--color-primary)' : 'rgba(92,61,46,0.32)',
+        color: active ? 'var(--color-menu)' : 'rgba(var(--color-menu-rgb, 92,61,46), 0.38)',
         letterSpacing: '0.02em',
         lineHeight: 1.2,
         whiteSpace: 'nowrap',
@@ -118,14 +118,14 @@ function NavTab({ label, active, onClick }) {
           rm ? (
             <div style={{
               position: 'absolute', inset: 0, borderRadius: '50%',
-              backgroundColor: 'var(--color-primary)',
+              backgroundColor: 'var(--color-menu)',
             }} />
           ) : (
             <motion.div
               layoutId="tab-dot"
               style={{
                 position: 'absolute', inset: 0, borderRadius: '50%',
-                backgroundColor: 'var(--color-primary)',
+                backgroundColor: 'var(--color-menu)',
               }}
               transition={{ type: 'spring', stiffness: 500, damping: 38 }}
             />
@@ -156,7 +156,7 @@ function CenterTab({ onClick }) {
           try { navigator.vibrate?.([15, 10, 15]); } catch {}
           onClick();
         }}
-        whileHover={rm ? {} : { y: -3, boxShadow: '0 10px 28px rgba(92,61,46,0.36), 0 3px 10px rgba(0,0,0,0.14)' }}
+        whileHover={rm ? {} : { y: -3, boxShadow: '0 10px 28px rgba(var(--color-menu-rgb, 92,61,46), 0.36), 0 3px 10px rgba(0,0,0,0.14)' }}
         whileTap={rm   ? {} : { scale: 0.91, y: 2 }}
         transition={{ type: 'spring', stiffness: 400, damping: 22 }}
         style={{
@@ -174,9 +174,9 @@ function CenterTab({ onClick }) {
           border: 'none',
 
           /* Color */
-          backgroundColor: 'var(--color-primary)',
-          backgroundImage: 'var(--demo-primary-mat-overlay, none)',
-          color: 'var(--color-surface)',
+          backgroundColor: 'var(--color-menu)',
+          backgroundImage: 'var(--demo-menu-mat-overlay, none)',
+          color: 'var(--color-on-menu)',
 
           /* Typography */
           fontFamily: 'var(--demo-heading-font, var(--demo-body-font, inherit))',
@@ -192,7 +192,7 @@ function CenterTab({ onClick }) {
           justifyContent: 'center',
 
           /* Shadow */
-          boxShadow: '0 6px 24px rgba(92,61,46,0.28), 0 2px 8px rgba(0,0,0,0.10)',
+          boxShadow: '0 6px 24px rgba(var(--color-menu-rgb, 92,61,46), 0.28), 0 2px 8px rgba(0,0,0,0.10)',
           animation: rm ? 'none' : 'bnPulse 3s ease-in-out 2.5s infinite',
 
           cursor: 'pointer',
