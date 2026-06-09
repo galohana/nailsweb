@@ -131,7 +131,7 @@ export default async function handler(req, res) {
 
     const resend = new Resend(RESEND_KEY);
     const fromAddr = receiptSettings.fromEmail || 'onboarding@resend.dev';
-    const fromLine = businessName ? `${businessName} <${fromAddr}>` : fromAddr;
+    const fromLine = `Receipt <${fromAddr}>`;
 
     console.log('[send-receipt] sending receipt #', receiptNumber, 'to=', ownerEmail, 'aptId=', aptId);
 
