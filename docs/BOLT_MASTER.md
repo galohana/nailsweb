@@ -13,7 +13,7 @@
 **עיקרון:** שינוי באתר-האב לא מתפשט לאתרי הלקוחות. תיקון גלובלי = תיקון ידני בכל repo.
 
 ### סטאק
-React + Vite + Tailwind · Framer Motion · עברית RTL · Supabase (Frankfurt EU) · Vercel · Twilio · Resend · Telegram bot
+React + Vite + Tailwind · Framer Motion · עברית RTL · Supabase (Frankfurt EU) · Vercel · Twilio · Resend · Web Push (VAPID)
 
 ### מיקומים
 | פריט | ערך |
@@ -121,8 +121,8 @@ export const design = {
 
 ## חלק ה' — תשתית חיצונית
 
-### Telegram
-בוט אחד לכולם. `TELEGRAM_CHAT_ID` שונה לכל לקוחה. הלקוחה חייבת לשלוח /start לבוט לפני שההתראות יעבדו.
+### Web Push (התראות אדמין + לקוחה)
+התראות מבוססות Web Push (VAPID). בעלת העסק והלקוחות מפעילים התראות מתוך האתר. אין subscription → השרת מחזיר `{"sent":0}` (לא באג).
 
 ### Twilio
 OTP + "ברוכה הבאה" תמיד פעיל. ⚠️ trim ל-70 תווים לכל SMS.
@@ -131,7 +131,7 @@ OTP + "ברוכה הבאה" תמיד פעיל. ⚠️ trim ל-70 תווים לכ
 קבלות HTML. `boltagent8@gmail.com` = חשבון הבעלים.
 
 ### תשלומים
-ביט: `https://www.bitpay.co.il/app/me/{phone}` · פייבוקס: לא עובד · מזומן: הזמנה + טלגרם
+ביט: `https://www.bitpay.co.il/app/me/{phone}` · פייבוקס: לא עובד · מזומן: הזמנה + התראת push
 
 ---
 
@@ -146,11 +146,11 @@ TWILIO_ACCOUNT_SID=     ← מ-RISE_MASTER
 TWILIO_AUTH_TOKEN=      ← מ-RISE_MASTER
 TWILIO_PHONE=           ← מ-RISE_MASTER
 RESEND_API_KEY=         ← מ-RISE_MASTER
-TELEGRAM_BOT_TOKEN=     ← שאל את גל (bot token של הבוט המשותף)
 
-# ─── VAPID (Web Push) — שאל את גל ───
-VAPID_PUBLIC_KEY=       ← שאל את גל
-VAPID_PRIVATE_KEY=      ← שאל את גל (server-side only)
+# ─── VAPID (Web Push) — יצור מפתחות חדשים לכל אתר ───
+# הרץ: npx web-push generate-vapid-keys
+VAPID_PUBLIC_KEY=       ← פלט הפקודה למעלה
+VAPID_PRIVATE_KEY=      ← פלט הפקודה למעלה (server-side only, לא לחשוף ב-frontend)
 VAPID_SUBJECT=mailto:galo09871@gmail.com
 
 # ─── Supabase Management API (ליצירת projects) — שאל את גל ───
@@ -161,7 +161,6 @@ VITE_SUPABASE_URL=        ← מ-Supabase project החדש
 VITE_SUPABASE_KEY=        ← anon key מ-Supabase project החדש
 SUPABASE_SERVICE_KEY=     ← service_role key מ-Supabase project החדש
 OWNER_PHONE=              ← טלפון הלקוחה עם קידומת +972
-TELEGRAM_CHAT_ID=         ← מ-Telegram הלקוחה (שלח /start לבוט ושלוף chat_id)
 ```
 
 ---
@@ -198,10 +197,7 @@ TELEGRAM_CHAT_ID=         ← מ-Telegram הלקוחה (שלח /start לבוט �
 
 ### לפני שמתחיל — גל מכין ידנית
 
-**Telegram בלבד:**
-בקש מהלקוחה לשלוח /start לבוט לפני שמתחילים.
-
-GitHub ו-Supabase — קלוד קוד עושה לבד.
+GitHub ו-Supabase — קלוד קוד עושה לבד. Web Push — בעלת העסק מפעילה מהאדמין אחרי שהאתר עולה.
 
 ---
 
@@ -337,10 +333,6 @@ INSERT INTO settings (key, value) VALUES
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
 INSERT INTO settings (key, value) VALUES
-('telegramChatId', '"[telegram_id]"')
-ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-
-INSERT INTO settings (key, value) VALUES
 ('adminPassword', '"[סיסמה מה-CLAUDE.md]"')
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
@@ -369,8 +361,6 @@ vercel env add RESEND_API_KEY production
 vercel env add VAPID_PUBLIC_KEY production
 vercel env add VAPID_PRIVATE_KEY production
 vercel env add VAPID_SUBJECT production
-vercel env add TELEGRAM_BOT_TOKEN production
-vercel env add TELEGRAM_CHAT_ID production
 vercel --prod
 ```
 
@@ -379,7 +369,7 @@ vercel --prod
 - [ ] אדמין /manage-x7k2 עובד
 - [ ] טאבים תואמים לחבילה
 - [ ] צבעים ועיצוב תואמים לבחירה
-- [ ] הודעת טלגרם ניסיון נשלחה
+- [ ] התראות Web Push — בעלת העסק מפעילה מהכרטיס "התראות" ב-Admin
 - [ ] SMS OTP עובד בהרשמה
 
 אם אחד נכשל — עצור ודווח. אל תמשיך.
