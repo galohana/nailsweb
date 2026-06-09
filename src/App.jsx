@@ -11,7 +11,7 @@ import AdminPanel from './pages/AdminPanel';
 import PasswordGate from './components/PasswordGate';
 import SplashScreen from './components/SplashScreen';
 import Register from './pages/Register';
-import BubbleMenu from './components/BubbleMenu';
+import BottomNav from './components/BottomNav';
 import ProfileModal from './components/ProfileModal';
 import UrgentBooking from './components/UrgentBooking';
 import InstallButton from './components/InstallButton';
@@ -312,15 +312,12 @@ export default function App() {
       <div className="w-full relative min-h-screen overflow-x-hidden">
 
         {!isAdmin && (
-          <BubbleMenu
+          <BottomNav
+            page={page}
             onNavigate={navigate}
             showStore={features.reports}
             user={user}
-            onLogout={logout}
             onProfile={() => setProfileOpen(true)}
-            hideButton={SUB_PAGES.includes(page)}
-            open={SUB_PAGES.includes(page) ? menuOpen : undefined}
-            onToggle={SUB_PAGES.includes(page) ? toggleMenu : undefined}
           />
         )}
 
