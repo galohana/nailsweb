@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../utils/db';
-import { fmtDuration } from '../utils/format';
+import { fmtDuration, toDS, digitsOnly } from '../utils/format';
+import { DAYS_HE, MONTH_HE_FULL } from '../utils/constants';
 import { notifyOwnerNewAppointment, notifyOwnerPendingAppointment, notifyOwnerCancellation, notifyOwnerNewClient, notifyClientWelcome, notifyOwnerWaitlistJoin, notifyOwnerWaitlistFilled, notifyOwnerAppointmentPaid } from '../utils/sms';
 import PageHeader from '../components/PageHeader';
 import PayButtons from '../components/PayButtons';
@@ -11,9 +12,7 @@ import { features } from '../config/features';
 
 const FEAT_WAITLIST = import.meta.env.VITE_FEATURE_WAITLIST !== 'false';
 
-const DAY_NAMES = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
-const MONTH_HE  = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-const COL_HE    = ['א','ב','ג','ד','ה','ו','ש'];
+const COL_HE = ['א','ב','ג','ד','ה','ו','ש'];
 const SHADOW    = 'var(--demo-shadow-card)';
 
 const C = {
@@ -45,12 +44,8 @@ function genSlots(start, end, dur, gap = 0) {
   return slots;
 }
 
-function toDS(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
 function fmtDateShort(d) {
-  return `${DAY_NAMES[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`;
+  return `${DAYS_HE[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`;
 }
 
 function fmtDateLong(d) {
@@ -143,7 +138,7 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
     db.settings.get('workingHours').then(setWh);
     db.settings.get('clinicInfo').then(ci => {
       const p = ci?.ownerPhone || ci?.ownerWhatsapp || ci?.phone || ci?.whatsapp || '';
-      setOwnerPhone(String(p).replace(/\D/g, ''));
+      setOwnerPhone(digitsOnly(p));
       if (ci?.ownerName) setOwner(prev => ({ ...prev, name: ci.ownerName }));
     });
     db.settings.get('about').then(a => {
@@ -611,7 +606,7 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
               </motion.button>
 
               <p style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 19, fontWeight: 500, color: C.text, letterSpacing: '0.05em' }}>
-                {MONTH_HE[calMonth]} {calYear}
+                {MONTH_HE_FULL[calMonth]} {calYear}
               </p>
 
               <motion.button

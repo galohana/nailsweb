@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../utils/db';
+import { digitsOnly } from '../utils/format';
 import { DEFAULT_ABOUT, DEFAULT_CLINIC_INFO } from '../utils/defaults';
 
 const FALLBACK_IMAGES = [];
@@ -153,9 +154,12 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
   }, []);
 
   // ── Reviews groups ────────────────────────────────────────────
-  const groups = [];
-  for (let i = 0; i < reviews.length; i += displayCount)
-    groups.push(reviews.slice(i, i + displayCount));
+  const groups = useMemo(() => {
+    const g = [];
+    for (let i = 0; i < reviews.length; i += displayCount)
+      g.push(reviews.slice(i, i + displayCount));
+    return g;
+  }, [reviews, displayCount]);
 
   useEffect(() => {
     if (groups.length <= 1) return;
@@ -177,7 +181,7 @@ export default function GalleryAbout({ onNavigate, embedded = false }) {
   }
 
   // ── WhatsApp link for about card ──────────────────────────────
-  const waNum = (clinicInfo?.ownerWhatsapp || clinicInfo?.whatsapp || '').replace(/\D/g, '');
+  const waNum = digitsOnly(clinicInfo?.ownerWhatsapp || clinicInfo?.whatsapp);
   const waLink = waNum
     ? `https://wa.me/${waNum.startsWith('972') ? waNum : '972' + waNum.replace(/^0/, '')}?text=${encodeURIComponent('היי! אשמח לקבוע תור 💕')}`
     : '#';

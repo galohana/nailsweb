@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X } from 'lucide-react';
 
@@ -20,11 +20,15 @@ const C = {
 // onCancel: () => void    — user clicked "cancel"
 export default function PaymentConfirmModal({ open, amount, method, onConfirm, onCancel }) {
   const [phase, setPhase] = useState('ask'); // 'ask' | 'success'
+  const timerRef = useRef(null);
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
   const handleConfirm = () => {
     setPhase('success');
     try { navigator.vibrate?.([30, 20, 30]); } catch {}
-    setTimeout(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
       onConfirm?.();
       setPhase('ask');
     }, 1600);

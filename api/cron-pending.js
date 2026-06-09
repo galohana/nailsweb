@@ -77,7 +77,7 @@ export default async function handler(req, res) {
 
       // Push → owner
       const ownerPush = await sendPushToAudience({ user_type: 'admin', user_identifier: 'admin', title, body: ownerMsg, url: '/manage-x7k2' });
-      if (ownerPush.sent === 0) await sendSms(ownerMsg, process.env.OWNER_PHONE);
+      if (ownerPush.sent === 0 && process.env.OWNER_PHONE) await sendSms(ownerMsg, process.env.OWNER_PHONE);
 
       // Push → client (SMS fallback)
       const clientPhone = toE164(apt.phone);

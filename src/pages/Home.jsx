@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { db } from '../utils/db';
+import { digitsOnly } from '../utils/format';
 import { DEFAULT_ABOUT, DEFAULT_HERO, DEFAULT_CLINIC_INFO, DEFAULT_REVIEWS, DEFAULT_GALLERY } from '../utils/defaults';
 
 const C = {
@@ -397,7 +398,7 @@ function GallerySection({ images }) {
 function AboutSection({ about, clinicInfo }) {
   const [flipped, setFlipped] = useState(false);
   const wa = clinicInfo?.ownerWhatsapp || clinicInfo?.whatsapp || '';
-  const waClean = `https://wa.me/${wa.replace(/\D/g, '')}`;
+  const waClean = `https://wa.me/${digitsOnly(wa)}`;
 
   return (
     <FadeSection style={{ backgroundColor: C.surface }}>
@@ -578,7 +579,7 @@ function ReviewsSection({ reviews, user, onAddReview }) {
 // ── Directions section ────────────────────────────────────────
 function DirectionsSection({ clinicInfo }) {
   const info = clinicInfo || DEFAULT_CLINIC_INFO;
-  const wa = `https://wa.me/${(info.whatsapp || '').replace(/\D/g, '')}`;
+  const wa = `https://wa.me/${digitsOnly(info.whatsapp)}`;
   const rawWaze     = (info.wazeLink || '').trim();
   const isValidWaze = rawWaze.startsWith('https://') || rawWaze.startsWith('http://');
   const wazeHref    = (isValidWaze ? rawWaze : '') || (info.address ? `https://waze.com/ul?q=${encodeURIComponent(info.address)}` : '');
@@ -739,7 +740,9 @@ export default function Home({ user, onNavigate }) {
   const [gallery, setGallery]         = useState([]);
 
   useEffect(() => {
-    setTimeout(() => setVisible(true), 60);
+    let cancelled = false;
+
+    setTimeout(() => { if (!cancelled) setVisible(true); }, 60);
 
     Promise.all([
       db.settings.get('adminSettings'),
@@ -748,6 +751,7 @@ export default function Home({ user, onNavigate }) {
       db.settings.get('clinicInfo',   DEFAULT_CLINIC_INFO),
       db.settings.get('businessLogo', ''),
     ]).then(([settings, h, a, ci, logo]) => {
+      if (cancelled) return;
       if (settings?.announcement?.show && settings?.announcement?.text) {
         setAnnounce(settings.announcement.text);
         setShowPopup(true);
@@ -763,13 +767,14 @@ export default function Home({ user, onNavigate }) {
     });
 
     if (FEAT_REVIEWS) {
-      db.reviews.list(true).then(r => setReviews(r.length ? r : DEFAULT_REVIEWS));
+      db.reviews.list(true).then(r => { if (!cancelled) setReviews(r.length ? r : DEFAULT_REVIEWS); });
     }
     if (FEAT_GALLERY) {
-      db.gallery.list().then(g =>
-        setGallery(g.length ? g : DEFAULT_GALLERY.map((url, i) => ({ id: i, imageUrl: url })))
-      );
+      db.gallery.list().then(g => {
+        if (!cancelled) setGallery(g.length ? g : DEFAULT_GALLERY.map((url, i) => ({ id: i, imageUrl: url })));
+      });
     }
+    return () => { cancelled = true; };
   }, []);
 
   const handleAddReview = async ({ rating, text }) => {

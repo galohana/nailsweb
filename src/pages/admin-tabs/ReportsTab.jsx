@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, DollarSign, UserPlus, Repeat, Clock, TrendingUp, Star, Minus, Plus, TrendingDown, Info, X } from 'lucide-react';
 import { db } from '../../utils/db';
+import { toDS } from '../../utils/format';
+import { DAYS_HE } from '../../utils/constants';
 import * as S from '../../utils/adminStyles';
 
-const DAY_HE = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
-const WARM   = ['#C97B4B','#A85A4A','var(--color-section)','var(--color-primary)','#D4A574','#8B6E52','#6B4F3A'];
+const WARM = ['#C97B4B','#A85A4A','var(--color-section)','var(--color-primary)','#D4A574','#8B6E52','#6B4F3A'];
 
 const RANGES = [
   { id: 'week',   label: 'שבוע',     days: 7 },
@@ -15,9 +16,6 @@ const RANGES = [
   { id: 'custom', label: 'מותאם',    days: null },
 ];
 
-function toDS(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
 function daysAgoDS(n) { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-n); return toDS(d); }
 function inRange(dateStr, from, to) {
   if (!dateStr) return false;
@@ -463,7 +461,7 @@ export default function ReportsTab() {
               <InsightCard icon={Clock}      tint="#C97B4B" title="שעת שיא"
                 value={peakHour ? `${peakHour[0]}:00` : '—'} sub={peakHour ? `${peakHour[1]} תורים` : ''} />
               <InsightCard icon={TrendingUp} tint="#5C3D2E" title="יום שיא"
-                value={peakDay ? DAY_HE[peakDay[0]] : '—'} sub={peakDay ? `${peakDay[1]} תורים` : ''} smallValue />
+                value={peakDay ? DAYS_HE[peakDay[0]] : '—'} sub={peakDay ? `${peakDay[1]} תורים` : ''} smallValue />
               <InsightCard icon={Star}       tint="#C97B4B" title="שירות מוביל"
                 value={topService ? topService[0] : '—'} sub={topService ? `${topService[1]} תורים` : ''} smallValue />
             </div>

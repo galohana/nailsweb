@@ -4,12 +4,8 @@
 
 export const config = { runtime: 'edge' };
 
-const SUPABASE_URL =
-  process.env.VITE_SUPABASE_URL || 'https://expypgqdrjbthgxfddog.supabase.co';
-const SUPABASE_KEY =
-  process.env.VITE_SUPABASE_KEY ||
-  process.env.VITE_SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4cHlwZ3FkcmpidGhneGZkZG9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4MzE3OTIsImV4cCI6MjA5NDQwNzc5Mn0.2hrcszcSFM3kT1VDAY7LGAF3vZEUm0moZYCCQgzGfiI';
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = process.env.VITE_SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
 async function fetchSettings(keys) {
   const url =

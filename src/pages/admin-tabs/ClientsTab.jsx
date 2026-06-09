@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Star, Phone, MessageCircle, X, Ban, AlertCircle, UserX, Trash2, MinusCircle } from 'lucide-react';
 import { db } from '../../utils/db';
+import { digitsOnly } from '../../utils/format';
 import { storage } from '../../utils/storage';
 import { DEFAULT_ADMIN_SETTINGS } from '../../utils/defaults';
 import * as S from '../../utils/adminStyles';
@@ -67,7 +68,7 @@ export default function ClientsTab() {
       setAdmS(s);
       setDeletedDigits(Array.isArray(dd) ? dd : []);
       setPermDeletedDigits(
-        Array.isArray(pd) ? pd.map(p => String(p || '').replace(/\D/g, '')) : []
+        Array.isArray(pd) ? pd.map(p => digitsOnly(p)) : []
       );
       setUserGenders(gens && typeof gens === 'object' ? gens : {});
     });
@@ -78,17 +79,17 @@ export default function ClientsTab() {
     male:   { solid: '#4A90E2', soft: 'rgba(74,144,226,0.10)', border: 'rgba(74,144,226,0.50)', tag: 'rgba(74,144,226,0.16)' },
     female: { solid: '#E91E8C', soft: 'rgba(233,30,140,0.10)', border: 'rgba(233,30,140,0.50)', tag: 'rgba(233,30,140,0.16)' },
   };
-  const genderOf = (phone) => userGenders[String(phone || '').replace(/\D/g, '')] || null;
+  const genderOf = (phone) => userGenders[digitsOnly(phone)] || null;
 
   const markPhoneDeleted = async (phone) => {
-    const d = String(phone || '').replace(/\D/g, '');
+    const d = digitsOnly(phone);
     if (!d) return;
     const next = Array.from(new Set([...deletedDigits, d]));
     setDeletedDigits(next);
     await db.settings.set('deletedAccounts', next);
   };
   const unmarkPhoneDeleted = async (phone) => {
-    const d = String(phone || '').replace(/\D/g, '');
+    const d = digitsOnly(phone);
     if (!d) return;
     const next = deletedDigits.filter(x => x !== d);
     setDeletedDigits(next);
@@ -144,14 +145,14 @@ export default function ClientsTab() {
     // Skip permanently-deleted phones — they're hidden from the list entirely.
     // Past appointments remain in DB but shouldn't create a visible client entry.
     return Object.values(byPhone)
-      .filter(c => !permDeletedDigits.includes(String(c.phone || '').replace(/\D/g, '')))
+      .filter(c => !permDeletedDigits.includes(digitsOnly(c.phone)))
       .map(c => {
       const sorted = c.appts.slice().sort((x, y) => (`${y.date}T${y.time}`).localeCompare(`${x.date}T${x.time}`));
       const m = meta[c.phone] || {};
       const cr = clientRows.find(r => r.phone === c.phone) || {};
       const hasFutureCancelled = c.appts.some(a => a.date && a.date >= today && a.status === 'cancelled');
       const hasFutureActive    = c.appts.some(a => a.date && a.date >= today && a.status === 'confirmed');
-      const digits = String(c.phone || '').replace(/\D/g, '');
+      const digits = digitsOnly(c.phone);
       const markedDeleted = deletedDigits.includes(digits);
       const inactive = markedDeleted || (hasFutureCancelled && !hasFutureActive);
       return {
@@ -184,8 +185,8 @@ export default function ClientsTab() {
   const clearLocalIfMatch = (phone) => {
     try {
       const u = storage.get('user');
-      const d1 = String(u?.phone || '').replace(/\D/g, '');
-      const d2 = String(phone || '').replace(/\D/g, '');
+      const d1 = digitsOnly(u?.phone);
+      const d2 = digitsOnly(phone);
       if (d1 && d2 && d1 === d2) storage.remove('user');
     } catch {}
   };
@@ -206,14 +207,14 @@ export default function ClientsTab() {
 
     clearLocalIfMatch(phone);
     // Optimistic: remove from local state immediately so UI updates without waiting for re-fetch
-    const d = String(phone).replace(/\D/g, '');
+    const d = digitsOnly(phone);
     setApts(prev => prev.map(a => {
-      if (String(a.phone || '').replace(/\D/g, '') !== d) return a;
+      if (digitsOnly(a.phone) !== d) return a;
       const today = new Date().toISOString().slice(0,10);
       if (a.date >= today && a.status === 'confirmed') return { ...a, status: 'cancelled' };
       return a;
     }));
-    setClientRows(prev => prev.filter(r => String(r.phone || '').replace(/\D/g, '') !== d));
+    setClientRows(prev => prev.filter(r => digitsOnly(r.phone) !== d));
     setOpenClient(null);
   };
 
@@ -230,7 +231,7 @@ export default function ClientsTab() {
     }
     clearLocalIfMatch(phone);
 
-    const d = String(phone || '').replace(/\D/g, '');
+    const d = digitsOnly(phone);
 
     // 1. Remove from soft-delete list (deletedAccounts) — no longer needed
     await unmarkPhoneDeleted(phone);
@@ -242,8 +243,8 @@ export default function ClientsTab() {
     await db.settings.set('permanentlyDeletedPhones', nextPerm);
 
     // 3. Optimistic: remove from local state immediately
-    setApts(prev => prev.filter(a => String(a.phone || '').replace(/\D/g, '') !== d));
-    setClientRows(prev => prev.filter(r => String(r.phone || '').replace(/\D/g, '') !== d));
+    setApts(prev => prev.filter(a => digitsOnly(a.phone) !== d));
+    setClientRows(prev => prev.filter(r => digitsOnly(r.phone) !== d));
     setOpenClient(null);
   };
 

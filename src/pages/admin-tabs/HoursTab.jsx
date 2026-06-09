@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, Lock, Unlock, AlertTriangle, X, SlidersHorizontal, Check } from 'lucide-react';
 import { db } from '../../utils/db';
-import { fmtDuration } from '../../utils/format';
+import { fmtDuration, toDS, getSunday, addDays } from '../../utils/format';
+import { DAYS_HE, MONTH_HE_SHORT } from '../../utils/constants';
 import { DEFAULT_WORKING_HOURS } from '../../utils/defaults';
 import * as S from '../../utils/adminStyles';
 import { notifyOwnerCancellation } from '../../utils/sms';
@@ -13,27 +14,10 @@ function timeToMin(t) {
   return (h || 0) * 60 + (m || 0);
 }
 
-const DAYS_HE = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-const MONTH_HE = ['ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יוני', 'יולי', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ'];
-
-function getSunday(d) {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  x.setDate(x.getDate() - x.getDay());
-  return x;
-}
-function toDS(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-function addDays(d, n) {
-  const x = new Date(d);
-  x.setDate(x.getDate() + n);
-  return x;
-}
 function fmtRange(start) {
   const end = addDays(start, 6);
-  const s = `${start.getDate()} ${MONTH_HE[start.getMonth()]}`;
-  const e = `${end.getDate()} ${MONTH_HE[end.getMonth()]}`;
+  const s = `${start.getDate()} ${MONTH_HE_SHORT[start.getMonth()]}`;
+  const e = `${end.getDate()} ${MONTH_HE_SHORT[end.getMonth()]}`;
   return `${s} – ${e}`;
 }
 

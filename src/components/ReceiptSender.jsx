@@ -2,22 +2,13 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft, Send, Check } from 'lucide-react';
 import { db } from '../utils/db';
+import { toDS, getSunday, addDays } from '../utils/format';
+import { DAYS_HE, MONTH_HE_SHORT } from '../utils/constants';
 import * as S from '../utils/adminStyles';
-
-function toDS(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function getSunday(d) {
-  const x = new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate() - x.getDay()); return x;
-}
-function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
-
-const DAYS_HE = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
-const MONTH_HE = ['ינו','פבר','מרץ','אפר','מאי','יוני','יולי','אוג','ספט','אוק','נוב','דצמ'];
 
 function fmtWeek(start) {
   const end = addDays(start, 6);
-  return `${start.getDate()} ${MONTH_HE[start.getMonth()]} – ${end.getDate()} ${MONTH_HE[end.getMonth()]}`;
+  return `${start.getDate()} ${MONTH_HE_SHORT[start.getMonth()]} – ${end.getDate()} ${MONTH_HE_SHORT[end.getMonth()]}`;
 }
 
 export default function ReceiptSender() {

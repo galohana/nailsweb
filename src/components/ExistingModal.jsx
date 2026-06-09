@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../utils/db';
-
-const DAY_HE   = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
-const MONTH_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+import { digitsOnly } from '../utils/format';
+import { DAYS_HE, MONTH_HE_FULL } from '../utils/constants';
 
 function fmtAptDate(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
-  return `יום ${DAY_HE[d.getDay()]}, ${d.getDate()} ${MONTH_HE[d.getMonth()]}`;
+  return `יום ${DAYS_HE[d.getDay()]}, ${d.getDate()} ${MONTH_HE_FULL[d.getMonth()]}`;
 }
 
 export default function ExistingModal({ open, onClose }) {
@@ -29,7 +28,7 @@ export default function ExistingModal({ open, onClose }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  const valid = phone.replace(/\D/g, '').length >= 9;
+  const valid = digitsOnly(phone).length >= 9;
 
   const handleLookup = async () => {
     if (!valid || loading) return;

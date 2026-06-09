@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { db } from '../utils/db';
-import { fmtDuration } from '../utils/format';
+import { fmtDuration, digitsOnly } from '../utils/format';
 import { notifyOwnerCancellation } from '../utils/sms';
 import { notifyWaitlistForDate } from '../utils/waitlist';
 import { features } from '../config/features';
@@ -35,7 +35,7 @@ function fmtDayHeader(d) {
 }
 
 function normPhone(p) {
-  let d = String(p || '').replace(/\D/g, '');
+  let d = digitsOnly(p);
   if (d.startsWith('972') && d.length >= 12) d = '0' + d.slice(3);
   return d;
 }
@@ -55,6 +55,8 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
   const [payVisible, setPayVisible]       = useState({ bit: true });
   const [historyOpen, setHistoryOpen]     = useState(false);
 
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
   useEffect(() => { if (user) load(); else setLoading(false); }, [user]);
 
   useEffect(() => {
@@ -87,6 +89,7 @@ export default function MyAppointments({ user, onNavigate, onMenuOpen }) {
   const load = async () => {
     setLoading(true);
     const data = await db.appointments.byPhone(user.phone);
+    if (!isMountedRef.current) return;
     setApts(data.sort((a, b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`)));
     setLoading(false);
   };

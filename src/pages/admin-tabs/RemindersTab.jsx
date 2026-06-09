@@ -4,6 +4,7 @@ import { Save, CheckCircle, RotateCcw, ChevronDown, Info } from 'lucide-react';
 import { db } from '../../utils/db';
 import { DEFAULT_SMS_TEMPLATES } from '../../utils/defaults';
 import * as S from '../../utils/adminStyles';
+import { DAYS_HE } from '../../utils/constants';
 
 // ── Client SMS templates (welcome + OTP only) ─────────────────
 const CLIENT_TPL = [
@@ -29,7 +30,6 @@ const OFFSET_OPTIONS = [
   ['30m', '30 דקות'], ['1h', 'שעה'], ['2h', 'שעתיים'], ['3h', '3 שעות'],
   ['12h', '12 שעות'], ['1d', 'יום'], ['2d', 'יומיים'],
 ];
-const DAYS_HE   = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 const HOURS_ARR = Array.from({ length: 24 }, (_, i) => i);
 
 const DEFAULT_PUSH = {

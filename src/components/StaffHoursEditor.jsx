@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { db } from '../utils/db';
 import * as S from '../utils/adminStyles';
-
-const DAYS_HE = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+import { DAYS_HE } from '../utils/constants';
 const DEFAULT_HOURS = {
   days: {
     0: { active: false, start: '09:00', end: '17:00' },

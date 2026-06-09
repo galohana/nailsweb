@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { digitsOnly } from './format';
 import {
   DEFAULT_SERVICES,
   DEFAULT_PRODUCTS,
@@ -146,11 +147,11 @@ export const db = {
     // Digits-only match: catches appointments stored with different phone formatting
     byPhoneDigits: async (phone) => {
       try {
-        const d = String(phone || '').replace(/\D/g, '');
+        const d = digitsOnly(phone);
         if (!d) return [];
         const { data } = await supabase.from('appointments').select()
           .order('created_at', { ascending: false });
-        return (data || []).filter(a => String(a.phone || '').replace(/\D/g, '') === d).map(mapApt);
+        return (data || []).filter(a => digitsOnly(a.phone) === d).map(mapApt);
       } catch { return []; }
     },
     byDate: async (date, staffId = null) => {
@@ -191,13 +192,13 @@ export const db = {
     // Mark all future confirmed appts of a phone as cancelled. Past appts preserved.
     cancelFuture: async (phone) => {
       try {
-        const d = String(phone || '').replace(/\D/g, '');
+        const d = digitsOnly(phone);
         if (!d) return 0;
         const today = new Date().toISOString().slice(0, 10);
         const { data: rows } = await supabase.from('appointments')
           .select('id, phone, date, status').eq('status', 'confirmed').gte('date', today);
         if (!rows) return 0;
-        const ids = rows.filter(r => String(r.phone || '').replace(/\D/g, '') === d).map(r => r.id);
+        const ids = rows.filter(r => digitsOnly(r.phone) === d).map(r => r.id);
         if (ids.length === 0) return 0;
         const { error } = await supabase.from('appointments').update({ status: 'cancelled' }).in('id', ids);
         if (error) { console.error('[appointments.cancelFuture]', error); return 0; }
@@ -216,18 +217,18 @@ export const db = {
     // Returns a normalized record or null.
     findByDigits: async (digits) => {
       try {
-        const d = String(digits || '').replace(/\D/g, '');
+        const d = digitsOnly(digits);
         if (!d) return null;
         const { data } = await supabase.from('clients').select();
         if (!data) return null;
-        const match = data.find(r => String(r.phone || '').replace(/\D/g, '') === d);
+        const match = data.find(r => digitsOnly(r.phone) === d);
         return match || null;
       } catch (e) { console.error('[clients.findByDigits]', e); return null; }
     },
     // Create/upsert a clients record (account marker). Phone stored digits-only.
     create: async ({ phone, name }) => {
       try {
-        const d = String(phone || '').replace(/\D/g, '');
+        const d = digitsOnly(phone);
         if (!d) return null;
         const { data, error } = await supabase.from('clients').upsert(
           { phone: d, name, is_blocked: false, no_show_count: 0, updated_at: new Date().toISOString() },
@@ -305,7 +306,7 @@ export const db = {
     // Digits-only lookup: tolerates different phone formatting in storage
     findByDigits: async (digits) => {
       try {
-        const d = String(digits || '').replace(/\D/g, '');
+        const d = digitsOnly(digits);
         if (!d) return null;
         // Exact match against digits
         const { data: exact } = await supabase.from('users').select()
@@ -314,7 +315,7 @@ export const db = {
         // Pull all and filter — works regardless of stored formatting
         const { data } = await supabase.from('users').select();
         if (!data) return null;
-        const match = data.find(u => String(u.phone || '').replace(/\D/g, '') === d);
+        const match = data.find(u => digitsOnly(u.phone) === d);
         return match ? mapUser(match) : null;
       } catch (e) { console.error('[users.findByDigits]', e); return null; }
     },
@@ -323,15 +324,15 @@ export const db = {
     deleteByPhone: async (phone) => {
       const tag = '[clients.deleteByPhone]';
       try {
-        const d = String(phone || '').replace(/\D/g, '');
+        const d = digitsOnly(phone);
         if (!d) { console.warn(`${tag} EXIT no digits`); return 'error'; }
         const { data: rows, error: selErr } = await supabase.from('clients').select('id, phone, name');
         if (selErr) { console.error(`${tag} SELECT failed:`, selErr); return 'error'; }
         if (!rows || rows.length === 0) { console.warn(`${tag} clients table is empty`); return 'not_found'; }
-        const matches = rows.filter(r => String(r.phone || '').replace(/\D/g, '') === d);
+        const matches = rows.filter(r => digitsOnly(r.phone) === d);
         if (matches.length === 0) {
           console.warn(`${tag} no row in clients with digits=${d}. All phones in DB:`,
-            rows.map(r => `${r.phone} (digits=${String(r.phone||'').replace(/\D/g,'')})`).slice(0, 20));
+            rows.map(r => `${r.phone} (digits=${digitsOnly(r.phone)})`).slice(0, 20));
           return 'not_found';
         }
         const ids = matches.map(r => r.id);
@@ -349,18 +350,18 @@ export const db = {
     permanentDelete: async (phone) => {
       const tag = '[clients.permanentDelete]';
       try {
-        const d = String(phone || '').replace(/\D/g, '');
+        const d = digitsOnly(phone);
         if (!d) return { ok: false, error: 'no_phone' };
         const today = new Date().toISOString().slice(0, 10);
         // 1) clients
         const { data: clientRows } = await supabase.from('clients').select('id, phone');
-        const clientIds = (clientRows || []).filter(r => String(r.phone || '').replace(/\D/g, '') === d).map(r => r.id);
+        const clientIds = (clientRows || []).filter(r => digitsOnly(r.phone) === d).map(r => r.id);
         if (clientIds.length > 0) {
           await supabase.from('clients').delete().in('id', clientIds);
         }
         // 2) future appointments
         const { data: aptRows } = await supabase.from('appointments').select('id, phone, date').gte('date', today);
-        const aptIds = (aptRows || []).filter(r => String(r.phone || '').replace(/\D/g, '') === d).map(r => r.id);
+        const aptIds = (aptRows || []).filter(r => digitsOnly(r.phone) === d).map(r => r.id);
         if (aptIds.length > 0) {
           await supabase.from('appointments').delete().in('id', aptIds);
         }
@@ -396,7 +397,7 @@ export const db = {
     },
     update: async (phone, { firstName, lastName, email, birthDate }) => {
       try {
-        const d = String(phone || '').replace(/\D/g, '');
+        const d = digitsOnly(phone);
         if (!d) return null;
         const payload = { first_name: firstName, last_name: lastName, birth_date: birthDate };
         if (email !== undefined) payload.email = email;

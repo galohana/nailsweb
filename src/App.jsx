@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { storage } from './utils/storage';
+import { digitsOnly } from './utils/format';
 import { db } from './utils/db';
 import HeroNew from './pages/HeroNew';
 import Booking from './pages/Booking';
@@ -64,7 +65,7 @@ export default function App() {
       const count  = clientRow.no_show_count || 0;
       const warnAt = settings?.noShow?.warningCount ?? 2;
       if (count >= warnAt) {
-        const key      = `noshow_warned_${String(phone).replace(/\D/g, '')}`;
+        const key      = `noshow_warned_${digitsOnly(phone)}`;
         const lastSeen = Number(localStorage.getItem(key) || 0);
         const TTL      = 24 * 60 * 60 * 1000; // 24 שעות
         if (Date.now() - lastSeen > TTL) {
@@ -288,7 +289,7 @@ export default function App() {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => {
-                  const key = `noshow_warned_${String(user?.phone || '').replace(/\D/g, '')}`;
+                  const key = `noshow_warned_${digitsOnly(user?.phone)}`;
                   localStorage.setItem(key, String(Date.now()));
                   setShowWarning('');
                 }}

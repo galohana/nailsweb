@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../utils/db';
+import { digitsOnly } from '../utils/format';
 import { DEFAULT_TERMS } from '../utils/defaults';
 import { notifyOwnerNewClient, notifyClientWelcome, sendOtp, verifyOtp } from '../utils/sms';
 import PageHeader from '../components/PageHeader';
@@ -77,7 +78,7 @@ export default function Register({ onUserSave, onNavigate, onPrivacy }) {
     if (!agreed) { setError('יש לאשר את התקנון לפני ההרשמה'); return; }
 
     // Normalize: strip everything except digits
-    const phoneDigits = form.phone.trim().replace(/\D/g, '');
+    const phoneDigits = digitsOnly(form.phone.trim());
     if (phoneDigits.length < 9 || phoneDigits.length > 10) {
       setError('מספר טלפון לא תקין — נא להזין 10 ספרות'); return;
     }
@@ -95,9 +96,9 @@ export default function Register({ onUserSave, onNavigate, onPrivacy }) {
       db.settings.get('permanentlyDeletedPhones', []).catch(() => []),
     ]);
     const wasDeleted = (Array.isArray(deletedList) &&
-      deletedList.some(p => String(p || '').replace(/\D/g, '') === phoneDigits)) ||
+      deletedList.some(p => digitsOnly(p) === phoneDigits)) ||
       (Array.isArray(permDeletedList) &&
-      permDeletedList.some(p => String(p || '').replace(/\D/g, '') === phoneDigits));
+      permDeletedList.some(p => digitsOnly(p) === phoneDigits));
 
     if (!wasDeleted) {
       const existingClient = await db.clients.findByDigits(phoneDigits).catch(() => null);
@@ -134,7 +135,7 @@ export default function Register({ onUserSave, onNavigate, onPrivacy }) {
 
   const resendOtp = async () => {
     if (otpCooldown > 0) return;
-    const phoneDigits = form.phone.trim().replace(/\D/g, '');
+    const phoneDigits = digitsOnly(form.phone.trim());
     setOtpError('');
     const result = await sendOtp(phoneDigits);
     if (!result.ok) {
@@ -151,7 +152,7 @@ export default function Register({ onUserSave, onNavigate, onPrivacy }) {
     if (code.length !== 4) { setOtpError('נא להזין 4 ספרות'); return; }
     setLoading(true); setOtpError('');
 
-    const phoneDigits = form.phone.trim().replace(/\D/g, '');
+    const phoneDigits = digitsOnly(form.phone.trim());
     const v = await verifyOtp(phoneDigits, code);
     if (!v.ok) {
       setLoading(false);
@@ -188,11 +189,11 @@ export default function Register({ onUserSave, onNavigate, onPrivacy }) {
       ]);
       const p = phoneDigits;
       await Promise.all([
-        Array.isArray(cur) && cur.some(x => String(x||'').replace(/\D/g,'') === p)
-          ? db.settings.set('deletedAccounts', cur.filter(x => String(x||'').replace(/\D/g,'') !== p))
+        Array.isArray(cur) && cur.some(x => digitsOnly(x) === p)
+          ? db.settings.set('deletedAccounts', cur.filter(x => digitsOnly(x) !== p))
           : Promise.resolve(),
-        Array.isArray(curPerm) && curPerm.some(x => String(x||'').replace(/\D/g,'') === p)
-          ? db.settings.set('permanentlyDeletedPhones', curPerm.filter(x => String(x||'').replace(/\D/g,'') !== p))
+        Array.isArray(curPerm) && curPerm.some(x => digitsOnly(x) === p)
+          ? db.settings.set('permanentlyDeletedPhones', curPerm.filter(x => digitsOnly(x) !== p))
           : Promise.resolve(),
       ]);
     } catch (e) { console.warn('[register] clear deleted flags failed:', e.message); }
@@ -207,7 +208,7 @@ export default function Register({ onUserSave, onNavigate, onPrivacy }) {
   };
 
   const updateOtpDigit = (idx, val) => {
-    const d = val.replace(/\D/g, '').slice(-1);
+    const d = digitsOnly(val).slice(-1);
     setOtpCode(prev => {
       const next = [...prev];
       next[idx] = d;
@@ -229,7 +230,7 @@ export default function Register({ onUserSave, onNavigate, onPrivacy }) {
   // ── Login flow (returning user) ──────────────────────────────
   const doLogin = async () => {
     const raw    = loginPhone.trim();
-    const digits = raw.replace(/\D/g, '');
+    const digits = digitsOnly(raw);
     if (!digits) { setError('נא להזין מספר טלפון'); return; }
     if (digits.length < 9 || digits.length > 10) {
       setError('מספר טלפון לא תקין — נא להזין 10 ספרות');
@@ -245,8 +246,8 @@ export default function Register({ onUserSave, onNavigate, onPrivacy }) {
       db.settings.get('permanentlyDeletedPhones', []).catch(() => []),
     ]);
     const wasDeleted =
-      (Array.isArray(deletedList) && deletedList.some(p => String(p || '').replace(/\D/g, '') === digits)) ||
-      (Array.isArray(permDeletedList) && permDeletedList.some(p => String(p || '').replace(/\D/g, '') === digits));
+      (Array.isArray(deletedList) && deletedList.some(p => digitsOnly(p) === digits)) ||
+      (Array.isArray(permDeletedList) && permDeletedList.some(p => digitsOnly(p) === digits));
     if (wasDeleted) {
       setError('חשבון זה נמחק. כדי להשתמש שוב — אנא הירשמי מחדש.');
       setLoading(false);

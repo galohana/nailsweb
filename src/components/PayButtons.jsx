@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { digitsOnly } from '../utils/format';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, ExternalLink } from 'lucide-react';
 
@@ -11,7 +12,7 @@ import { Copy, Check, ExternalLink } from 'lucide-react';
 // In both cases the AMOUNT is shown big with a "copy" button — Bit can't inject amount into URLs.
 
 function normPhone(p) {
-  let d = String(p || '').replace(/\D/g, '');
+  let d = digitsOnly(p);
   if (d.startsWith('972') && d.length >= 12) d = '0' + d.slice(3);
   return d;
 }

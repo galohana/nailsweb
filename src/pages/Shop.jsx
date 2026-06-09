@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, X, Plus, Minus, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { storage } from '../utils/storage';
+import { digitsOnly } from '../utils/format';
 import { db } from '../utils/db';
 import { notifyOwnerNewOrder } from '../utils/sms';
 import PageHeader from '../components/PageHeader';
@@ -46,6 +47,9 @@ export default function Shop({ user, onNavigate, onMenuOpen }) {
   const [pickupLoading, setPickupLoading]   = useState(false);
   // Ref guard: prevents double-submit race condition before React re-renders disabled state
   const pickupSubmittingRef = useRef(false);
+  const highlightTimerRef   = useRef(null);
+
+  useEffect(() => () => { if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current); }, []);
 
   useEffect(() => {
     db.products.list(true).then(setProducts);
@@ -55,7 +59,7 @@ export default function Shop({ user, onNavigate, onMenuOpen }) {
     db.settings.get('productInventory', {}).then(iv => setInventory(iv || {}));
     db.settings.get('clinicInfo').then(ci => {
       const p = ci?.ownerPhone || ci?.ownerWhatsapp || ci?.phone || ci?.whatsapp || '';
-      setOwnerPhone(String(p).replace(/\D/g, ''));
+      setOwnerPhone(digitsOnly(p));
     });
     // Bit account now lives at root settings (set via ShopTab → Payment).
     // string חופשי — יכול להיות טלפון או URL. PayButtons מזהה ומטפל.
@@ -65,9 +69,9 @@ export default function Shop({ user, onNavigate, onMenuOpen }) {
       setPaySettingsReady(true);
     });
     if (user?.phone) {
-      const digits = String(user.phone).replace(/\D/g, '');
+      const digits = digitsOnly(user.phone);
       db.orders.list().then(all => {
-        const mine = (all || []).filter(o => String(o.clientPhone || '').replace(/\D/g, '').endsWith(digits.slice(-9)));
+        const mine = (all || []).filter(o => digitsOnly(o.clientPhone).endsWith(digits.slice(-9)));
         setMyOrders(mine.slice(0, 10));
       }).catch(() => {});
     }
@@ -104,7 +108,8 @@ export default function Shop({ user, onNavigate, onMenuOpen }) {
     const id = order.id || `local-${Date.now()}`;
     setMyOrders(prev => [{ ...order, id }, ...prev].slice(0, 10));
     setHighlightOrderId(id);
-    setTimeout(() => setHighlightOrderId(null), 1800);
+    if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = setTimeout(() => setHighlightOrderId(null), 1800);
   };
 
   const placePickupOrder = async () => {
