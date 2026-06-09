@@ -44,3 +44,4 @@
 
 ---
 > עדכון יוני 2026: `smsReminders` הופעל (true) — Twilio מוגדר ופעיל. cron-reminders.js שולח SMS ללקוחות ש-push subscription שלהן לא פעיל (SMS fallback).
+> session 2026-06-09: קבצי handoff (AGENTS/PROJECT_CONTEXT/TASKS) קובעו ל-git (commit 6727da4). הותקן plugin `lovable-claude-code` v1.7.0 — גלובלי ב-`~/.claude/`, לא משפיע על repo זה.
