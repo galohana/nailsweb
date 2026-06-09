@@ -72,7 +72,7 @@ export const DEFAULT_TERMS = 'ברוכות הבאות לקליניקה! בקבי
 
 // ── SMS Templates ─────────────────────────────────────────────────────────────
 // Hebrew SMS = UCS-2 = 70 chars per segment. All templates must be ≤70 chars.
-// Owner notifications are now via Telegram (see DEFAULT_TELEGRAM_TEMPLATES below).
+// Owner notifications are now via Web Push (/api/notify).
 // Only client 'welcome' remains as SMS. reminder/waitlistSlot/orderApproved removed.
 // Placeholders: {name} {phone} {service} {date} {time} {total} {items} {business}
 export const DEFAULT_SMS_TEMPLATES = {
@@ -82,20 +82,6 @@ export const DEFAULT_SMS_TEMPLATES = {
     reminder: { enabled: false, text: 'תזכורת: {service} | {date} {time}. מחכות!' },
     otp:     { enabled: true,  text: 'קוד האימות שלך: {code} (תקף ל-5 דקות)' },
   },
-};
-
-// ── Telegram Templates (owner notifications) ──────────────────────────────────
-// No 70-char limit. HTML supported: <b>, <i>, <code>.
-// Stored in Supabase under key 'telegramTemplates'.
-// Editable in Admin → יצירת קשר → הודעות טלגרם.
-export const DEFAULT_TELEGRAM_TEMPLATES = {
-  newBooking:     { enabled: true, text: '📅 <b>תור חדש!</b>\n👤 {name} | 📞 {phone}\n💅 {service}\n📆 {date} ⏰ {time}' },
-  cancellation:   { enabled: true, text: '❌ <b>ביטול תור</b>\n👤 {name} | 📞 {phone}\n💅 {service}\n📆 {date} ⏰ {time}' },
-  newClient:      { enabled: true, text: '🎉 <b>לקוחה חדשה!</b>\n👤 {name}\n📞 {phone}' },
-  waitlistJoin:   { enabled: true, text: '⏳ <b>הצטרפות להמתנה</b>\n👤 {name} | 📞 {phone}\n📆 {date}' },
-  waitlistFilled: { enabled: true, text: '✨ <b>מהמתנה לתור!</b>\n👤 {name} | 📞 {phone}\n📆 {date} ⏰ {time}' },
-  orderPending:   { enabled: true, text: '🛍️ <b>הזמנה חדשה!</b>\n👤 {name} | 📞 {phone}\n{items}\nסה"כ: ₪{total}' },
-  orderPurchase:  { enabled: true, text: '💳 <b>קנייה בחנות!</b>\n👤 {name} | 📞 {phone}\n{items}\nסה"כ: ₪{total}' },
 };
 
 export const DEFAULT_GALLERY = [];

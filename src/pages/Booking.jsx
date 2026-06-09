@@ -1070,7 +1070,7 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
                 },
               });
             } catch (e) { console.error('[booking] pending payment:', e); }
-            // Notify owner via Telegram with "אישרתי קבלת תשלום" button
+            // Notify owner via Web Push with "אישרתי קבלת תשלום" button
             try {
               await notifyOwnerAppointmentPaid({
                 clientName: confirmed.userName || '',

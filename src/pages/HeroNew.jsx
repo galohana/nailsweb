@@ -536,7 +536,7 @@ export default function HeroNew({ user, onNavigate, onLogout, showStore, onOpenE
       <RisePage embedded={true} />
 
       {/* ── Privacy link ── */}
-      <div style={{ textAlign: 'center', paddingBottom: 12, backgroundColor: BG, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
+      <div style={{ textAlign: 'center', paddingBottom: 96, backgroundColor: BG, backgroundImage: 'var(--demo-bg-mat-surface)', backgroundRepeat: 'repeat' }}>
         <button
           onClick={() => onNavigate('privacy')}
           style={{

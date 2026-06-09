@@ -119,13 +119,13 @@ export default function Shop({ user, onNavigate, onMenuOpen }) {
     pickupSubmittingRef.current = true;
     setPickupLoading(true);
     const payload = { clientName: pickupName.trim(), clientPhone: pickupPhone.trim(), items: cart, total };
-    // Create DB row first to get orderId for the Telegram button
+    // Create DB row first to get orderId for the push notification button
     let createdOrderId = null;
     try {
       const created = await db.orders.create(payload);
       createdOrderId = created?.id || created?.data?.id || null;
     } catch (e) { console.error('[Shop] orders.create:', e); }
-    // Notify owner with orderId (enables "אשר הזמנה" button in Telegram)
+    // Notify owner with orderId (enables "אשר הזמנה" button in the push notification)
     try { await notifyOwnerNewOrder({ ...payload, orderId: createdOrderId }); } catch (e) { console.error('[Shop] SMS:', e); }
     clearCart(); setPickupSuccess(true);
     try { navigator.vibrate?.([30, 20, 30]); } catch {}
@@ -790,7 +790,7 @@ function CartDrawer({ cart, total, user, onClose, onUpdateQty, ownerPhone, bitAc
       });
     } catch (e) { console.error('[cart] pendingPayments:', e); }
 
-    // 3. Notify owner via Telegram (fire-and-forget); paymentId enables reject/approve buttons
+    // 3. Notify owner via Web Push (fire-and-forget); paymentId enables reject/approve buttons
     try { notifyOwnerNewOrder({ clientName, clientPhone, items: orderItems, total, paymentId: orderId }); } catch {}
 
     // 4. Add to local strip as pending — receipt will be sent by admin on approval

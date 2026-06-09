@@ -24,6 +24,21 @@
 - בחר אחד בלבד: `git push` (Vercel עולה אוטומטי) **או** `vercel --prod` (בלי git push לפני) — לא שניהם
 - תמיד לאחר `vercel --prod`: להריץ `vercel alias set <deployment-url> nailsweb.vercel.app`
 
+## 🚨 STOP GATE — alias של clone (חובה לפני deploy ראשון)
+כל clone של התבנית יורש `"alias":["nailsweb.vercel.app"]` ב-vercel.json.
+**לפני ה-deploy הראשון של כל clone — חובה לשנות את שדה ה-alias ב-vercel.json לדומיין של הקלון בלבד**
+(למשל `{ "alias": ["[שם-לקוחה].vercel.app"] }`).
+אם לא משנים → כל `vercel --prod` מהקלון **חוטף את nailsweb.vercel.app**.
+אימות אחרי deploy: `vercel alias ls` — ודא שכל דומיין מצביע ל-deployment הנכון שלו.
+
+## 🛑 STOP GATE — אין deploy אוטומטי (NO EXCEPTIONS)
+לפני כל `vercel --prod` — עצור לחלוטין:
+1. הרץ `npm run dev`
+2. צלם screenshots של localhost (העמודים שהשתנו)
+3. שלח לגל וחכה לאישור מפורש
+4. רק אחרי "תעלה" / "אשר" / "OK" — בצע deploy
+חל על כל שינוי, בלי קשר לגודל המשימה.
+
 ## עיצוב — עקרונות קבועים
 - תחושה: יוקרה, בגרות, מודרניות, נינוחות, חדשנות
 - הצבעים משתנים לפי לקוחה — אל תנעל על צבע ספציפי

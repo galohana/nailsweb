@@ -1,7 +1,7 @@
 // Client-side notification helper — calls Vercel serverless functions.
-// Twilio/Telegram credentials are NEVER here (server-side only).
+// Twilio credentials are NEVER here (server-side only).
 //
-// Owner notifications   → /api/notify → Telegram
+// Owner notifications   → /api/notify → Web Push
 // Client welcome SMS    → /api/notify → Twilio
 // OTP                   → /api/send-otp / /api/verify-otp
 
@@ -17,8 +17,8 @@ async function post(payload) {
   }
 }
 
-// ── Owner notifications (→ Telegram) ─────────────────────────────────────────
-// aptId is included so the owner can cancel the appointment directly from Telegram.
+// ── Owner notifications (→ Web Push) ─────────────────────────────────────────
+// aptId is included so the owner can cancel the appointment directly from the push notification.
 export async function notifyOwnerNewAppointment({ clientName, clientPhone, service, date, time, aptId }) {
   await post({ type: 'new_appointment', clientName, clientPhone, service, date, time, aptId });
 }
