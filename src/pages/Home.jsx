@@ -169,7 +169,7 @@ function Hero({ user, hero, onNavigate, visible, businessLogo }) {
               fontFamily: 'var(--demo-heading-font)',
               fontSize: 15, fontWeight: 400, letterSpacing: '0.06em',
               color: 'var(--color-primary-ink)', whiteSpace: 'nowrap',
-            }}>BOLT ⚡</span>
+            }}>RISE ⚡</span>
           )}
         </motion.div>
       </div>
@@ -628,7 +628,7 @@ function DirectionsSection({ clinicInfo }) {
   );
 }
 
-// ── BOLT section ──────────────────────────────────────────────
+// ── RISE section ──────────────────────────────────────────────
 function BoltSection() {
   const waMsg = encodeURIComponent('היי! אשמח לשמוע עוד פרטים על בניית האתר לעסק שלי 🙏');
 
@@ -639,10 +639,10 @@ function BoltSection() {
         margin: '0 auto 16px', overflow: 'hidden',
         boxShadow: 'var(--demo-shadow-deep)',
       }}>
-        <img src="/assets/bolt-brand.png" alt="BOLT" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <img src="/assets/bolt-brand.png" alt="RISE" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
       </div>
 
-      <h2 style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 6 }}>BOLT</h2>
+      <h2 style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 6 }}>RISE</h2>
       <p style={{ color: C.brown, fontWeight: 600, fontSize: 13, marginBottom: 20 }}>
         בונה אתרים חכמים לעסקים קטנים
       </p>

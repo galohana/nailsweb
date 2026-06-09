@@ -35,7 +35,7 @@ export default function Navbar({ user, page, menuOpen, onMenuToggle, onNavigate,
           boxShadow: 'var(--demo-shadow-card)',
         }}
       >
-        {/* BOLT logo — inline start (right in RTL) */}
+        {/* RISE logo — inline start (right in RTL) */}
         <svg width="44" height="22" viewBox="0 0 44 22" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, opacity: 0.82 }}>
           <path d="M9 2 L4 11.5 L8.2 11.5 L6 20 L14 9.5 L9.8 9.5 Z"
             style={{ fill: 'none', stroke: 'var(--demo-navbar-text, #5C3D2E)' }}
@@ -45,7 +45,7 @@ export default function Navbar({ user, page, menuOpen, onMenuToggle, onNavigate,
             strokeWidth="0.8"/>
           <text x="22" y="15.5" fontFamily="'Cormorant Garamond', 'Georgia', serif"
             fontSize="13" fontWeight="600" letterSpacing="2.5"
-            style={{ fill: 'var(--demo-navbar-text, #5C3D2E)' }}>BOLT</text>
+            style={{ fill: 'var(--demo-navbar-text, #5C3D2E)' }}>RISE</text>
         </svg>
 
         {/* Clinic name — centered absolutely */}
