@@ -2,7 +2,7 @@
    applyDesign — מזריק את האובייקט design ל-:root כ-CSS vars.
    מופעל פעם אחת ב-main.jsx לפני שה-App נטען.
 
-   סנכרון מלא עם bolt-builder/src/preview/designVars.js:
+   סנכרון מלא עם rise-builder/src/preview/designVars.js:
    - כל החומרים: flat, matte, glass, metallic, wood, stripes, marble
    - כל הגדלים: surface, overlay, overlay_sm (tabs/buttons), backdrop, border
    - כל הצבעים: primary, section, bg, menu
@@ -42,7 +42,7 @@ function shadowFor(level, primary) {
 
 /**
  * materialFor — single source of truth for all CSS material patterns.
- * Synced with bolt-builder/src/preview/designVars.js → materialFor().
+ * Synced with rise-builder/src/preview/designVars.js → materialFor().
  *
  * Returns:
  *   surface      — background-image for large areas (bg color via backgroundColor)
@@ -303,7 +303,7 @@ export function applyDesign(design) {
     '--demo-bg-mat-border':   matBg.border,
     '--demo-bg-mat-backdrop': matBg.backdrop,
 
-    /* ── Surface aliases — bolt-builder naming (כרטיסים, panels) ──── */
+    /* ── Surface aliases — rise-builder naming (כרטיסים, panels) ──── */
     '--demo-surface':          matBg.surface,
     '--demo-surface-overlay':  matBg.overlay,
     '--demo-surface-border':   matBg.border,
