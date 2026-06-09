@@ -137,19 +137,31 @@ OTP + "ברוכה הבאה" תמיד פעיל. ⚠️ trim ל-70 תווים לכ
 
 ## חלק ו' — ENV vars
 
-```
-# קבועים לכולם — אל תשנה
-TWILIO_ACCOUNT_SID=<set in .env>
-TWILIO_AUTH_TOKEN=<set in .env>
-TWILIO_PHONE=<set in .env>
-RESEND_API_KEY=<set in .env>
-TELEGRAM_BOT_TOKEN=<set in .env>
+> 🔑 **ערכים קבועים משותפים לכל אתרי RISE** — ראה `eyebrowsweb-app/docs/RISE_MASTER.md` חלק ו'.
+> הם אחידים בין גבות/ציפורניים/מספרה. אל תשנה ואל תייצר חדשים ללא אישור גל.
 
-# ספציפי ללקוחה — מה-CLAUDE.md
-VITE_SUPABASE_URL=
-VITE_SUPABASE_KEY=
-OWNER_PHONE=[טלפון הלקוחה עם קידומת +972]
-TELEGRAM_CHAT_ID=
+```
+# ─── קבועים לכולם — העתק מ-eyebrowsweb-app/docs/RISE_MASTER.md חלק ו' ───
+TWILIO_ACCOUNT_SID=     ← מ-RISE_MASTER
+TWILIO_AUTH_TOKEN=      ← מ-RISE_MASTER
+TWILIO_PHONE=           ← מ-RISE_MASTER
+RESEND_API_KEY=         ← מ-RISE_MASTER
+TELEGRAM_BOT_TOKEN=     ← שאל את גל (bot token של הבוט המשותף)
+
+# ─── VAPID (Web Push) — שאל את גל ───
+VAPID_PUBLIC_KEY=       ← שאל את גל
+VAPID_PRIVATE_KEY=      ← שאל את גל (server-side only)
+VAPID_SUBJECT=mailto:galo09871@gmail.com
+
+# ─── Supabase Management API (ליצירת projects) — שאל את גל ───
+# SUPABASE_PAT=         ← token של Supabase Management API, ראה RISE_MASTER
+
+# ─── ספציפי ללקוחה — מה-CLAUDE_BUILD_NAILS.md ───
+VITE_SUPABASE_URL=        ← מ-Supabase project החדש
+VITE_SUPABASE_KEY=        ← anon key מ-Supabase project החדש
+SUPABASE_SERVICE_KEY=     ← service_role key מ-Supabase project החדש
+OWNER_PHONE=              ← טלפון הלקוחה עם קידומת +972
+TELEGRAM_CHAT_ID=         ← מ-Telegram הלקוחה (שלח /start לבוט ושלוף chat_id)
 ```
 
 ---
@@ -348,11 +360,15 @@ ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 ```bash
 vercel env add VITE_SUPABASE_URL production
 vercel env add VITE_SUPABASE_KEY production
+vercel env add SUPABASE_SERVICE_KEY production
 vercel env add TWILIO_ACCOUNT_SID production
 vercel env add TWILIO_AUTH_TOKEN production
 vercel env add TWILIO_PHONE production
 vercel env add OWNER_PHONE production
 vercel env add RESEND_API_KEY production
+vercel env add VAPID_PUBLIC_KEY production
+vercel env add VAPID_PRIVATE_KEY production
+vercel env add VAPID_SUBJECT production
 vercel env add TELEGRAM_BOT_TOKEN production
 vercel env add TELEGRAM_CHAT_ID production
 vercel --prod
