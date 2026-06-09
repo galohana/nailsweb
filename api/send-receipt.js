@@ -28,73 +28,81 @@ async function getReceiptSettings() {
 }
 
 function buildReceiptHtml({ name, items, total, method, businessName, businessAddress, receiptNumber, date, logoUrl }) {
-  const methodLabel = method === 'bit' ? 'Bit' : 'מזומן';
-  const itemsRows = (items || []).map(item => `
+  const methodLabel = method === 'bit' ? 'Bit' : method === 'credit' ? 'אשראי' : 'מזומן';
+  const itemsHtml = (items || []).map(item => `
     <tr>
-      <td style="padding:10px 14px;border-bottom:1px solid #F0E6D6;font-family:Arial,sans-serif;font-size:14px;color:#2C1810;text-align:right;">${item.name || item.serviceName || ''}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #F0E6D6;font-family:Arial,sans-serif;font-size:14px;color:#5C3D2E;text-align:left;white-space:nowrap;">₪${Number(item.price || 0).toLocaleString()}</td>
-    </tr>
-  `).join('');
+      <td style="padding:8px 0;border-bottom:1px solid #f0e6d6;font-family:Arial,sans-serif;font-size:13px;color:#2d1a0e;direction:rtl;">${item.name || item.serviceName || ''}</td>
+      <td style="padding:8px 0;border-bottom:1px solid #f0e6d6;font-family:Arial,sans-serif;font-size:13px;font-weight:700;color:#5c3d2e;text-align:left;white-space:nowrap;">₪${Number(item.price || 0).toLocaleString('he-IL')}</td>
+    </tr>`).join('');
 
   return `<!DOCTYPE html>
 <html dir="rtl" lang="he">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body dir="rtl" style="margin:0;padding:0;background:#F2E8DC;font-family:Arial,sans-serif;direction:rtl;text-align:right;">
-  <div dir="rtl" style="max-width:520px;margin:32px auto;background:#FDFAF7;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(92,61,46,0.12);direction:rtl;">
+<body dir="rtl" style="margin:0;padding:0;background:#f8f4f0;direction:rtl;text-align:right;">
+<table width="100%" cellpadding="0" cellspacing="0" dir="rtl" style="background:#f8f4f0;padding:24px 0;direction:rtl;">
+  <tr><td align="center">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(92,61,46,0.12);">
 
-    <!-- Header -->
-    <div style="background:#5C3D2E;padding:28px 32px;text-align:center;">
-      ${logoUrl ? `<img src="${logoUrl}" alt="logo" style="height:52px;object-fit:contain;margin-bottom:12px;border-radius:50%;">` : ''}
-      <h1 style="color:#FDFAF7;font-size:24px;margin:0 0 4px;font-weight:400;letter-spacing:0.04em;">${businessName || 'הסטודיו'}</h1>
-      ${businessAddress ? `<p style="color:rgba(253,250,247,0.75);font-size:13px;margin:0;">${businessAddress}</p>` : ''}
-    </div>
+      <!-- Header -->
+      <tr>
+        <td style="background:#5c3d2e;padding:24px 20px;text-align:center;">
+          ${logoUrl ? `<img src="${logoUrl}" alt="" style="height:48px;border-radius:50%;display:block;margin:0 auto 10px;">` : ''}
+          <p style="margin:0;font-family:Georgia,serif;font-size:22px;font-weight:400;color:#fdfaf7;letter-spacing:0.04em;">${businessName || 'הסטודיו'}</p>
+          ${businessAddress ? `<p style="margin:4px 0 0;font-family:Arial,sans-serif;font-size:11px;color:rgba(253,250,247,0.7);">${businessAddress}</p>` : ''}
+        </td>
+      </tr>
 
-    <!-- Receipt badge -->
-    <div style="background:#F2E8DC;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #E8DCC8;">
-      <span style="font-size:13px;color:#7D5A47;">קבלה מספר <strong style="color:#2C1810;">${receiptNumber}</strong></span>
-      <span style="font-size:13px;color:#7D5A47;">${date || new Date().toLocaleDateString('he-IL')}</span>
-    </div>
+      <!-- Receipt meta -->
+      <tr>
+        <td style="background:#faf7f4;padding:8px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="font-family:Arial,sans-serif;font-size:11px;color:#a08060;direction:rtl;">קבלה #${receiptNumber}</td>
+              <td style="font-family:Arial,sans-serif;font-size:11px;color:#a08060;text-align:left;">${date}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
 
-    <!-- Customer -->
-    <div style="padding:20px 32px 8px;">
-      <p style="font-size:13px;color:#7D5A47;margin:0 0 4px;">לקוחה יקרה,</p>
-      <p style="font-size:18px;color:#2C1810;margin:0;font-weight:600;">${name || ''}</p>
-    </div>
+      <!-- Client name -->
+      <tr>
+        <td style="padding:16px 20px 4px;direction:rtl;">
+          <p style="margin:0;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#2d1a0e;">${name}</p>
+        </td>
+      </tr>
 
-    <!-- Items -->
-    <div style="padding:8px 32px 0;">
-      <table style="width:100%;border-collapse:collapse;">
-        <thead>
-          <tr style="background:#F5EFE6;">
-            <th style="padding:10px 14px;font-size:12px;color:#7D5A47;font-weight:600;text-align:right;border-bottom:2px solid #E8DCC8;">פירוט</th>
-            <th style="padding:10px 14px;font-size:12px;color:#7D5A47;font-weight:600;text-align:left;border-bottom:2px solid #E8DCC8;">סכום</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsRows || `<tr><td colspan="2" style="padding:14px;font-size:14px;color:#7D5A47;text-align:center;">—</td></tr>`}
-        </tbody>
-      </table>
-    </div>
+      <!-- Items -->
+      <tr>
+        <td style="padding:4px 20px 0;direction:rtl;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            ${itemsHtml}
+          </table>
+        </td>
+      </tr>
 
-    <!-- Total -->
-    <div style="margin:0 32px;padding:16px 14px;background:#5C3D2E;border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="color:#FDFAF7;font-size:14px;font-weight:600;">סה״כ שולם</span>
-      <span style="color:#FDFAF7;font-size:22px;font-weight:700;">₪${Number(total || 0).toLocaleString()}</span>
-    </div>
+      <!-- Total -->
+      <tr>
+        <td style="padding:12px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#5c3d2e;border-radius:10px;">
+            <tr>
+              <td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:#fdfaf7;direction:rtl;">סה״כ שולם</td>
+              <td style="padding:12px 16px;font-family:Georgia,serif;font-size:22px;font-weight:700;color:#fdfaf7;text-align:left;">₪${Number(total).toLocaleString('he-IL')}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
 
-    <!-- Method -->
-    <div style="padding:12px 32px 0;text-align:center;">
-      <span style="display:inline-block;padding:5px 16px;background:rgba(92,61,46,0.08);border:1px solid rgba(92,61,46,0.18);border-radius:20px;font-size:12px;color:#5C3D2E;font-weight:600;">
-        שולם ב-${methodLabel}
-      </span>
-    </div>
+      <!-- Payment method -->
+      <tr>
+        <td style="padding:0 20px 20px;text-align:center;">
+          <span style="display:inline-block;padding:4px 14px;background:rgba(92,61,46,0.08);border:1px solid rgba(92,61,46,0.18);border-radius:20px;font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#5c3d2e;">שולם ב-${methodLabel}</span>
+          <p style="margin:12px 0 0;font-family:Arial,sans-serif;font-size:12px;color:#a08060;">תודה שבחרת בנו 💕</p>
+        </td>
+      </tr>
 
-    <!-- Footer -->
-    <div style="padding:24px 32px;text-align:center;border-top:1px solid #F0E6D6;margin-top:20px;">
-      <p style="font-size:13px;color:#7D5A47;margin:0 0 4px;">תודה שבחרת בנו 💕</p>
-      <p style="font-size:11px;color:#A89580;margin:0;">קבלה זו מהווה אסמכתא לתשלום</p>
-    </div>
-  </div>
+    </table>
+  </td></tr>
+</table>
 </body>
 </html>`;
 }
