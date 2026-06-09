@@ -199,7 +199,7 @@ export default function InstallButton() {
         whileTap={{ scale: 0.92 }}
         whileHover={{ scale: 1.06 }}
         style={{
-          position: 'fixed', bottom: 24, right: 18, zIndex: 90,
+          position: 'fixed', bottom: 'calc(max(12px, env(safe-area-inset-bottom) + 8px) + 72px)', right: 18, zIndex: 90,
           width: 48, height: 48, borderRadius: 'var(--demo-radius-pill, 999px)',
           backgroundColor: 'var(--color-primary)',
           backgroundImage: 'var(--demo-primary-mat-overlay, none)',
