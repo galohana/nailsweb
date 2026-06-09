@@ -138,7 +138,7 @@ export default async function handler(req, res) {
     const { data: sendData, error: sendErr } = await resend.emails.send({
       from: fromLine,
       to: [ownerEmail],
-      subject: `קבלה מספר ${receiptNumber} — ${businessName}`,
+      subject: `Receipt #${receiptNumber}`,
       html,
     });
 
