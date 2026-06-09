@@ -21,7 +21,7 @@ export default function RisePage({ embedded = false }) {
           transition={{ delay: 0.2, type: 'spring', stiffness: 220 }}
           style={{ width: '120px', height: 'auto', margin: '0 auto 12px', display: 'flex', justifyContent: 'center' }}
         >
-          <img src="/assets/rise-brand.png" alt="RISE" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
+          <img src="/assets/rise-brand.png" alt="RISE" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block', mixBlendMode: 'multiply' }} />
         </motion.div>
 
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
