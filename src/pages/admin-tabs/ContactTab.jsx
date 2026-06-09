@@ -60,7 +60,7 @@ function InlineSaveBtn({ dirty, saved, onSave }) {
             display: 'flex', alignItems: 'center', gap: 4,
             padding: '4px 11px', borderRadius: 'var(--radius-sm)',
             border: 'none', backgroundColor: 'var(--color-primary)',
-            color: 'var(--color-surface)', fontFamily: 'var(--font-body)',
+            color: 'var(--color-on-primary)', fontFamily: 'var(--font-body)',
             fontSize: 11, fontWeight: 700, cursor: 'pointer',
             whiteSpace: 'nowrap',
           }}>

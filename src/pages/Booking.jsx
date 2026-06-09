@@ -1140,7 +1140,7 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
                         style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} />
                     ) : (
                       <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 20, fontWeight: 600, color: 'var(--color-surface)' }}>
+                        <span style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 20, fontWeight: 600, color: 'var(--color-on-primary)' }}>
                           {(c.name || '?').charAt(0)}
                         </span>
                       </div>
@@ -1315,7 +1315,7 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
                           style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} />
                       ) : (
                         <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 20, fontWeight: 600, color: 'var(--color-surface)' }}>
+                          <span style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 20, fontWeight: 600, color: 'var(--color-on-primary)' }}>
                             {(owner.name || '?').charAt(0)}
                           </span>
                         </div>
@@ -1337,7 +1337,7 @@ export default function Booking({ user, onUserSave, onNavigate, onMenuOpen }) {
                             style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} />
                         ) : (
                           <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <span style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 20, fontWeight: 600, color: 'var(--color-surface)' }}>
+                            <span style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 20, fontWeight: 600, color: 'var(--color-on-primary)' }}>
                               {(s.name || '?').charAt(0)}
                             </span>
                           </div>

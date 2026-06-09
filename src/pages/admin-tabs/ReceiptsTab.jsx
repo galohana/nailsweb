@@ -298,11 +298,11 @@ function ReceiptPreview({ name, items, total, method, businessName, businessAddr
           {logoUrl && (
             <img src={logoUrl} alt="" style={{ height: 36, borderRadius: 'var(--radius-full)', display: 'block', margin: '0 auto 8px' }} />
           )}
-          <p style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 400, color: 'var(--color-surface)', margin: 0 }}>
+          <p style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 400, color: 'var(--color-on-primary)', margin: 0 }}>
             {businessName}
           </p>
           {businessAddress && (
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'rgba(253,250,247,0.7)', marginTop: 2 }}>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--color-on-primary)', opacity: 0.7, marginTop: 2 }}>
               {businessAddress}
             </p>
           )}
@@ -339,8 +339,8 @@ function ReceiptPreview({ name, items, total, method, businessName, businessAddr
           borderRadius: 'var(--radius-sm)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, color: 'var(--color-surface)' }}>סה״כ שולם</span>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: 'var(--color-surface)' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, color: 'var(--color-on-primary)' }}>סה״כ שולם</span>
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: 'var(--color-on-primary)' }}>
             ₪{Number(total).toLocaleString()}
           </span>
         </div>

@@ -83,7 +83,7 @@ export default function StaffTab() {
                 onError={e => { e.target.style.display = 'none'; }} />
             ) : (
               <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 22, fontWeight: 600, color: 'var(--color-surface)' }}>
+                <span style={{ fontFamily: 'var(--demo-heading-font)', fontSize: 22, fontWeight: 600, color: 'var(--color-on-primary)' }}>
                   {(s.name || '?').charAt(0)}
                 </span>
               </div>

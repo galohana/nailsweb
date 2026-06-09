@@ -207,7 +207,7 @@ function PushSettingsSection() {
     <>
       {/* ── חלונית 1: בעלת העסק ── */}
       <div style={{ ...S.card, border: '1.5px solid rgba(92,61,46,0.28)', backgroundColor: 'rgba(92,61,46,0.025)' }}>
-        <p style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 700, color: 'var(--color-primary)', margin: '0 0 2px' }}>
+        <p style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 700, color: 'var(--color-primary-ink)', margin: '0 0 2px' }}>
           🏪 התראות לבעלת העסק
         </p>
         <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--color-text-muted)', margin: '0 0 10px', lineHeight: 1.5 }}>

@@ -424,7 +424,7 @@ export default function ReportsTab() {
               </div>
               <motion.button whileTap={{ scale: 0.9 }} onClick={() => { setExpenseModal('add'); setExpenseAmount(''); }}
                 style={{ width: 44, height: 44, borderRadius: 'var(--radius-full)', border: '1.5px solid var(--color-border-dark)', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', touchAction: 'manipulation' }}>
-                <Plus size={18} color="var(--color-surface)" />
+                <Plus size={18} color="var(--color-on-primary)" />
               </motion.button>
             </div>
           </GlassCard>
@@ -514,7 +514,7 @@ export default function ReportsTab() {
               <motion.button whileTap={{ scale: 0.9 }}
                 onClick={() => { setNoShowModal('add'); setSearchQ(''); setNsDate(toDS(new Date())); }}
                 style={{ width: 44, height: 44, borderRadius: 'var(--radius-full)', border: '1.5px solid var(--color-border-dark)', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', touchAction: 'manipulation' }}>
-                <Plus size={18} color="var(--color-surface)" />
+                <Plus size={18} color="var(--color-on-primary)" />
               </motion.button>
             </div>
             {noShowCount > 0 && avgPerApt > 0 && (

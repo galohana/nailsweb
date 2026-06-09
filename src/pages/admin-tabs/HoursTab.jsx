@@ -114,7 +114,7 @@ function NewAppointmentsPanel({ apts, payments, confirmations, pendingPays, appr
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', backgroundColor: 'var(--color-primary)', backgroundImage: 'var(--demo-primary-mat-overlay, none)' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-on-primary)', fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700 }}>
           🔔 תורים חדשים שנקבעו
-          <span style={{ minWidth: 22, height: 22, padding: '0 6px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-surface)', color: 'var(--color-primary)', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ minWidth: 22, height: 22, padding: '0 6px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-surface)', color: 'var(--color-primary-ink)', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {apts.length}
           </span>
         </span>
