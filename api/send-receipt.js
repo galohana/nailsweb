@@ -39,8 +39,8 @@ function buildReceiptHtml({ name, items, total, method, businessName, businessAd
   return `<!DOCTYPE html>
 <html dir="rtl" lang="he">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#F2E8DC;font-family:Arial,sans-serif;">
-  <div style="max-width:520px;margin:32px auto;background:#FDFAF7;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(92,61,46,0.12);">
+<body dir="rtl" style="margin:0;padding:0;background:#F2E8DC;font-family:Arial,sans-serif;direction:rtl;text-align:right;">
+  <div dir="rtl" style="max-width:520px;margin:32px auto;background:#FDFAF7;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(92,61,46,0.12);direction:rtl;">
 
     <!-- Header -->
     <div style="background:#5C3D2E;padding:28px 32px;text-align:center;">
