@@ -561,6 +561,42 @@ jobs:
           EOF
           echo "Notification sent"
 
+      # ── 13b. Register cron jobs on cron-job.org ───────────────
+      # Reminders + pending-approval sweeps. Never fails the build (continue-on-error);
+      # if CRON_API_KEY is missing it only warns with manual instructions.
+      - name: Register cron jobs
+        continue-on-error: true
+        env:
+          REPO_SLUG: ${{ inputs.repo_slug }}
+          RAW_CRON_KEY: ${{ secrets.CRON_API_KEY }}
+        run: |
+          CRON_KEY=$(printf '%s' "$RAW_CRON_KEY" | tr -d '\357\273\277\r')
+          SITE="https://${REPO_SLUG}.vercel.app"
+          if [ -z "$CRON_KEY" ]; then
+            echo "::warning::CRON_API_KEY secret missing — skipping automatic cron registration."
+            echo "::warning::Set up manually at cron-job.org: $SITE/api/cron-reminders (every 15 min) + $SITE/api/cron-pending (daily 08:00 Asia/Jerusalem)."
+            exit 0
+          fi
+          create_cron() {
+            # $1=title  $2=url  $3=schedule-json
+            RESP=$(curl -sS -w $'\n%{http_code}' -X PUT "https://api.cron-job.org/jobs" \
+              -H "Authorization: Bearer $CRON_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{\"job\":{\"url\":\"$2\",\"enabled\":true,\"title\":\"$1\",\"saveResponses\":false,\"requestMethod\":0,\"schedule\":$3}}" 2>&1)
+            CODE=$(printf '%s' "$RESP" | tail -1)
+            BODY=$(printf '%s' "$RESP" | sed '$d')
+            if [ "$CODE" = "200" ] || [ "$CODE" = "201" ]; then
+              echo "  ✓ cron registered: $1"
+            else
+              echo "::warning::cron-job.org HTTP $CODE for '$1' — $BODY"
+            fi
+          }
+          # cron-reminders — every 15 minutes
+          create_cron "RISE reminders — ${REPO_SLUG}" "$SITE/api/cron-reminders" '{"timezone":"Asia/Jerusalem","hours":[-1],"mdays":[-1],"minutes":[0,15,30,45],"months":[-1],"wdays":[-1]}'
+          # cron-pending — daily at 08:00
+          create_cron "RISE pending — ${REPO_SLUG}" "$SITE/api/cron-pending" '{"timezone":"Asia/Jerusalem","hours":[8],"mdays":[-1],"minutes":[0],"months":[-1],"wdays":[-1]}'
+          echo "Cron registration done"
+
       # ── 14. Notify Gal on FAILURE ─────────────────────────────
       - name: Notify Gal on failure
         if: failure()
