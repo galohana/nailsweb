@@ -486,6 +486,7 @@ jobs:
       - name: Insert Supabase data
         env:
           CLIENT_JSON: ${{ inputs.client_json }}
+          BUSINESS_TYPE: ${{ inputs.business_type }}
           SB_URL: ${{ steps.supabase.outputs.sb_url }}
           SB_SVC: ${{ steps.supabase.outputs.service_key }}
         run: |
@@ -493,6 +494,10 @@ jobs:
           const client = JSON.parse(process.env.CLIENT_JSON);
           const url = process.env.SB_URL;
           const key = process.env.SB_SVC;
+          // Gender/venue-appropriate cancellation terms per business type (barber = masculine).
+          const terms = (process.env.BUSINESS_TYPE || 'eyebrows') === 'barber'
+            ? 'ברוך הבא! בקביעת תור אתה מאשר את תנאי הביטול — ביטול פחות מ-24 שעות לפני התור יחויב בדמי ביטול.'
+            : 'ברוכות הבאות! בקביעת תור את מאשרת את תנאי הביטול — ביטול פחות מ-24 שעות לפני התור יחויב בדמי ביטול.';
 
           const headers = {
             'apikey': key, 'Authorization': `Bearer ${key}`,
@@ -511,7 +516,7 @@ jobs:
             { key: 'bitAccount', value: phone },
             { key: 'adminPassword', value: client.admin_password },
             { key: 'ownerEmail', value: client.email },
-            { key: 'terms', value: 'ברוכות הבאות לקליניקה! בקביעת תור את מאשרת את תנאי הביטול — ביטול פחות מ-24 שעות לפני התור יחויב בדמי ביטול.' },
+            { key: 'terms', value: terms },
           ];
 
           Promise.all(inserts.map(({ key, value }) =>
