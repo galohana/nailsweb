@@ -131,3 +131,10 @@ ALTER TABLE public.reviews      ADD CONSTRAINT reviews_rating_check       CHECK 
 CREATE INDEX idx_appointments_date   ON public.appointments USING btree (date);
 CREATE INDEX idx_appointments_phone  ON public.appointments USING btree (phone);
 CREATE INDEX idx_appointments_status ON public.appointments USING btree (status);
+
+-- Prevent exact-slot double-booking among CONFIRMED appointments only.
+-- COALESCE maps NULL staff_id (single-staff businesses) to a fixed sentinel so
+-- they are protected too (Postgres treats NULLs as distinct in unique indexes).
+CREATE UNIQUE INDEX IF NOT EXISTS appointments_no_double_booking
+  ON public.appointments (date, "time", COALESCE(staff_id, '00000000-0000-0000-0000-000000000000'::uuid))
+  WHERE status = 'confirmed';
