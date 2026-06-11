@@ -30,9 +30,13 @@ async function sendSms(body, to) {
   try { await twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN).messages.create({ body, from: TWILIO_PHONE, to: dest }); } catch {}
 }
 
+// Israel-local date/hour, DST-aware (Asia/Jerusalem handles IST/IDT automatically).
+// Replaces the old hardcoded UTC+2 offset that drifted +1h during summer (DST).
+const ilDate = (ms) => new Date(ms).toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
+const ilHour = (ms) => Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jerusalem', hour: '2-digit', hourCycle: 'h23' }).format(new Date(ms)));
+
 export default async function handler(req, res) {
-  const ISRAEL_OFFSET_MS = 2 * 60 * 60 * 1000;
-  if (new Date(Date.now() + ISRAEL_OFFSET_MS).getUTCHours() !== 20) {
+  if (ilHour(Date.now()) !== 20) {
     return res.status(200).json({ ok: true, skipped: 'outside-digest-window' });
   }
   const supabase = sb();
@@ -57,15 +61,14 @@ export default async function handler(req, res) {
     const log = (logRow?.value && typeof logRow.value === 'object') ? { ...logRow.value } : {};
 
     const now = Date.now();
-    const todayIsrael = new Date(now + ISRAEL_OFFSET_MS).toISOString().slice(0, 10);
-    const cutoff4pmUtc = new Date(todayIsrael + 'T14:00:00Z').getTime();
+    const todayIsrael = ilDate(now);
     const logUpdated = { ...log };
     let notified = 0;
 
     for (const apt of pending) {
       const createdAt = apt.created_at ? new Date(apt.created_at).getTime() : 0;
-      if (new Date(createdAt + ISRAEL_OFFSET_MS).toISOString().slice(0, 10) === todayIsrael && createdAt >= cutoff4pmUtc) continue;
-      const lastNotifiedDate = log[apt.id] ? new Date(log[apt.id] + ISRAEL_OFFSET_MS).toISOString().slice(0, 10) : null;
+      if (ilDate(createdAt) === todayIsrael && ilHour(createdAt) >= 16) continue;
+      const lastNotifiedDate = log[apt.id] ? ilDate(log[apt.id]) : null;
       if (lastNotifiedDate === todayIsrael) continue;
 
       const name = apt.user_name || '';
