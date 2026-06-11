@@ -34,16 +34,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       # ── 1. Checkout template ──────────────────────────────────
       - name: Checkout template
         uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install npm deps
         run: npm ci
@@ -56,31 +58,69 @@ jobs:
           ORG_ID: ${{ inputs.supabase_org_id }}
           REPO_SLUG: ${{ inputs.repo_slug }}
         run: |
-          set -e
+          set -euo pipefail
           DB_PASS="Rise$(openssl rand -hex 8)!"
-          RESP=$(curl -sf -X POST "https://api.supabase.com/v1/projects" \
+          CREATE_RESP=$(mktemp)
+          CREATE_STATUS=$(curl -sS -o "$CREATE_RESP" -w "%{http_code}" -X POST "https://api.supabase.com/v1/projects" \
             -H "Authorization: Bearer $SB_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"name\":\"$REPO_SLUG\",\"organization_id\":\"$ORG_ID\",\"region\":\"eu-central-1\",\"plan\":\"free\",\"db_pass\":\"$DB_PASS\"}")
-          PROJECT_ID=$(echo $RESP | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+            -d "{\"name\":\"$REPO_SLUG\",\"organization_id\":\"$ORG_ID\",\"region\":\"eu-central-1\",\"plan\":\"free\",\"db_pass\":\"$DB_PASS\"}" || true)
+          PROJECT_ID=""
+          if [ "$CREATE_STATUS" = "200" ] || [ "$CREATE_STATUS" = "201" ] || [ "$CREATE_STATUS" = "202" ]; then
+            PROJECT_ID=$(python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" < "$CREATE_RESP")
+            if [ -z "$PROJECT_ID" ]; then
+              echo "::error::Supabase project id missing in create response."
+              cat "$CREATE_RESP"
+              exit 1
+            fi
+            echo "Created Supabase project: $PROJECT_ID"
+          else
+            echo "Supabase create returned HTTP $CREATE_STATUS; trying to reuse existing project..."
+            LIST_RESP=$(mktemp)
+            LIST_STATUS=$(curl -sS -o "$LIST_RESP" -w "%{http_code}" "https://api.supabase.com/v1/projects" \
+              -H "Authorization: Bearer $SB_TOKEN" || true)
+            if [ "$LIST_STATUS" != "200" ]; then
+              echo "::error::Failed to fetch Supabase projects list (HTTP $LIST_STATUS)."
+              cat "$LIST_RESP"
+              exit 1
+            fi
+            # Supabase list responses can vary in org field naming; only accept a project that matches both slug and org.
+            PROJECT_ID=$(python3 -c "import json,os,sys; name=os.environ['REPO_SLUG']; org=os.environ['ORG_ID']; data=json.load(sys.stdin); items=data if isinstance(data,list) else data.get('projects',[]); exact=next((i.get('id','') for i in items if i.get('name')==name and i.get('id') and (i.get('organization_id')==org or i.get('organization')==org or i.get('org_id')==org)), ''); print(exact)" < "$LIST_RESP")
+            if [ -z "$PROJECT_ID" ]; then
+              echo "::error::Failed to create or find Supabase project '$REPO_SLUG'."
+              cat "$CREATE_RESP"
+              exit 1
+            fi
+            echo "Reusing Supabase project: $PROJECT_ID"
+          fi
           echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
-          echo "Created Supabase project: $PROJECT_ID"
 
           # Poll until project is ready (up to 3 min)
+          STATUS=""
           for i in $(seq 1 36); do
-            STATUS=$(curl -sf "https://api.supabase.com/v1/projects/$PROJECT_ID" \
-              -H "Authorization: Bearer $SB_TOKEN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('status',''))")
-            echo "Status: $STATUS ($i/36)"
+            POLL_RESP=$(mktemp)
+            POLL_STATUS=$(curl -sS -o "$POLL_RESP" -w "%{http_code}" "https://api.supabase.com/v1/projects/$PROJECT_ID" \
+              -H "Authorization: Bearer $SB_TOKEN" || echo "000")
+            if [ "$POLL_STATUS" = "200" ]; then
+              STATUS=$(python3 -c "import sys,json; print(json.load(sys.stdin).get('status',''))" < "$POLL_RESP" 2>/dev/null || echo "")
+            fi
+            echo "Status: $STATUS (attempt $i/36, http=$POLL_STATUS)"
             if [ "$STATUS" = "ACTIVE_HEALTHY" ]; then break; fi
             sleep 5
           done
-          if [ "$STATUS" != "ACTIVE_HEALTHY" ]; then echo "Supabase timeout" && exit 1; fi
+          if [ "$STATUS" != "ACTIVE_HEALTHY" ]; then echo "::error::Supabase project not ready after 3 min (last status: $STATUS)" && exit 1; fi
 
           # Get API keys
-          KEYS=$(curl -sf "https://api.supabase.com/v1/projects/$PROJECT_ID/api-keys" \
-            -H "Authorization: Bearer $SB_TOKEN")
-          ANON_KEY=$(echo $KEYS | python3 -c "import sys,json; ks=json.load(sys.stdin); print(next(k['api_key'] for k in ks if k['name']=='anon'))")
-          SERVICE_KEY=$(echo $KEYS | python3 -c "import sys,json; ks=json.load(sys.stdin); print(next(k['api_key'] for k in ks if k['name']=='service_role'))")
+          KEYS_RESP=$(mktemp)
+          KEYS_HTTP=$(curl -sS -o "$KEYS_RESP" -w "%{http_code}" "https://api.supabase.com/v1/projects/$PROJECT_ID/api-keys" \
+            -H "Authorization: Bearer $SB_TOKEN" || echo "000")
+          if [ "$KEYS_HTTP" != "200" ]; then
+            echo "::error::Failed to fetch API keys (HTTP $KEYS_HTTP)."
+            cat "$KEYS_RESP"
+            exit 1
+          fi
+          ANON_KEY=$(python3 -c "import sys,json; ks=json.load(sys.stdin); print(next(k['api_key'] for k in ks if k['name']=='anon'))" < "$KEYS_RESP")
+          SERVICE_KEY=$(python3 -c "import sys,json; ks=json.load(sys.stdin); print(next(k['api_key'] for k in ks if k['name']=='service_role'))" < "$KEYS_RESP")
 
           SB_URL="https://$PROJECT_ID.supabase.co"
           echo "sb_url=$SB_URL" >> $GITHUB_OUTPUT
@@ -95,10 +135,15 @@ jobs:
           PROJECT_ID: ${{ steps.supabase.outputs.project_id }}
         run: |
           SCHEMA=$(cat docs/schema.sql | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
-          curl -sf -X POST "https://api.supabase.com/v1/projects/$PROJECT_ID/database/query" \
+          SCHEMA_RESP=$(mktemp)
+          SCHEMA_HTTP=$(curl -sS -o "$SCHEMA_RESP" -w "%{http_code}" -X POST "https://api.supabase.com/v1/projects/$PROJECT_ID/database/query" \
             -H "Authorization: Bearer $SB_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"query\": $SCHEMA}" > /dev/null
+            -d "{\"query\": $SCHEMA}" || echo "000")
+          if [ "$SCHEMA_HTTP" != "200" ] && [ "$SCHEMA_HTTP" != "201" ]; then
+            echo "::warning::Schema SQL returned HTTP $SCHEMA_HTTP"
+            cat "$SCHEMA_RESP"
+          fi
           echo "Schema applied"
 
       # ── 4. RLS + Storage + push_subscriptions ────────────────
@@ -181,10 +226,15 @@ jobs:
           CREATE POLICY anon_delete_own_endpoint ON public.push_subscriptions FOR DELETE TO anon USING (true);
           "
           ENCODED=$(echo "$SQL" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
-          curl -sf -X POST "https://api.supabase.com/v1/projects/$PROJECT_ID/database/query" \
+          RLS_RESP=$(mktemp)
+          RLS_HTTP=$(curl -sS -o "$RLS_RESP" -w "%{http_code}" -X POST "https://api.supabase.com/v1/projects/$PROJECT_ID/database/query" \
             -H "Authorization: Bearer $SB_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"query\": $ENCODED}" > /dev/null
+            -d "{\"query\": $ENCODED}" || echo "000")
+          if [ "$RLS_HTTP" != "200" ] && [ "$RLS_HTTP" != "201" ]; then
+            echo "::warning::RLS SQL returned HTTP $RLS_HTTP"
+            cat "$RLS_RESP"
+          fi
           echo "RLS + Storage + push_subscriptions applied"
 
       # ── 5. Generate VAPID keys ────────────────────────────────
@@ -295,10 +345,25 @@ jobs:
 
       # ── 9. Create GitHub repo + push ─────────────────────────
       - name: Create GitHub repo and push
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           REPO_SLUG: ${{ inputs.repo_slug }}
         run: |
+          GH_TOKEN=$(printf '%s' "$GH_TOKEN" | tr -d '\357\273\277')
+          export GH_TOKEN
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::GH_PAT secret is not set. Skipping GitHub repo creation."
+            echo "::warning::To fix: go to Repository Settings → Secrets and variables → Actions → New repository secret, name it GH_PAT, and paste a classic PAT with 'repo' scope."
+            exit 0
+          fi
+          # Validate the token before doing any work (gh auth status uses GH_TOKEN env var securely)
+          if ! gh auth status --hostname github.com > /dev/null 2>&1; then
+            echo "::warning::GH_PAT is invalid or expired (gh auth status failed)."
+            echo "::warning::To fix: go to Repository Settings → Secrets and variables → Actions → update the GH_PAT secret with a valid classic PAT that has 'repo' scope."
+            echo "::warning::Skipping GitHub repo creation — Vercel deploy will still proceed."
+            exit 0
+          fi
           git config user.email "boltagent8@gmail.com"
           git config user.name "RISE Auto-Builder"
           git remote remove origin || true
@@ -317,9 +382,31 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           REPO_SLUG: ${{ inputs.repo_slug }}
         run: |
-          OUTPUT=$(vercel --prod --token=$VERCEL_TOKEN --yes 2>&1)
+          set +e
+          VTOKEN=$(printf '%s' "$VERCEL_TOKEN" | tr -d '\357\273\277')
+          # Deploy from a directory named after the slug so Vercel creates/links a
+          # DEDICATED project per client. The default checkout dir is named after the
+          # template repo, which would make every clone deploy INTO the template's own
+          # Vercel project and clobber its env + production deployment.
+          DEPLOY_DIR="$RUNNER_TEMP/$REPO_SLUG"
+          rm -rf "$DEPLOY_DIR"; mkdir -p "$DEPLOY_DIR"
+          rsync -a --exclude='.git' --exclude='node_modules' --exclude='.vercel' --exclude='dist' ./ "$DEPLOY_DIR"/
+          echo "$DEPLOY_DIR" > "$RUNNER_TEMP/deploy_dir"
+          cd "$DEPLOY_DIR"
+          OUTPUT=$(vercel --prod --token="$VTOKEN" --yes 2>&1)
+          VEXIT=$?
+          set -e
           echo "$OUTPUT"
-          DEPLOY_URL=$(echo "$OUTPUT" | grep -oP 'https://[a-zA-Z0-9-]+\.vercel\.app' | grep -v "$REPO_SLUG" | head -1)
+          if [ $VEXIT -ne 0 ]; then
+            echo "::error::Vercel initial deploy failed (exit $VEXIT). See CLI output above."
+            exit $VEXIT
+          fi
+          DEPLOY_URL=$(echo "$OUTPUT" | grep -oP 'https://[a-zA-Z0-9-]+\.vercel\.app' | head -1)
+          # SAFETY GUARD: a clone must NEVER land on a template project.
+          if echo "$DEPLOY_URL" | grep -qiE 'eyebrowsweb|nailsweb|barberweb'; then
+            echo "::error::Deploy URL '$DEPLOY_URL' points at a TEMPLATE project, not '$REPO_SLUG'. Aborting to protect the template."
+            exit 1
+          fi
           echo "deploy_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deployed: $DEPLOY_URL"
 
@@ -333,11 +420,27 @@ jobs:
           SB_SVC: ${{ steps.supabase.outputs.service_key }}
           VAPID_PUB: ${{ steps.vapid.outputs.public }}
           VAPID_PRIV: ${{ steps.vapid.outputs.private }}
+          RAW_TW_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          RAW_TW_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          RAW_TW_PHONE: ${{ secrets.TWILIO_PHONE }}
+          RAW_RESEND: ${{ secrets.RESEND_API_KEY }}
         run: |
+          # Operate inside the per-client deploy dir so env vars target the CLIENT's
+          # Vercel project (linked in the deploy step), never the template's.
+          cd "$(cat "$RUNNER_TEMP/deploy_dir")"
+          # Strip BOM (U+FEFF) + CR from every secret value before it reaches Vercel.
+          clean() { printf '%s' "$1" | tr -d '\357\273\277\r'; }
+          VTOKEN=$(clean "$VERCEL_TOKEN")
           CLIENT_PHONE=$(echo "$CLIENT_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('owner_phone',''))")
 
           add_env() {
-            echo "$2" | vercel env add "$1" production --token=$VERCEL_TOKEN --yes 2>/dev/null || true
+            # Remove an existing value first so re-runs overwrite (not error), then add the clean value.
+            vercel env rm "$1" production --token="$VTOKEN" --yes >/dev/null 2>&1 || true
+            if printf '%s' "$2" | vercel env add "$1" production --token="$VTOKEN" --yes 2>&1 | tail -1; then
+              echo "  set $1"
+            else
+              echo "::warning::failed to set Vercel env $1"
+            fi
           }
 
           add_env VITE_SUPABASE_URL "$SB_URL"
@@ -348,10 +451,10 @@ jobs:
           add_env VAPID_PRIVATE_KEY "$VAPID_PRIV"
           add_env VAPID_SUBJECT "mailto:boltagent8@gmail.com"
           add_env OWNER_PHONE "$CLIENT_PHONE"
-          add_env TWILIO_ACCOUNT_SID "${{ secrets.TWILIO_ACCOUNT_SID }}"
-          add_env TWILIO_AUTH_TOKEN "${{ secrets.TWILIO_AUTH_TOKEN }}"
-          add_env TWILIO_PHONE "${{ secrets.TWILIO_PHONE }}"
-          add_env RESEND_API_KEY "${{ secrets.RESEND_API_KEY }}"
+          add_env TWILIO_ACCOUNT_SID "$(clean "$RAW_TW_SID")"
+          add_env TWILIO_AUTH_TOKEN "$(clean "$RAW_TW_TOKEN")"
+          add_env TWILIO_PHONE "$(clean "$RAW_TW_PHONE")"
+          add_env RESEND_API_KEY "$(clean "$RAW_RESEND")"
           echo "Env vars added"
 
       - name: Vercel redeploy with env vars
@@ -360,10 +463,23 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           REPO_SLUG: ${{ inputs.repo_slug }}
         run: |
-          OUTPUT=$(vercel --prod --token=$VERCEL_TOKEN --yes 2>&1)
+          cd "$(cat "$RUNNER_TEMP/deploy_dir")"
+          set +e
+          VTOKEN=$(printf '%s' "$VERCEL_TOKEN" | tr -d '\357\273\277')
+          OUTPUT=$(vercel --prod --token="$VTOKEN" --yes 2>&1)
+          VEXIT=$?
+          set -e
           echo "$OUTPUT"
-          DEPLOY_URL=$(echo "$OUTPUT" | grep -oP 'https://[a-zA-Z0-9-]+\.vercel\.app' | grep -v "$REPO_SLUG" | head -1)
-          vercel alias set "$DEPLOY_URL" "${REPO_SLUG}.vercel.app" --token=$VERCEL_TOKEN 2>&1 || true
+          if [ $VEXIT -ne 0 ]; then
+            echo "::error::Vercel redeploy failed (exit $VEXIT). See CLI output above."
+            exit $VEXIT
+          fi
+          DEPLOY_URL=$(echo "$OUTPUT" | grep -oP 'https://[a-zA-Z0-9-]+\.vercel\.app' | head -1)
+          if echo "$DEPLOY_URL" | grep -qiE 'eyebrowsweb|nailsweb|barberweb'; then
+            echo "::error::Redeploy URL '$DEPLOY_URL' points at a TEMPLATE project. Aborting."
+            exit 1
+          fi
+          vercel alias set "$DEPLOY_URL" "${REPO_SLUG}.vercel.app" --token="$VTOKEN" 2>&1 || true
           echo "final_url=https://${REPO_SLUG}.vercel.app" >> $GITHUB_OUTPUT
 
       # ── 12. Insert Supabase client data ───────────────────────
@@ -412,7 +528,9 @@ jobs:
           CLIENT_JSON: ${{ inputs.client_json }}
           REPO_SLUG: ${{ inputs.repo_slug }}
           FINAL_URL: ${{ steps.vercel_final.outputs.final_url }}
+          RAW_RESEND: ${{ secrets.RESEND_API_KEY }}
         run: |
+          export RESEND_CLEAN=$(printf '%s' "$RAW_RESEND" | tr -d '\357\273\277\r')
           node << 'EOF'
           const client = JSON.parse(process.env.CLIENT_JSON);
           const slug = process.env.REPO_SLUG;
@@ -421,7 +539,7 @@ jobs:
           fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${{ secrets.RESEND_API_KEY }}`,
+              'Authorization': `Bearer ${process.env.RESEND_CLEAN}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
