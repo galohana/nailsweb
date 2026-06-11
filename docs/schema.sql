@@ -5,7 +5,7 @@
 -- ═══════════════════════════════════════════════════════════
 -- TABLES
 -- ═══════════════════════════════════════════════════════════
-CREATE TABLE public.appointments (
+CREATE TABLE IF NOT EXISTS public.appointments (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     phone text NOT NULL,
     user_name text NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE public.appointments (
     addons jsonb DEFAULT '[]'::jsonb
 );
 
-CREATE TABLE public.clients (
+CREATE TABLE IF NOT EXISTS public.clients (
     phone text NOT NULL,
     name text NOT NULL,
     no_show_count integer DEFAULT 0,
@@ -30,7 +30,7 @@ CREATE TABLE public.clients (
     updated_at timestamp with time zone DEFAULT now()
 );
 
-CREATE TABLE public.gallery (
+CREATE TABLE IF NOT EXISTS public.gallery (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     url text,
     "order" integer DEFAULT 0,
@@ -38,7 +38,7 @@ CREATE TABLE public.gallery (
     image_url text
 );
 
-CREATE TABLE public.orders (
+CREATE TABLE IF NOT EXISTS public.orders (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     client_name text NOT NULL,
     client_phone text NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE public.orders (
     created_at timestamp with time zone DEFAULT now()
 );
 
-CREATE TABLE public.products (
+CREATE TABLE IF NOT EXISTS public.products (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     name text NOT NULL,
     price numeric(10,2) NOT NULL DEFAULT 0,
@@ -58,7 +58,7 @@ CREATE TABLE public.products (
     created_at timestamp with time zone DEFAULT now()
 );
 
-CREATE TABLE public.reviews (
+CREATE TABLE IF NOT EXISTS public.reviews (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     name text NOT NULL,
     rating integer NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE public.reviews (
     created_at timestamp with time zone DEFAULT now()
 );
 
-CREATE TABLE public.services (
+CREATE TABLE IF NOT EXISTS public.services (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     name text NOT NULL,
     duration integer NOT NULL DEFAULT 30,
@@ -77,13 +77,13 @@ CREATE TABLE public.services (
     parent_id uuid DEFAULT NULL
 );
 
-CREATE TABLE public.settings (
+CREATE TABLE IF NOT EXISTS public.settings (
     key text NOT NULL,
     value jsonb NOT NULL,
     updated_at timestamp with time zone DEFAULT now()
 );
 
-CREATE TABLE public.staff (
+CREATE TABLE IF NOT EXISTS public.staff (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     name text NOT NULL,
     phone text,
@@ -91,7 +91,7 @@ CREATE TABLE public.staff (
     image_url text DEFAULT ''::text
 );
 
-CREATE TABLE public.waitlist (
+CREATE TABLE IF NOT EXISTS public.waitlist (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     date date NOT NULL,
     phone text NOT NULL,
@@ -128,9 +128,9 @@ ALTER TABLE public.reviews      ADD CONSTRAINT reviews_rating_check       CHECK 
 -- ═══════════════════════════════════════════════════════════
 -- INDEXES
 -- ═══════════════════════════════════════════════════════════
-CREATE INDEX idx_appointments_date   ON public.appointments USING btree (date);
-CREATE INDEX idx_appointments_phone  ON public.appointments USING btree (phone);
-CREATE INDEX idx_appointments_status ON public.appointments USING btree (status);
+CREATE INDEX IF NOT EXISTS idx_appointments_date   ON public.appointments USING btree (date);
+CREATE INDEX IF NOT EXISTS idx_appointments_phone  ON public.appointments USING btree (phone);
+CREATE INDEX IF NOT EXISTS idx_appointments_status ON public.appointments USING btree (status);
 
 -- Prevent exact-slot double-booking among CONFIRMED appointments only.
 -- COALESCE maps NULL staff_id (single-staff businesses) to a fixed sentinel so
