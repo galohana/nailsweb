@@ -560,3 +560,51 @@ jobs:
           }).then(r => r.json()).then(console.log).catch(console.error);
           EOF
           echo "Notification sent"
+
+      # ── 14. Notify Gal on FAILURE ─────────────────────────────
+      - name: Notify Gal on failure
+        if: failure()
+        env:
+          CLIENT_JSON: ${{ inputs.client_json }}
+          REPO_SLUG: ${{ inputs.repo_slug }}
+          BUSINESS_TYPE: ${{ inputs.business_type }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          JOBS_URL: ${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs
+          GH_TOKEN_RO: ${{ github.token }}
+          RAW_RESEND: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          export RESEND_CLEAN=$(printf '%s' "$RAW_RESEND" | tr -d '\357\273\277\r')
+          # Best-effort: which step failed. The auto github.token (not the GH_PAT secret) is always valid; jq is preinstalled.
+          export FAILED_STEP=$(curl -sS -H "Authorization: Bearer $GH_TOKEN_RO" -H "Accept: application/vnd.github+json" "$JOBS_URL" 2>/dev/null | jq -r 'first(.jobs[].steps[] | select(.conclusion=="failure") | .name) // "לא ידוע"' 2>/dev/null || echo "לא ידוע")
+          [ -z "$FAILED_STEP" ] && export FAILED_STEP="לא ידוע"
+          node << 'EOF'
+          const client = JSON.parse(process.env.CLIENT_JSON || '{}');
+          const slug = process.env.REPO_SLUG || '';
+          const biz = process.env.BUSINESS_TYPE || '';
+          const failedStep = process.env.FAILED_STEP || 'לא ידוע';
+          const runUrl = process.env.RUN_URL || '';
+          fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.RESEND_CLEAN}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'RISE Auto-Builder <noreply@rise-booking.com>',
+              to: ['gal@rise-booking.com'],
+              subject: `❌ הבנייה נכשלה — ${client.clinic_name || slug}`,
+              text: [
+                `הבנייה האוטומטית של אתר RISE נכשלה.`,
+                '',
+                `🏷️ לקוחה: ${client.clinic_name || '—'}`,
+                `🔖 slug: ${slug}`,
+                `💼 סוג עסק: ${biz || '—'}`,
+                `🛑 שלב שנכשל: ${failedStep}`,
+                '',
+                `🔗 צפייה בריצה המלאה: ${runUrl}`,
+                client.email ? `📧 אימייל לקוחה: ${client.email}` : '',
+              ].filter(Boolean).join('\n'),
+            }),
+          }).then(r => r.json()).then(j => console.log('failure-notify:', JSON.stringify(j))).catch(console.error);
+          EOF
+          echo "Failure notification attempted"
