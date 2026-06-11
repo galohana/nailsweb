@@ -122,7 +122,7 @@ ALTER TABLE public.appointments ADD CONSTRAINT appointments_staff_id_fkey   FORE
 ALTER TABLE public.services     ADD CONSTRAINT services_parent_id_fkey      FOREIGN KEY (parent_id)  REFERENCES services(id)  ON DELETE CASCADE;
 
 -- CHECK
-ALTER TABLE public.appointments ADD CONSTRAINT appointments_status_check CHECK ((status = ANY (ARRAY['confirmed'::text, 'cancelled'::text])));
+ALTER TABLE public.appointments ADD CONSTRAINT appointments_status_check CHECK ((status = ANY (ARRAY['confirmed'::text, 'cancelled'::text, 'pending'::text])));
 ALTER TABLE public.reviews      ADD CONSTRAINT reviews_rating_check       CHECK (((rating >= 1) AND (rating <= 5)));
 
 -- ═══════════════════════════════════════════════════════════
