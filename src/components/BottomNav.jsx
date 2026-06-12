@@ -100,7 +100,7 @@ function NavTab({ label, active, onClick }) {
         fontFamily: 'var(--demo-body-font, inherit)',
         fontSize: active ? 11.5 : 11,
         fontWeight: active ? 700 : 400,
-        color: active ? 'var(--color-menu)' : 'rgba(var(--color-menu-rgb, 92,61,46), 0.38)',
+        color: active ? 'var(--color-menu)' : 'var(--color-menu-ink)',
         letterSpacing: '0.02em',
         lineHeight: 1.2,
         whiteSpace: 'nowrap',

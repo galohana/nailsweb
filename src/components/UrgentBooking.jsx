@@ -75,7 +75,7 @@ export default function UrgentBooking({ open, onOpen, onClose, onBook }) {
             exit={{ opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             style={{
-              position: 'fixed', bottom: 24, left: 24,
+              position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom))', left: 24,
               width: 56, height: 56, borderRadius: '50%',
               backgroundColor: 'var(--color-section)',
               backgroundImage: 'var(--demo-section-mat-overlay-sm, none)',

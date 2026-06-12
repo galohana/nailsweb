@@ -473,7 +473,7 @@ export default function Register({ onUserSave, onNavigate, onPrivacy }) {
               placeholder="שם" style={S.input} onFocus={focusStyle} onBlur={blurStyle} />
           </div>
           <div>
-            <label style={S.label}>שם משפחה</label>
+            <label style={S.label}>שם משפחה *</label>
             <input type="text" dir="rtl" value={form.lastName} onChange={e => upd('lastName', e.target.value)}
               placeholder="משפחה" style={S.input} onFocus={focusStyle} onBlur={blurStyle} />
           </div>

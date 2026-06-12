@@ -145,7 +145,7 @@ export default function ReportsTab() {
   }, [confirmed]);
   const topService = Object.entries(svcCounts).sort((a,b) => b[1]-a[1])[0];
 
-  const dayBarData = useMemo(() => DAY_HE.map((name, i) => ({ name, count: dayCounts[i] || 0 })), [dayCounts]);
+  const dayBarData = useMemo(() => DAYS_HE.map((name, i) => ({ name, count: dayCounts[i] || 0 })), [dayCounts]);
   const maxDayCount = Math.max(...dayBarData.map(d => d.count), 1);
 
   const pieData  = useMemo(() => Object.entries(svcCounts).sort((a,b) => b[1]-a[1]).slice(0,6), [svcCounts]);
