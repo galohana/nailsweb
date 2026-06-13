@@ -269,11 +269,13 @@ jobs:
 
       # ── 6. Update client-specific files ──────────────────────
       - name: Generate client files
+        id: generate_files
         env:
           DESIGN_JSON: ${{ inputs.design_json }}
           FEATURES_JSON: ${{ inputs.features_json }}
           CLIENT_JSON: ${{ inputs.client_json }}
           REPO_SLUG: ${{ inputs.repo_slug }}
+          RISE_CLIENT_SECRET: ${{ secrets.RISE_CLIENT_SECRET }}
         run: |
           node << 'EOF'
           const fs = require('fs');
@@ -311,7 +313,15 @@ jobs:
           } catch(e) { console.log('manifest skip:', e.message); }
 
           console.log('Client files written OK');
+          // Generate 6-digit client code (HMAC of slug)
+          const crypto = require('crypto');
+          const secret = process.env.RISE_CLIENT_SECRET || 'rise-default-secret';
+          const h = crypto.createHmac('sha256', secret).update(slug).digest('hex');
+          const code = String(parseInt(h.slice(0, 8), 16) % 1000000).padStart(6, '0');
+          require('fs').writeFileSync('/tmp/client_code', code);
+          console.log('Client code generated');
           EOF
+          echo "client_code=$(cat /tmp/client_code)" >> $GITHUB_OUTPUT
 
       # ── 7. Create .env ────────────────────────────────────────
       - name: Write .env
@@ -489,6 +499,7 @@ jobs:
           BUSINESS_TYPE: ${{ inputs.business_type }}
           SB_URL: ${{ steps.supabase.outputs.sb_url }}
           SB_SVC: ${{ steps.supabase.outputs.service_key }}
+          CLIENT_CODE: ${{ steps.generate_files.outputs.client_code }}
         run: |
           node << 'EOF'
           const client = JSON.parse(process.env.CLIENT_JSON);
@@ -519,12 +530,19 @@ jobs:
             { key: 'terms', value: terms },
           ];
 
-          Promise.all(inserts.map(({ key, value }) =>
-            fetch(`${url}/rest/v1/settings`, {
-              method: 'POST', headers,
-              body: JSON.stringify({ key, value }),
-            }).then(r => r.text()).then(t => console.log(key, ':', t.slice(0,60)))
-          )).then(() => process.exit(0)).catch(e => { console.error(e.message); process.exit(1); });
+          Promise.all([
+            ...inserts.map(({ key, value }) =>
+              fetch(`${url}/rest/v1/settings`, {
+                method: 'POST', headers,
+                body: JSON.stringify({ key, value }),
+              }).then(r => r.text()).then(t => console.log(key, ':', t.slice(0,60)))
+            ),
+            // Save client code to business_settings (service_role access)
+            process.env.CLIENT_CODE ? fetch(`${url}/rest/v1/business_settings`, {
+              method: 'POST', headers: { ...headers, 'Prefer': 'resolution=merge-duplicates' },
+              body: JSON.stringify({ key: 'client_code', value: process.env.CLIENT_CODE }),
+            }).then(r => r.text()).then(t => console.log('client_code saved:', t.slice(0,60))).catch(e => console.log('client_code save warning:', e.message)) : Promise.resolve(),
+          ]).then(() => process.exit(0)).catch(e => { console.error(e.message); process.exit(1); });
           EOF
 
       # ── 13. Send completion notification ─────────────────────
@@ -534,6 +552,7 @@ jobs:
           REPO_SLUG: ${{ inputs.repo_slug }}
           FINAL_URL: ${{ steps.vercel_final.outputs.final_url }}
           RAW_RESEND: ${{ secrets.RESEND_API_KEY }}
+          CLIENT_CODE: ${{ steps.generate_files.outputs.client_code }}
         run: |
           export RESEND_CLEAN=$(printf '%s' "$RAW_RESEND" | tr -d '\357\273\277\r')
           node << 'EOF'
@@ -564,9 +583,12 @@ jobs:
               `🔑 סיסמה: ${client.admin_password}`,
               `📦 GitHub: https://github.com/galohana/${slug}`,
               '',
-              `לקוחה: ${client.owner_name} | ${client.phone} | ${client.email}`,
+              `לקוח: ${client.owner_name} | ${client.phone} | ${client.email}`,
               '',
-              `⚡ לשליחת מייל ללקוחה — הפעל ידנית: send-client-email.yml עם repo_slug=${slug}`,
+              `🔐 קוד אישי: ${process.env.CLIENT_CODE || '—'}`,
+              `📌 שמור אותו! הלקוחה תצטרך קוד זה לכל שינוי עיצוב דרך rise-builder.`,
+              '',
+              `⚡ לשליחת מייל ללקוח — הפעל ידנית: send-client-email.yml עם repo_slug=${slug}`,
             ].join('\n'),
           }).then(() => process.exit(0)).catch(() => process.exit(0));
           EOF
