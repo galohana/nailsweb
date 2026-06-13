@@ -42,8 +42,10 @@ const tabVariants = {
 };
 
 /* ── Single nav tab ─────────────────────────────────── */
-function NavTab({ label, active, onClick }) {
+function NavTab({ label, icon, active, onClick }) {
   const rm = useReducedMotion();
+  const activeColor   = 'var(--color-menu)';
+  const inactiveColor = 'rgba(var(--color-menu-rgb, 92,61,46), 0.35)';
 
   return (
     <motion.button
@@ -65,10 +67,10 @@ function NavTab({ label, active, onClick }) {
         background: 'none',
         border: 'none',
         cursor: 'pointer',
-        gap: 5,
+        gap: 3,
         paddingTop: 8,
         paddingBottom: 8,
-        overflow: 'visible',   /* card's overflow:hidden clips corners properly */
+        overflow: 'visible',
         WebkitTapHighlightColor: 'transparent',
         outline: 'none',
       }}
@@ -79,7 +81,7 @@ function NavTab({ label, active, onClick }) {
           <div style={{
             position: 'absolute', inset: '4px 2px',
             borderRadius: 10,
-            backgroundColor: 'rgba(var(--color-menu-rgb, 92,61,46), 0.07)',
+            backgroundColor: 'rgba(var(--color-menu-rgb, 92,61,46), 0.13)',
           }} />
         ) : (
           <motion.div
@@ -87,20 +89,33 @@ function NavTab({ label, active, onClick }) {
             style={{
               position: 'absolute', inset: '4px 2px',
               borderRadius: 10,
-              backgroundColor: 'rgba(var(--color-menu-rgb, 92,61,46), 0.07)',
+              backgroundColor: 'rgba(var(--color-menu-rgb, 92,61,46), 0.13)',
             }}
             transition={{ type: 'spring', stiffness: 500, damping: 38 }}
           />
         )
       )}
 
+      {/* Icon */}
+      <span style={{
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: active ? activeColor : inactiveColor,
+        transition: rm ? 'none' : 'color 0.18s',
+        lineHeight: 0,
+      }}>
+        {icon}
+      </span>
+
       {/* Label */}
       <span style={{
         position: 'relative',
         fontFamily: 'var(--demo-body-font, inherit)',
-        fontSize: active ? 11.5 : 11,
-        fontWeight: active ? 700 : 400,
-        color: active ? 'var(--color-menu)' : 'var(--color-menu-ink)',
+        fontSize: active ? 10.5 : 10,
+        fontWeight: active ? 700 : 500,
+        color: active ? activeColor : inactiveColor,
         letterSpacing: '0.02em',
         lineHeight: 1.2,
         whiteSpace: 'nowrap',
@@ -111,27 +126,6 @@ function NavTab({ label, active, onClick }) {
       }}>
         {label}
       </span>
-
-      {/* Active dot */}
-      <div style={{ width: 4, height: 4, flexShrink: 0, position: 'relative' }}>
-        {active && (
-          rm ? (
-            <div style={{
-              position: 'absolute', inset: 0, borderRadius: '50%',
-              backgroundColor: 'var(--color-menu)',
-            }} />
-          ) : (
-            <motion.div
-              layoutId="tab-dot"
-              style={{
-                position: 'absolute', inset: 0, borderRadius: '50%',
-                backgroundColor: 'var(--color-menu)',
-              }}
-              transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-            />
-          )
-        )}
-      </div>
     </motion.button>
   );
 }
@@ -220,6 +214,35 @@ function CenterTab({ onClick }) {
     </div>
   );
 }
+
+/* ── SVG Icons ───────────────────────────────────────── */
+const IcoHome = (
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+    <polyline points="9,22 9,12 15,12 15,22"/>
+  </svg>
+);
+const IcoCalendar = (
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+    <line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8" y1="2" x2="8" y2="6"/>
+    <line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+const IcoShop = (
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <path d="M16 10a4 4 0 0 1-8 0"/>
+  </svg>
+);
+const IcoPerson = (
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+);
 
 /* ── Main export ─────────────────────────────────────── */
 export default function BottomNav({ page, onNavigate, showStore, user, onProfile }) {
@@ -312,18 +335,19 @@ export default function BottomNav({ page, onNavigate, showStore, user, onProfile
               }}
             >
               {/* rightmost → leftmost */}
-              <NavTab label="דף הבית"     active={page === 'home'}         onClick={() => onNavigate('home')} />
-              <NavTab label="התורים שלי"  active={page === 'appointments'} onClick={() => onNavigate('appointments')} />
+              <NavTab label="דף הבית"    icon={IcoHome}     active={page === 'home'}         onClick={() => onNavigate('home')} />
+              <NavTab label="התורים שלי" icon={IcoCalendar}  active={page === 'appointments'} onClick={() => onNavigate('appointments')} />
 
               {/* Placeholder — keeps space for the absolute center button */}
               <div style={{ flex: '0 0 auto', width: 110 }} />
 
               {showStore && (
-                <NavTab label="חנות" active={page === 'shop'} onClick={() => onNavigate('shop')} />
+                <NavTab label="חנות" icon={IcoShop} active={page === 'shop'} onClick={() => onNavigate('shop')} />
               )}
 
               <NavTab
                 label={user ? 'הפרופיל שלי' : 'כניסה'}
+                icon={IcoPerson}
                 active={page === 'register'}
                 onClick={handleProfile}
               />
