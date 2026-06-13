@@ -1,0 +1,205 @@
+name: Redesign Client Site
+# Triggered from rise-builder/api/auto-redesign.js when a client submits a redesign form.
+# Updates design.js + features.js in the TEMPLATE checkout, then deploys to the
+# CLIENT's existing Vercel project (identified by repo_slug).
+# No Supabase, no GitHub repo creation — redesign only.
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_slug:
+        description: 'Client repo slug (e.g. adi-barberit)'
+        required: true
+        type: string
+      design_json:
+        description: 'New design config JSON'
+        required: true
+        type: string
+      features_json:
+        description: 'Feature flags JSON (pass {} to keep existing flags unchanged)'
+        required: false
+        type: string
+        default: '{}'
+
+jobs:
+  redesign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      # ── 1. Checkout template ──────────────────────────────────
+      - name: Checkout template
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install npm deps
+        run: npm ci
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      # ── 2. Link CLI to the client's existing Vercel project ──
+      - name: Link to client Vercel project
+        id: link
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          REPO_SLUG: ${{ inputs.repo_slug }}
+        run: |
+          set -euo pipefail
+          VTOKEN=$(printf '%s' "$VERCEL_TOKEN" | tr -d '\357\273\277')
+
+          # Fetch project details from Vercel API by name
+          PROJ_RESP=$(mktemp)
+          PROJ_HTTP=$(curl -sS -o "$PROJ_RESP" -w "%{http_code}" \
+            "https://api.vercel.com/v9/projects/$REPO_SLUG" \
+            -H "Authorization: Bearer $VTOKEN")
+          if [ "$PROJ_HTTP" != "200" ]; then
+            echo "::error::Vercel project '$REPO_SLUG' not found (HTTP $PROJ_HTTP). Run the initial build first."
+            cat "$PROJ_RESP"
+            exit 1
+          fi
+
+          PROJECT_ID=$(python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" < "$PROJ_RESP")
+          ORG_ID=$(python3 -c "import sys,json; print(json.load(sys.stdin).get('accountId',''))" < "$PROJ_RESP")
+
+          if [ -z "$PROJECT_ID" ] || [ -z "$ORG_ID" ]; then
+            echo "::error::Could not extract projectId or orgId from Vercel response."
+            cat "$PROJ_RESP"
+            exit 1
+          fi
+
+          # Write .vercel/project.json so the CLI targets this specific project
+          mkdir -p .vercel
+          printf '{"projectId":"%s","orgId":"%s"}' "$PROJECT_ID" "$ORG_ID" > .vercel/project.json
+          echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
+          echo "Linked to Vercel project: $REPO_SLUG ($PROJECT_ID)"
+
+      # ── 3. Update design.js, features.js, vercel.json alias ──
+      - name: Update design and features
+        env:
+          DESIGN_JSON: ${{ inputs.design_json }}
+          FEATURES_JSON: ${{ inputs.features_json }}
+          REPO_SLUG: ${{ inputs.repo_slug }}
+        run: |
+          node << 'EOF'
+          const fs = require('fs');
+          const design = JSON.parse(process.env.DESIGN_JSON);
+          const slug = process.env.REPO_SLUG;
+
+          // Always update design.js
+          fs.writeFileSync('src/config/design.js',
+            `/* Redesign — ${slug} */\nexport const design = ${JSON.stringify(design, null, 2)};\n`
+          );
+
+          // Merge new features only if caller provided non-empty JSON
+          const newFeatures = (() => {
+            try { return JSON.parse(process.env.FEATURES_JSON || '{}'); } catch { return {}; }
+          })();
+          if (Object.keys(newFeatures).length > 0) {
+            const existing = fs.readFileSync('src/config/features.js', 'utf8');
+            // Parse existing object via a simple regex (avoids dynamic import in CJS node)
+            const m = existing.match(/\{([\s\S]*?)\}/);
+            let merged = {};
+            if (m) { try { merged = eval('({' + m[1] + '})'); } catch {} }
+            merged = { ...merged, ...newFeatures, smsReminders: false };
+            fs.writeFileSync('src/config/features.js',
+              `export const features = ${JSON.stringify(merged, null, 2)};\n`
+            );
+          }
+
+          // Set vercel.json alias to the client's domain (never the template's)
+          const vj = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
+          vj.alias = [`${slug}.vercel.app`];
+          fs.writeFileSync('vercel.json', JSON.stringify(vj, null, 2) + '\n');
+
+          console.log('design.js, features.js and vercel.json updated OK');
+          EOF
+
+      # ── 4. Deploy (Vercel cloud-builds using project env vars) ─
+      - name: Deploy to Vercel
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          REPO_SLUG: ${{ inputs.repo_slug }}
+        run: |
+          VTOKEN=$(printf '%s' "$VERCEL_TOKEN" | tr -d '\357\273\277')
+          set +e
+          OUTPUT=$(vercel --prod --token="$VTOKEN" --yes 2>&1)
+          VEXIT=$?
+          set -e
+          echo "$OUTPUT"
+          if [ $VEXIT -ne 0 ]; then
+            echo "::error::Vercel deploy failed (exit $VEXIT). See output above."
+            exit $VEXIT
+          fi
+          DEPLOY_URL=$(echo "$OUTPUT" | grep -oP 'https://[a-zA-Z0-9-]+\.vercel\.app' | head -1)
+          # Safety: must never land on a template project
+          if echo "$DEPLOY_URL" | grep -qiE 'eyebrowsweb|nailsweb|barberweb'; then
+            echo "::error::Deploy URL '$DEPLOY_URL' points at a TEMPLATE project. Aborting."
+            exit 1
+          fi
+          vercel alias set "$DEPLOY_URL" "${REPO_SLUG}.vercel.app" --token="$VTOKEN" 2>&1 || true
+          echo "final_url=https://${REPO_SLUG}.vercel.app" >> $GITHUB_OUTPUT
+          echo "Deployed: https://${REPO_SLUG}.vercel.app"
+
+      # ── 5. Notify Gal — success ───────────────────────────────
+      - name: Notify Gal
+        env:
+          REPO_SLUG: ${{ inputs.repo_slug }}
+          FINAL_URL: ${{ steps.deploy.outputs.final_url }}
+          RAW_RESEND: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          export RESEND_CLEAN=$(printf '%s' "$RAW_RESEND" | tr -d '\357\273\277\r')
+          node << 'EOF'
+          const slug = process.env.REPO_SLUG;
+          const url = process.env.FINAL_URL || `https://${slug}.vercel.app`;
+          fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.RESEND_CLEAN}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'RISE Auto-Builder <noreply@rise-booking.com>',
+              to: ['boltagent8@gmail.com'],
+              subject: `🎨 עיצוב מחדש הושלם — ${slug}`,
+              text: [
+                `העיצוב המחודש של ${slug} הושלם בהצלחה!`,
+                '',
+                `🌐 אתר: ${url}`,
+                `🔧 Admin: ${url}/manage-x7k2`,
+              ].join('\n'),
+            }),
+          }).then(r => r.json()).then(j => console.log('notify:', JSON.stringify(j))).catch(console.error);
+          EOF
+
+      # ── 6. Notify Gal — failure ───────────────────────────────
+      - name: Notify on failure
+        if: failure()
+        env:
+          REPO_SLUG: ${{ inputs.repo_slug }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RAW_RESEND: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          export RESEND_CLEAN=$(printf '%s' "$RAW_RESEND" | tr -d '\357\273\277\r')
+          node << 'EOF'
+          fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.RESEND_CLEAN}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'RISE Auto-Builder <noreply@rise-booking.com>',
+              to: ['boltagent8@gmail.com'],
+              subject: `❌ עיצוב מחדש נכשל — ${process.env.REPO_SLUG}`,
+              text: `הריצה נכשלה.\n🔗 ${process.env.RUN_URL}`,
+            }),
+          }).then(r => r.json()).then(j => console.log(JSON.stringify(j)));
+          EOF
