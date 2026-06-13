@@ -1,0 +1,64 @@
+name: Send Client Welcome Email
+# מופעל ידנית על-ידי גל לאחר אישור — שולח מייל פתיחה ללקוח
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_slug:
+        description: 'Repo slug (e.g. gal-barbershop)'
+        required: true
+        type: string
+      client_json:
+        description: 'Client info JSON (clinic_name, owner_name, phone, email, admin_password, ...)'
+        required: true
+        type: string
+      final_url:
+        description: 'Live URL (e.g. https://gal-barbershop.vercel.app)'
+        required: false
+        type: string
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Send client welcome email
+        env:
+          CLIENT_JSON: ${{ inputs.client_json }}
+          REPO_SLUG: ${{ inputs.repo_slug }}
+          FINAL_URL: ${{ inputs.final_url }}
+          RAW_RESEND: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          export RESEND_CLEAN=$(printf '%s' "$RAW_RESEND" | tr -d '\357\273\277\r')
+          node << 'EOF'
+          const client = JSON.parse(process.env.CLIENT_JSON);
+          const slug = process.env.REPO_SLUG;
+          const url = process.env.FINAL_URL || `https://${slug}.vercel.app`;
+          const adminUrl = `${url}/manage-x7k2`;
+
+          if (!client.email) {
+            console.log('No client email — nothing to send.');
+            process.exit(0);
+          }
+
+          fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.RESEND_CLEAN}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'RISE <noreply@rise-booking.com>',
+              to: [client.email],
+              subject: `האתר שלך מוכן — ${client.clinic_name} 🎉`,
+              html: `<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;line-height:1.7;color:#2c2c2c;max-width:560px;margin:0 auto;padding:8px"><h2 style="margin:0 0 4px">${client.clinic_name} — האתר שלך באוויר! 🎉</h2><p>היי ${client.owner_name || ''}, האתר שלך מוכן ופעיל. כל מה שצריך כדי להתחיל:</p><table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:15px"><tr><td style="padding:8px 0;white-space:nowrap">🌐 <b>כתובת האתר</b></td><td style="padding:8px 0"><a href="${url}" style="color:#1a73e8">${url}</a></td></tr><tr><td style="padding:8px 0;white-space:nowrap">🔧 <b>דף ניהול</b></td><td style="padding:8px 0"><a href="${adminUrl}" style="color:#1a73e8">${adminUrl}</a></td></tr><tr><td style="padding:8px 0;white-space:nowrap">🔑 <b>סיסמת ניהול</b></td><td style="padding:8px 0"><code style="background:#f2efe9;padding:3px 10px;border-radius:5px;letter-spacing:1px">${client.admin_password}</code></td></tr></table><h3 style="margin:18px 0 6px">צעדים ראשונים</h3><ol style="margin:0;padding-inline-start:20px"><li>היכנסי לדף הניהול עם הסיסמה שלמעלה.</li><li>הגדירי את <b>השירותים</b> והמחירים, ואת <b>שעות העבודה</b>.</li><li>הפעילי <b>התראות</b> מכרטיס "התראות" בדף הניהול — כדי לקבל עדכון על כל תור חדש.</li><li>שתפי את קישור האתר עם הלקוחות — באינסטגרם, בוואטסאפ ובכל מקום. 💛</li></ol><p style="color:#999;font-size:13px;margin-top:18px">מומלץ לשמור את הסיסמה במקום בטוח ולשנות אותה בכל עת מדף הניהול.</p><p style="color:#999;font-size:13px;margin:2px 0">— צוות RISE</p></div>`,
+            }),
+          })
+            .then(r => r.json())
+            .then(j => { console.log('Client email sent:', JSON.stringify(j)); process.exit(0); })
+            .catch(e => { console.error('Email error:', e.message); process.exit(1); });
+          EOF
+          echo "Client email workflow complete"
