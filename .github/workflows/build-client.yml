@@ -553,13 +553,24 @@ jobs:
           FINAL_URL: ${{ steps.vercel_final.outputs.final_url }}
           RAW_RESEND: ${{ secrets.RESEND_API_KEY }}
           CLIENT_CODE: ${{ steps.generate_files.outputs.client_code }}
+          RISE_CLIENT_SECRET: ${{ secrets.RISE_CLIENT_SECRET }}
         run: |
           export RESEND_CLEAN=$(printf '%s' "$RAW_RESEND" | tr -d '\357\273\277\r')
           node << 'EOF'
+          const crypto = require('crypto');
           const client = JSON.parse(process.env.CLIENT_JSON);
           const slug = process.env.REPO_SLUG;
           const url = process.env.FINAL_URL || `https://${slug}.vercel.app`;
           const adminUrl = `${url}/manage-x7k2`;
+          const secret = process.env.RISE_CLIENT_SECRET || '';
+
+          let approveLink = '';
+          if (secret && client.email) {
+            const data = { email: client.email, name: client.owner_name || client.owner_full_name || '', url, slug };
+            const dataB64 = Buffer.from(JSON.stringify(data)).toString('base64url');
+            const sig = crypto.createHmac('sha256', secret).update(dataB64).digest('base64url');
+            approveLink = `https://rise-builder.vercel.app/api/site-ready?t=${dataB64}.${sig}`;
+          }
 
           const send = (payload) => fetch('https://api.resend.com/emails', {
             method: 'POST',
@@ -570,7 +581,6 @@ jobs:
             body: JSON.stringify(payload),
           }).then(r => r.json()).then(j => console.log('email:', JSON.stringify(j))).catch(e => console.error('email error:', e));
 
-          // Internal notice only — client email sent manually via send-client-email.yml after Gal's approval
           send({
             from: 'RISE Auto-Builder <noreply@rise-booking.com>',
             to: ['boltagent8@gmail.com'],
@@ -588,11 +598,13 @@ jobs:
               `🔐 קוד אישי: ${process.env.CLIENT_CODE || '—'}`,
               `📌 שמור אותו! הלקוחה תצטרך קוד זה לכל שינוי עיצוב דרך rise-builder.`,
               '',
-              `⚡ לשליחת מייל ללקוח — הפעל ידנית: send-client-email.yml עם repo_slug=${slug}`,
+              approveLink
+                ? `📬 לשליחת "האתר מוכן" ללקוח — לחץ לאישור:\n${approveLink}`
+                : `⚡ לשליחת מייל ללקוח — הפעל ידנית: send-client-email.yml עם repo_slug=${slug}`,
             ].join('\n'),
           }).then(() => process.exit(0)).catch(() => process.exit(0));
           EOF
-          echo "Internal notification sent — client email pending manual approval via send-client-email.yml"
+          echo "Internal notification sent"
 
       # ── 13b. Register cron jobs on cron-job.org ───────────────
       # Reminders + pending-approval sweeps. Never fails the build (continue-on-error);

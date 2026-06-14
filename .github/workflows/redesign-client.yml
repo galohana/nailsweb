@@ -20,6 +20,11 @@ on:
         required: false
         type: string
         default: '{}'
+      client_json:
+        description: 'Client info JSON (name, email) for owner notification'
+        required: false
+        type: string
+        default: '{}'
 
 jobs:
   redesign:
@@ -153,18 +158,29 @@ jobs:
         env:
           REPO_SLUG: ${{ inputs.repo_slug }}
           FINAL_URL: ${{ steps.deploy.outputs.final_url }}
+          CLIENT_JSON: ${{ inputs.client_json }}
           RAW_RESEND: ${{ secrets.RESEND_API_KEY }}
+          RISE_CLIENT_SECRET: ${{ secrets.RISE_CLIENT_SECRET }}
         run: |
           export RESEND_CLEAN=$(printf '%s' "$RAW_RESEND" | tr -d '\357\273\277\r')
           node << 'EOF'
+          const crypto = require('crypto');
           const slug = process.env.REPO_SLUG;
           const url = process.env.FINAL_URL || `https://${slug}.vercel.app`;
+          const client = (() => { try { return JSON.parse(process.env.CLIENT_JSON || '{}'); } catch { return {}; } })();
+          const secret = process.env.RISE_CLIENT_SECRET || '';
+
+          let approveLink = '';
+          if (secret && client.email) {
+            const data = { email: client.email, name: client.name || '', url, slug };
+            const dataB64 = Buffer.from(JSON.stringify(data)).toString('base64url');
+            const sig = crypto.createHmac('sha256', secret).update(dataB64).digest('base64url');
+            approveLink = `https://rise-builder.vercel.app/api/site-ready?t=${dataB64}.${sig}`;
+          }
+
           fetch('https://api.resend.com/emails', {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${process.env.RESEND_CLEAN}`,
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Authorization': `Bearer ${process.env.RESEND_CLEAN}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
               from: 'RISE Auto-Builder <noreply@rise-booking.com>',
               to: ['boltagent8@gmail.com'],
@@ -174,7 +190,12 @@ jobs:
                 '',
                 `🌐 אתר: ${url}`,
                 `🔧 Admin: ${url}/manage-x7k2`,
-              ].join('\n'),
+                client.name ? `👤 לקוח: ${client.name} (${client.email})` : '',
+                '',
+                approveLink
+                  ? `📬 לשליחת "האתר מוכן" ללקוח — לחץ לאישור:\n${approveLink}`
+                  : '(לא הועבר מייל לקוח — שלח ידנית)',
+              ].filter(s => s !== '').join('\n'),
             }),
           }).then(r => r.json()).then(j => console.log('notify:', JSON.stringify(j))).catch(console.error);
           EOF
