@@ -38,6 +38,19 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
+      # ── 0. DEPRECATED guard ───────────────────────────────────
+      # Onboarding moved to the MULTITENANT model: rise-builder → approve-order →
+      # onboardBusiness → building POST /api/create-business. This legacy per-client
+      # build path (separate Supabase project + repo + deploy) is NO LONGER USED — its
+      # dispatcher (rise-builder/api/auto-build.js) was removed. It also registers
+      # cron-job.org jobs WITHOUT the CRON_SECRET header (step 13b), so any site it built
+      # would get silently-broken reminders (401). Kept as reference only.
+      # To intentionally run the legacy path, delete this single step.
+      - name: DEPRECATED — do not run
+        run: |
+          echo "::error::build-client.yml is DEPRECATED. New clients are created as multitenant tenants via create-business, not via this per-client build. Delete this guard step only if you intentionally need the legacy path."
+          exit 1
+
       # ── 1. Checkout template ──────────────────────────────────
       - name: Checkout template
         uses: actions/checkout@v4
