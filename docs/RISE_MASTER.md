@@ -5,6 +5,10 @@
 
 ---
 
+> ⚠️ **DRIFT WARNING — קרא לפני הקמת building חדש:** בלוק ה-permissions/RLS למטה הוא **מודל חד-דיירי ישן**; ה-buildings החיים (cosmetics/barber) הם multi-tenant ו**לא נבנו ממדריך זה**. הוא drifted בכל שכבת-האבטחה: **grants** (staff = column-grant בלי phone — PII) · **RLS write-policies** (owner-manage דרך business_members/auth_business_ids — חסרות כאן, admin-writes ייכשלו ב-building שנבנה מכאן) · **settings allowlist**. **building חדש חייב להיבנות משכפול בניין חי-מוקשח (cosmetics/barber), לא מהמדריך הזה.** ראה `claude-brain/ops/infrastructure` למצב החי המדויק.
+
+---
+
 ## חלק א' — הבנת המערכת
 
 ### מה זה RISE
@@ -252,8 +256,12 @@ curl -X POST https://api.supabase.com/v1/projects/[project-id]/database/query \
 -- 1. הרשאות לתפקיד anon (בלי זה INSERT/UPDATE/DELETE נחסמים)
 GRANT SELECT, INSERT, UPDATE, DELETE
   ON TABLE appointments, clients, gallery, orders, products,
-          reviews, services, settings, staff, waitlist
+          reviews, services, settings, waitlist
   TO anon, authenticated;
+-- staff: SELECT is COLUMN-LEVEL (no phone — PII). Table-level SELECT for anon would
+-- expose staff.phone via `staff?select=phone` (RLS is row-level, not column-level).
+GRANT SELECT (id, name, image_url, business_id, created_at) ON staff TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON staff TO authenticated;  -- owner sees phone; anon does not
 
 -- 2. יצירת bucket לאחסון תמונות
 INSERT INTO storage.buckets (id, name, public)
