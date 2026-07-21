@@ -387,7 +387,7 @@ jobs:
             echo "::warning::Skipping GitHub repo creation — Vercel deploy will still proceed."
             exit 0
           fi
-          git config user.email "boltagent8@gmail.com"
+          git config user.email "support@rise-booking.com"
           git config user.name "RISE Auto-Builder"
           git remote remove origin || true
           git add -A
@@ -472,7 +472,7 @@ jobs:
           add_env VITE_VAPID_PUBLIC_KEY "$VAPID_PUB"
           add_env VAPID_PUBLIC_KEY "$VAPID_PUB"
           add_env VAPID_PRIVATE_KEY "$VAPID_PRIV"
-          add_env VAPID_SUBJECT "mailto:boltagent8@gmail.com"
+          add_env VAPID_SUBJECT "mailto:support@rise-booking.com"
           add_env OWNER_PHONE "$CLIENT_PHONE"
           add_env TWILIO_ACCOUNT_SID "$(clean "$RAW_TW_SID")"
           add_env TWILIO_AUTH_TOKEN "$(clean "$RAW_TW_TOKEN")"
@@ -596,7 +596,7 @@ jobs:
 
           send({
             from: 'RISE Auto-Builder <noreply@rise-booking.com>',
-            to: ['boltagent8@gmail.com'],
+            to: ['support@rise-booking.com'],
             subject: `✅ האתר מוכן — ${client.clinic_name}`,
             text: [
               `האתר של ${client.clinic_name} עלה בהצלחה! 🎉`,

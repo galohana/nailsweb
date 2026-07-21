@@ -183,7 +183,7 @@ jobs:
             headers: { 'Authorization': `Bearer ${process.env.RESEND_CLEAN}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
               from: 'RISE Auto-Builder <noreply@rise-booking.com>',
-              to: ['boltagent8@gmail.com'],
+              to: ['support@rise-booking.com'],
               subject: `🎨 עיצוב מחדש הושלם — ${slug}`,
               text: [
                 `העיצוב המחודש של ${slug} הושלם בהצלחה!`,
@@ -218,7 +218,7 @@ jobs:
             },
             body: JSON.stringify({
               from: 'RISE Auto-Builder <noreply@rise-booking.com>',
-              to: ['boltagent8@gmail.com'],
+              to: ['support@rise-booking.com'],
               subject: `❌ עיצוב מחדש נכשל — ${process.env.REPO_SLUG}`,
               text: `הריצה נכשלה.\n🔗 ${process.env.RUN_URL}`,
             }),

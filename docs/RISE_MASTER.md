@@ -132,7 +132,7 @@ export const design = {
 OTP + "ברוכה הבאה" תמיד פעיל. ⚠️ trim ל-70 תווים לכל SMS.
 
 ### Resend
-קבלות HTML. `boltagent8@gmail.com` = חשבון הבעלים.
+קבלות HTML. `support@rise-booking.com` = חשבון הבעלים.
 
 ### תשלומים
 ביט: `https://www.bitpay.co.il/app/me/{phone}` · פייבוקס: לא עובד · מזומן: הזמנה + התראת push
